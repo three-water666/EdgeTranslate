@@ -164,7 +164,9 @@ function buildJS() {
  * @param {Function} done execute done to inform gulp that the task is finished
  */
 function buildJSDev(done) {
-    let result = spawn("gulp", ["buildJS", "--browser", browser, "--color"]);
+    let result = spawn("gulp", ["buildJS", "--browser", browser, "--color"], {
+        shell: true
+    });
     result.stdout.on("data", (data) => {
         log(data);
     });
