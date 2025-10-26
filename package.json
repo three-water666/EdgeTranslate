@@ -24,9 +24,10 @@
     },
     "scripts": {
         "build": "turbo run build",
-        "build:chrome": "turbo run build:chrome --filter=edge_translate",
+        "test": "turbo run test",
         "dev:chrome": "turbo run dev:chrome --filter=edge_translate",
-        "test": "turbo run test"
+        "build:chrome": "turbo run build:chrome --filter=edge_translate",
+        "pack:chrome": "turbo run pack:chrome --filter=edge_translate"
     },
     "devDependencies": {
         "@commitlint/cli": "^13.2.1",
