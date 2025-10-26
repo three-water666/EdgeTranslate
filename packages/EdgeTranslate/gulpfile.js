@@ -35,7 +35,7 @@ exports.buildJS = gulp.series(setDevelopEnvironment, buildJS);
 exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
-    gulp.parallel(eslintJS, buildJSDev, manifest, html, styl, packStatic),
+    gulp.parallel(eslintJS, buildJSDev, copyManifest, html, styl, packStatic),
     watcher
 );
 
@@ -45,7 +45,7 @@ exports.dev = gulp.series(
 exports.build = gulp.series(
     setProductEnvironment,
     clean,
-    gulp.parallel(eslintJS, buildJS, manifest, html, styl, packStatic)
+    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic)
 );
 
 /**
@@ -54,7 +54,7 @@ exports.build = gulp.series(
 exports.pack = gulp.series(
     setProductEnvironment,
     clean,
-    gulp.parallel(eslintJS, buildJS, manifest, html, styl, packStatic),
+    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic),
     packToZip
 );
 /**
@@ -107,7 +107,7 @@ function watcher(done) {
     gulp.watch("./src/**/*.{js,jsx}").on("change", gulp.series(eslintJS));
     gulp.watch("./src/(manifest|manifest_chrome|manifest_firefox).json").on(
         "change",
-        gulp.series(manifest)
+        gulp.series(copyManifest)
     );
     gulp.watch("./src/**/*.html").on("change", gulp.series(html));
     gulp.watch("./static/**/*").on("change", gulp.series(packStatic));
@@ -184,6 +184,15 @@ function manifest() {
         .src("./src/manifest.json", { base: "src" })
         .pipe(merge_json(manifest_patch))
         .pipe(gulp.dest(output_dir));
+}
+
+function copyManifest() {
+    let output_dir = `./build/${browser}/`;
+    return gulp.src(`./src/manifest_${browser}.json`).pipe(through.obj(function (file, enc, cb) {
+        file.basename = "manifest.json";
+        this.push(file);
+        cb();
+    })).pipe(gulp.dest(output_dir));
 }
 
 /**
