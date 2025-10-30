@@ -19,7 +19,7 @@ let mutualTranslate = document.getElementById("mutual-translate");
 /**
  * 初始化设置列表
  */
-window.onload = function () {
+window.onload = async function () {
     i18nHTML();
 
     let arrowUp = document.getElementById("arrow-up");
@@ -49,57 +49,55 @@ window.onload = function () {
     exchangeButton.onclick = exchangeLanguage;
 
     // 添加互译模式开关的事件监听
-    mutualTranslate.onchange = () => {
-        getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
-            let OtherSettings = result.OtherSettings;
-            OtherSettings["MutualTranslate"] = mutualTranslate.checked;
-            saveOption("OtherSettings", OtherSettings);
-        });
+    mutualTranslate.onchange = async () => {
+        const result = await getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS);
+        let OtherSettings = result.OtherSettings;
+        OtherSettings["MutualTranslate"] = mutualTranslate.checked;
+        await saveOption("OtherSettings", OtherSettings);
         showSourceTarget();
     };
 
     // 获得用户之前选择的语言翻译选项和互译设置
-    getOrSetDefaultSettings(["languageSetting", "OtherSettings"], DEFAULT_SETTINGS).then(
-        (result) => {
-            let OtherSettings = result.OtherSettings;
-            let languageSetting = result.languageSetting;
-
-            // 根据源语言设定更新
-            if (languageSetting.sl === "auto") {
-                mutualTranslate.disabled = true;
-                mutualTranslate.parentElement.title = chrome.i18n.getMessage(
-                    "MutualTranslationWarning"
-                );
-                if (OtherSettings["MutualTranslate"]) {
-                    mutualTranslate.checked = false;
-                    mutualTranslate.onchange();
-                }
-            } else {
-                mutualTranslate.checked = OtherSettings["MutualTranslate"];
-                mutualTranslate.parentElement.title = "";
-            }
-
-            // languages是可选的源语言和目标语言的列表
-            for (let language in LANGUAGES) {
-                let value = language;
-                let name = chrome.i18n.getMessage(LANGUAGES[language]);
-
-                if (languageSetting && value == languageSetting.sl) {
-                    sourceLanguage.options.add(new Option(name, value, true, true));
-                } else {
-                    sourceLanguage.options.add(new Option(name, value));
-                }
-
-                if (languageSetting && value == languageSetting.tl) {
-                    targetLanguage.options.add(new Option(name, value, true, true));
-                } else {
-                    targetLanguage.options.add(new Option(name, value));
-                }
-            }
-
-            showSourceTarget(); // show source language and target language in input placeholder
-        }
+    const result = await getOrSetDefaultSettings(
+        ["languageSetting", "OtherSettings"],
+        DEFAULT_SETTINGS
     );
+
+    let OtherSettings = result.OtherSettings;
+    let languageSetting = result.languageSetting;
+
+    // 根据源语言设定更新
+    if (languageSetting.sl === "auto") {
+        mutualTranslate.disabled = true;
+        mutualTranslate.parentElement.title = chrome.i18n.getMessage("MutualTranslationWarning");
+        if (OtherSettings["MutualTranslate"]) {
+            mutualTranslate.checked = false;
+            mutualTranslate.onchange();
+        }
+    } else {
+        mutualTranslate.checked = OtherSettings["MutualTranslate"];
+        mutualTranslate.parentElement.title = "";
+    }
+
+    // languages是可选的源语言和目标语言的列表
+    for (let language in LANGUAGES) {
+        let value = language;
+        let name = chrome.i18n.getMessage(LANGUAGES[language]);
+
+        if (languageSetting && value == languageSetting.sl) {
+            sourceLanguage.options.add(new Option(name, value, true, true));
+        } else {
+            sourceLanguage.options.add(new Option(name, value));
+        }
+
+        if (languageSetting && value == languageSetting.tl) {
+            targetLanguage.options.add(new Option(name, value, true, true));
+        } else {
+            targetLanguage.options.add(new Option(name, value));
+        }
+    }
+
+    showSourceTarget(); // show source language and target language in input placeholder
     // 统一添加事件监听
     addEventListener();
 };
@@ -129,14 +127,14 @@ chrome.commands.onCommand.addListener((command) => {
  * @param {*} sourceLanguage 源语言
  * @param {*} targetLanguage 目标语言
  */
-function updateLanguageSetting(sourceLanguage, targetLanguage) {
+async function updateLanguageSetting(sourceLanguage, targetLanguage) {
     // Update translator config.
     channel.emit("language_setting_update", {
         from: sourceLanguage,
         to: targetLanguage,
     });
 
-    saveOption("languageSetting", { sl: sourceLanguage, tl: targetLanguage });
+    await saveOption("languageSetting", { sl: sourceLanguage, tl: targetLanguage });
     if (sourceLanguage === "auto") {
         mutualTranslate.checked = false;
         mutualTranslate.disabled = true;
@@ -154,10 +152,10 @@ function updateLanguageSetting(sourceLanguage, targetLanguage) {
  * @param {*} key 设置项名
  * @param {*} value 设置项
  */
-function saveOption(key, value) {
+async function saveOption(key, value) {
     let item = {};
     item[key] = value;
-    chrome.storage.sync.set(item);
+    await chrome.storage.sync.set(item);
 }
 
 /**
@@ -180,18 +178,17 @@ function addEventListener() {
 /**
  * 负责在option页面中输入内容后进行翻译
  */
-function translateSubmit() {
+async function translateSubmit() {
     let content = document.getElementById("translate_input").value;
     if (content.replace(/\s*/, "") !== "") {
         // 判断值是否为
         document.getElementById("hint_message").style.display = "none";
 
         // send message to background to translate content
-        channel.request("translate", { text: content }).then(() => {
-            setTimeout(() => {
-                window.close(); // 展示结束后关闭option页面
-            }, 0);
-        });
+        await channel.request("translate", { text: content });
+        setTimeout(() => {
+            window.close(); // 展示结束后关闭option页面
+        }, 0);
     } // 提示输入的内容是
     else document.getElementById("hint_message").style.display = "inline";
 }
