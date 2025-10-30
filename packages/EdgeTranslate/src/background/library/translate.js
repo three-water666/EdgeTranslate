@@ -107,6 +107,9 @@ class TranslatorManager {
 
         /**
          * Update config cache on config changed.
+         * * ⚠️ MV3 WARNING: This listener is registered non-persistently
+         * and will be lost when the Service Worker terminates.
+         * This logic must be moved to the top level of your service worker script.
          */
         chrome.storage.onChanged.addListener(
             (async (changes, area) => {
@@ -145,6 +148,9 @@ class TranslatorManager {
     async getCurrentTabId() {
         let tabId = -1;
         const tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            return -1;
+        }
         tabId = tabs[0].id;
 
         // to test whether the current tab can receive message(display results)
@@ -152,16 +158,21 @@ class TranslatorManager {
             const shouldOpenNoticePage = await new Promise((resolve) => {
                 // The page is a local file page
                 if (/^file:\/\.*/.test(tabs[0].url)) {
-                    chrome.extension.isAllowedFileSchemeAccess((allowed) => {
-                        if (!allowed && confirm(chrome.i18n.getMessage("PermissionRemind"))) {
+                    chrome.runtime.isAllowedFileSchemeAccess((allowed) => {
+                        if (!allowed) {
                             chrome.tabs.create({
                                 url: `chrome://extensions/?id=${chrome.runtime.id}`,
                             });
                             resolve(false);
-                        } else resolve(true);
+                        } else {
+                            resolve(true);
+                        }
                     });
-                } else resolve(true);
+                } else {
+                    resolve(true);
+                }
             });
+
             if (!shouldOpenNoticePage) {
                 tabId = -1;
                 return;
@@ -297,6 +308,10 @@ class TranslatorManager {
      * @returns {Promise<void>} pronounce finished Promise
      */
     async pronounce(pronouncing, text, language, speed) {
+        // ⚠️ MV3 WARNING: this.localTTS.speak() might fail if it uses
+        // DOM APIs like new Audio() or speechSynthesis.
+        // Use chrome.tts or chrome.offscreen API instead.
+
         // Ensure that configurations have been initialized.
         await this.config_loader;
 
@@ -350,6 +365,9 @@ class TranslatorManager {
      * Stop pronounce proxy.
      */
     async stopPronounce() {
+        // ⚠️ MV3 WARNING: this.localTTS.pause() might fail
+        // if it's tied to a DOM API.
+
         // Ensure that configurations have been initialized.
         await this.config_loader;
 
@@ -401,12 +419,14 @@ class TranslatorManager {
         });
 
         // Inform result frame to update options.
-        promiseTabs.query({ active: true, currentWindow: true }).then((tabs) =>
-            this.channel.emitToTabs(tabs[0].id, "update_translator_options", {
-                selectedTranslator,
-                availableTranslators,
-            })
-        );
+        promiseTabs.query({ active: true, currentWindow: true }).then((tabs) => {
+            if (tabs && tabs.length > 0) {
+                this.channel.emitToTabs(tabs[0].id, "update_translator_options", {
+                    selectedTranslator,
+                    availableTranslators,
+                });
+            }
+        });
     }
 
     /**
@@ -449,17 +469,32 @@ function translatePage(channel) {
  *
  * @param {import("../../common/scripts/channel.js").default} channel Communication channel.
  */
-function executeGoogleScript(channel) {
-    chrome.tabs.executeScript({ file: "/google/init.js" }, (result) => {
-        if (chrome.runtime.lastError) {
-            log(`Chrome runtime error: ${chrome.runtime.lastError}`);
-            log(`Detail: ${result}`);
-        } else {
-            promiseTabs.query({ active: true, currentWindow: true }).then((tabs) => {
-                channel.emitToTabs(tabs[0].id, "start_page_translate", { translator: "google" });
-            });
+async function executeGoogleScript(channel) {
+    let tabs;
+    try {
+        tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            log("No active tab found to execute script.");
+            return;
         }
-    });
+
+        const tabId = tabs[0].id;
+
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["/google/init.js"],
+        });
+
+        channel.emitToTabs(tabId, "start_page_translate", { translator: "google" });
+    } catch (e) {
+        if (tabs && tabs.length > 0) {
+            log(`Failed to execute script on tab ${tabs[0].id} (${tabs[0].url}): ${e.message}`);
+        } else if (e instanceof Error) {
+            log(`Chrome runtime error: ${e.message}`);
+        } else {
+            log(`Chrome runtime error: ${String(e)}`);
+        }
+    }
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };
