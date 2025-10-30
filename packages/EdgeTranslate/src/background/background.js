@@ -6,7 +6,6 @@ import {
     removeDomainBlacklist,
     updateBLackListMenu,
 } from "./library/blacklist.js";
-import { sendHitRequest } from "./library/analytics.js";
 import { promiseTabs } from "common/scripts/promise.js";
 import Channel from "common/scripts/channel.js";
 import { getDomain } from "common/scripts/common.js";
@@ -105,14 +104,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 title: chrome.i18n.getMessage("AppName"),
                 message: chrome.i18n.getMessage("DataCollectionNotice"),
             });
-
-            // 尝试发送安装事件
-            setTimeout(() => {
-                sendHitRequest("background", "event", {
-                    ec: "installation", // event category
-                    ea: "installation", // event label
-                });
-            }, 10 * 60 * 1000); // 10 min
         } else if (details.reason === "update") {
             await new Promise((resolve) => {
                 chrome.storage.sync.get((result) => {
@@ -407,17 +398,3 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         ? ["blocking", "requestHeaders", "extraHeaders"]
         : ["blocking", "requestHeaders"]
 );
-
-// send basic hit data to google analytics
-setTimeout(() => {
-    sendHitRequest("background", "pageview", null);
-}, 60 * 1000);
-
-/**
- * dynamic importing hot reload function only in development env
- */
-if (BUILD_ENV === "development" && BROWSER_ENV === "chrome") {
-    import("./library/hot_reload.js").then((module) => {
-        module.hotReload();
-    });
-}
