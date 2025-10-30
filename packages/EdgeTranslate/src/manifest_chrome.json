@@ -94,7 +94,8 @@
         "webRequest",
         "declarativeNetRequest",
         "alarms",
-        "scripting"
+        "scripting",
+        "tts"
     ],
     "host_permissions": ["<all_urls>"],
     "declarative_net_request": {
