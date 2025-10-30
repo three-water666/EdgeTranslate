@@ -8,86 +8,156 @@ import {
 } from "./library/blacklist.js";
 import { promiseTabs } from "common/scripts/promise.js";
 import Channel from "common/scripts/channel.js";
-import { getDomain } from "common/scripts/common.js";
 // map language abbreviation from browser languages to translation languages
 import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
 import { DEFAULT_SETTINGS, setDefaultSettings } from "common/scripts/settings.js";
 
-/**
- * BEGIN SETTING UP CONTEXT MENUS
- */
-chrome.contextMenus.create({
-    id: "translate",
-    title: `${chrome.i18n.getMessage("Translate")} '%s'`,
-    contexts: ["selection"],
-});
+const RULE_CSP_ALL = {
+    id: 1,
+    priority: 1,
+    action: {
+        type: "modifyHeaders",
+        responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
+    },
+    condition: {
+        // 对应原 "urls": ["*://*/*"]
+        // 你必须在 manifest.json 的 host_permissions 中请求 "<all_urls>" 或 "*://*/*"
+        resourceTypes: ["main_frame", "sub_frame"],
+    },
+};
 
-// Add an entry to options page for Firefox as it doesn't have one.
-if (BROWSER_ENV === "firefox") {
-    chrome.contextMenus.create({
-        id: "settings",
-        title: chrome.i18n.getMessage("Settings"),
-        contexts: ["browser_action"],
-    });
-}
+const RULE_CSP_DEEPL = {
+    id: 2,
+    priority: 2, // 优先级更高，确保在 deepl.com 上也生效
+    action: {
+        type: "modifyHeaders",
+        responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
+    },
+    condition: {
+        urlFilter: "*://*.deepl.com/*",
+        resourceTypes: ["main_frame", "sub_frame"],
+    },
+};
 
-chrome.contextMenus.create({
-    id: "shortcut",
-    title: chrome.i18n.getMessage("ShortcutSetting"),
-    contexts: ["browser_action"],
-});
+// 规则 3: 修改 Google TTS 的 CORP 头部
+const RULE_GOOGLE_TTS = {
+    id: 3,
+    priority: 1,
+    action: {
+        type: "modifyHeaders",
+        responseHeaders: [
+            {
+                header: "cross-origin-resource-policy",
+                operation: "set",
+                value: "cross-origin",
+            },
+        ],
+    },
+    condition: {
+        urlFilter: "*://translate.google.cn/*",
+        // 原代码未指定类型，这里选择可能相关的类型
+        resourceTypes: ["xmlhttprequest", "media", "other"],
+    },
+};
 
-chrome.contextMenus.create({
-    id: "translate_page",
-    title: chrome.i18n.getMessage("TranslatePage"),
-    contexts: ["page"],
-});
-
-chrome.contextMenus.create({
-    id: "translate_page_google",
-    title: chrome.i18n.getMessage("TranslatePageGoogle"),
-    contexts: ["browser_action"],
-});
-
-chrome.contextMenus.create({
-    id: "add_url_blacklist",
-    title: chrome.i18n.getMessage("AddUrlBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-
-chrome.contextMenus.create({
-    id: "add_domain_blacklist",
-    title: chrome.i18n.getMessage("AddDomainBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-
-chrome.contextMenus.create({
-    id: "remove_url_blacklist",
-    title: chrome.i18n.getMessage("RemoveUrlBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-
-chrome.contextMenus.create({
-    id: "remove_domain_blacklist",
-    title: chrome.i18n.getMessage("RemoveDomainBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-/**
- * END SETTING UP CONTEXT MENUS
- */
+// 规则 4: 修改 QQ 翻译的 Origin 头部
+const RULE_QQ_FANYI = {
+    id: 4,
+    priority: 1,
+    action: {
+        type: "modifyHeaders",
+        requestHeaders: [
+            {
+                header: "origin",
+                operation: "set",
+                value: "https://fanyi.qq.com",
+            },
+        ],
+    },
+    condition: {
+        urlFilter: "*://fanyi.qq.com/*",
+        // 假定这是 API 请求
+        resourceTypes: ["xmlhttprequest"],
+    },
+};
 
 /**
- * 初始化插件配置。
+ * 插件安装和更新时的初始化。
  */
 chrome.runtime.onInstalled.addListener(async (details) => {
+    chrome.contextMenus.create({
+        id: "translate",
+        title: `${chrome.i18n.getMessage("Translate")} '%s'`,
+        contexts: ["selection"],
+    });
+
+    // Add an entry to options page for Firefox as it doesn't have one.
+    if (BROWSER_ENV === "firefox") {
+        chrome.contextMenus.create({
+            id: "settings",
+            title: chrome.i18n.getMessage("Settings"),
+            contexts: ["browser_action"],
+        });
+    }
+
+    chrome.contextMenus.create({
+        id: "shortcut",
+        title: chrome.i18n.getMessage("ShortcutSetting"),
+        contexts: ["browser_action"],
+    });
+
+    chrome.contextMenus.create({
+        id: "translate_page",
+        title: chrome.i18n.getMessage("TranslatePage"),
+        contexts: ["page"],
+    });
+
+    chrome.contextMenus.create({
+        id: "translate_page_google",
+        title: chrome.i18n.getMessage("TranslatePageGoogle"),
+        contexts: ["browser_action"],
+    });
+
+    chrome.contextMenus.create({
+        id: "add_url_blacklist",
+        title: chrome.i18n.getMessage("AddUrlBlacklist"),
+        contexts: ["browser_action"],
+        enabled: false,
+        visible: false,
+    });
+
+    chrome.contextMenus.create({
+        id: "add_domain_blacklist",
+        title: chrome.i18n.getMessage("AddDomainBlacklist"),
+        contexts: ["browser_action"],
+        enabled: false,
+        visible: false,
+    });
+
+    chrome.contextMenus.create({
+        id: "remove_url_blacklist",
+        title: chrome.i18n.getMessage("RemoveUrlBlacklist"),
+        contexts: ["browser_action"],
+        enabled: false,
+        visible: false,
+    });
+
+    chrome.contextMenus.create({
+        id: "remove_domain_blacklist",
+        title: chrome.i18n.getMessage("RemoveDomainBlacklist"),
+        contexts: ["browser_action"],
+        enabled: false,
+        visible: false,
+    });
+
+    const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const oldRuleIds = existingRules.map((rule) => rule.id);
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: [RULE_CSP_ALL, RULE_CSP_DEEPL, RULE_GOOGLE_TTS, RULE_QQ_FANYI],
+    });
+
     // 只有在生产环境下，才会展示说明页面
     if (process.env.NODE_ENV === "production") {
         if (details.reason === "install") {
@@ -292,109 +362,3 @@ chrome.commands.onCommand.addListener((command) => {
             break;
     }
 });
-
-/**
- * Modify the CSP header of translate requests.
- */
-chrome.webRequest.onHeadersReceived.addListener(
-    (details) => ({
-        responseHeaders: details.responseHeaders.map((header) =>
-            /^content-security-policy$/i.test(header.name)
-                ? {
-                      name: header.name,
-                      value: header.value
-                          .replaceAll(
-                              // Remove 'none' and "none".
-                              /((^|;)\s*(default-src|script-src|img-src|connect-src|frame-src))\s+['"]none['"]/g,
-                              "$1 "
-                          )
-                          .replaceAll(
-                              // Add Google Page Translate related domains.
-                              // The last "\s" is added to prevent matching script-src-attr, script-src-elem, etc..
-                              /((^|;)\s*(default-src|script-src|img-src|connect-src))\s/g,
-                              // eslint-disable-next-line prefer-template
-                              "$1 'unsafe-inline' translate.googleapis.com translate.google.com *.google.com *.gstatic.com " +
-                                  chrome.runtime.getURL("") +
-                                  " "
-                          )
-                          .replaceAll(/((^|;)\s*frame-src)\s/g, "$1 'self' "), // Allow frame-src to the page itself.
-                  }
-                : header
-        ),
-    }),
-    { urls: ["*://*/*"], types: ["main_frame", "sub_frame"] },
-    ["blocking", "responseHeaders"]
-);
-
-/**
- * Modify the CSP header of DeepL home page.
- */
-chrome.webRequest.onHeadersReceived.addListener(
-    (details) => ({
-        responseHeaders: details.responseHeaders.map((header) =>
-            /^content-security-policy$/i.test(header.name)
-                ? {
-                      name: header.name,
-                      value: header.value.replaceAll(/frame-ancestors [^;]*;?/g, ""),
-                  }
-                : header
-        ),
-    }),
-    { urls: ["*://*.deepl.com/*"], types: ["main_frame", "sub_frame"] },
-    ["blocking", "responseHeaders"]
-);
-
-/**
- * Modify the cross-origin-resource-policy header of Google TTS response.
- */
-chrome.webRequest.onHeadersReceived.addListener(
-    (details) => {
-        for (let header of details.responseHeaders) {
-            if (header.name.toLowerCase() === "cross-origin-resource-policy") {
-                // console.log(JSON.stringify(header));
-                header.value = "cross-origin";
-                break;
-            }
-        }
-
-        return { responseHeaders: details.responseHeaders };
-    },
-    { urls: ["*://translate.google.cn/*"] },
-    // Browser compatibility.
-    BROWSER_ENV === "chrome"
-        ? ["blocking", "responseHeaders", "extraHeaders"]
-        : ["blocking", "responseHeaders"]
-);
-
-/**
- * Modify the origin header of translate requests.
- */
-chrome.webRequest.onBeforeSendHeaders.addListener(
-    (details) => {
-        let modified = false;
-        let origin = `https://${getDomain(details.url)}`;
-
-        // log("requesting " + details.url);
-        for (let header of details.requestHeaders) {
-            // log(header);
-            if (header.name.toLowerCase() === "origin") {
-                // log("changed origin: " + header.value);
-                header.value = origin;
-                modified = true;
-                break;
-            }
-        }
-
-        // Origin header has not been set.
-        if (!modified) {
-            details.requestHeaders.push({ name: "Origin", value: origin });
-        }
-
-        return { requestHeaders: details.requestHeaders };
-    },
-    { urls: ["*://fanyi.qq.com/*"] },
-    // Browser compatibility.
-    BROWSER_ENV === "chrome"
-        ? ["blocking", "requestHeaders", "extraHeaders"]
-        : ["blocking", "requestHeaders"]
-);
