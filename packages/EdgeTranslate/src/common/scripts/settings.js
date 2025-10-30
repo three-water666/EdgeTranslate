@@ -106,39 +106,41 @@ function setDefaultSettings(result, settings) {
  * @param {Object | Function} defaults default values or function to generate default values
  * @returns {Promise<Any>} settings
  */
-function getOrSetDefaultSettings(settings, defaults) {
-    return new Promise((resolve) => {
-        // If there is only one setting to get, warp it up.
-        if (typeof settings === "string") {
-            settings = [settings];
-        } else if (settings === undefined) {
-            // If settings is undefined, collect all setting keys in defaults.
-            settings = [];
-            for (let key in defaults) {
-                settings.push(key);
-            }
+async function getOrSetDefaultSettings(settings, defaults) {
+    // If there is only one setting to get, warp it up.
+    if (typeof settings === "string") {
+        settings = [settings];
+    } else if (settings === undefined) {
+        // If settings is undefined, collect all setting keys in defaults.
+        settings = [];
+        for (let key in defaults) {
+            settings.push(key);
         }
+    }
 
-        chrome.storage.sync.get(settings, (result) => {
-            let updated = false;
+    // Use await to get the result directly
+    let result = await chrome.storage.sync.get(settings);
+    let updated = false;
 
-            for (let setting of settings) {
-                if (!result[setting]) {
-                    if (typeof defaults === "function") {
-                        defaults = defaults(settings);
-                    }
-                    result[setting] = defaults[setting];
-                    updated = true;
-                }
-            }
+    // Get defaults object if it's a function (run once)
+    if (typeof defaults === "function") {
+        defaults = defaults(settings);
+    }
 
-            if (updated) {
-                chrome.storage.sync.set(result, () => resolve(result));
-            } else {
-                resolve(result);
-            }
-        });
-    });
+    for (let setting of settings) {
+        // Use 'undefined' check for safer assignment
+        if (result[setting] === undefined) {
+            result[setting] = defaults[setting];
+            updated = true;
+        }
+    }
+
+    if (updated) {
+        // Use await for the set operation
+        await chrome.storage.sync.set(result);
+    }
+
+    return result;
 }
 
 export { DEFAULT_SETTINGS, setDefaultSettings, getOrSetDefaultSettings };
