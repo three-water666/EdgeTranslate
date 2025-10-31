@@ -95,7 +95,8 @@
         "declarativeNetRequest",
         "alarms",
         "scripting",
-        "tts"
+        "tts",
+        "offscreen"
     ],
     "host_permissions": ["<all_urls>"],
     "content_scripts": [

@@ -1,4 +1,3 @@
-import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
 import {
     addUrlBlacklist,
     addDomainBlacklist,
@@ -220,10 +219,35 @@ chrome.runtime.onInstalled.addListener(async (details) => {
  */
 const channel = new Channel();
 
-/**
- * Create translator manager and register event listeners and service providers.
- */
-const TRANSLATOR_MANAGER = new TranslatorManager(channel);
+// 检查是否已经有 Offscreen 文档
+async function hasOffscreenDocument(path) {
+    // getContexts 是新 API，用于查找正在运行的插件页面
+    const existingContexts = await chrome.runtime.getContexts({
+        contextTypes: ["OFFSCREEN_DOCUMENT"],
+        documentUrls: [chrome.runtime.getURL(path)],
+    });
+    return existingContexts.length > 0;
+}
+
+// 创建 Offscreen 文档
+async function createOffscreenDocument() {
+    const path = "../offscreen/offscreen.html";
+    if (await hasOffscreenDocument(path)) {
+        console.log("Service Worker: Offscreen 文档已存在。");
+        return;
+    }
+
+    console.log("Service Worker: Offscreen 文档不存在，正在创建...");
+    await chrome.offscreen.createDocument({
+        url: path,
+        // 告诉 Chrome 你为什么需要这个页面
+        reasons: [
+            chrome.offscreen.Reason.AUDIO_PLAYBACK, // 如果你要放音乐
+            chrome.offscreen.Reason.DOM_PARSER, // 如果你要解析DOM
+        ],
+        justification: "用于播放通知声音和解析HTML内容",
+    });
+}
 
 /**
  * 监听用户点击通知事件
@@ -250,30 +274,19 @@ chrome.notifications.onClicked.addListener((notificationId) => {
 /**
  * 添加点击菜单后的处理事件
  */
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     switch (info.menuItemId) {
         case "translate":
-            channel
-                .requestToTab(tab.id, "get_selection")
-                .then(({ text, position }) => {
-                    if (text) {
-                        return TRANSLATOR_MANAGER.translate(text, position);
-                    }
-                    return Promise.reject();
-                })
-                .catch((error) => {
-                    // If content scripts can not access the tab the selection, use info.selectionText instead.
-                    if (info.selectionText.trim()) {
-                        return TRANSLATOR_MANAGER.translate(info.selectionText, null);
-                    }
-                    return Promise.resolve(error);
-                });
+            await createOffscreenDocument();
+            channel.emit("translate_by_offscreen", { tab, info });
             break;
         case "translate_page":
-            translatePage(channel);
+            await createOffscreenDocument();
+            channel.emit("translate_page_by_offscreen", { channel });
             break;
         case "translate_page_google":
-            executeGoogleScript(channel);
+            await createOffscreenDocument();
+            channel.emit("translate_page_google_by_offscreen", { channel });
             break;
         case "settings":
             chrome.runtime.openOptionsPage();
@@ -349,10 +362,11 @@ channel.provide("get_lang", () => {
 /**
  *  将快捷键消息转发给content_scripts
  */
-chrome.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener(async (command) => {
     switch (command) {
         case "translate_page":
-            translatePage(channel);
+            await createOffscreenDocument();
+            channel.emit("translate_page_by_offscreen", { channel });
             break;
         default:
             promiseTabs
