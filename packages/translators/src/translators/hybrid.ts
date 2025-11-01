@@ -9,14 +9,12 @@ import BaiduTranslator from "./baidu";
 import BingTranslator from "./bing";
 import DeepLTranslator from "./deepl";
 import GoogleTranslator from "./google";
-import TencentTranslator from "./tencent";
 
 export type HybridSupportedTranslators =
     | "BaiduTranslate"
     | "BingTranslate"
     | "DeepLTranslate"
-    | "GoogleTranslate"
-    | "TencentTranslate";
+    | "GoogleTranslate";
 
 export type HybridConfig = {
     selections: Selections;
@@ -37,7 +35,6 @@ class HybridTranslator {
         BaiduTranslate: BaiduTranslator;
         BingTranslate: BingTranslator;
         GoogleTranslate: GoogleTranslator;
-        TencentTranslate: TencentTranslator;
         DeepLTranslate: DeepLTranslator;
     };
     MAIN_TRANSLATOR: HybridSupportedTranslators = "GoogleTranslate";
@@ -52,7 +49,6 @@ class HybridTranslator {
             BaiduTranslate: new BaiduTranslator(),
             BingTranslate: new BingTranslator(),
             GoogleTranslate: new GoogleTranslator(),
-            TencentTranslate: new TencentTranslator(channel),
             DeepLTranslate: null as unknown as DeepLTranslator,
         };
 
