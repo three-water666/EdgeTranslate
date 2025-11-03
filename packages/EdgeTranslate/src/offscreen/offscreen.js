@@ -24,7 +24,9 @@ channel.on("hybrid_translator_use_config", (detail) => {
 });
 
 channel.provide("hybrid_translator_get_available_translators", (detail) => {
-    return Promise.resolve(HYBRID_TRANSLATOR.getAvailableTranslatorsFor(detail.from, detail.to));
+    const result = HYBRID_TRANSLATOR.getAvailableTranslatorsFor(detail.from, detail.to);
+    console.log("Offscreen: Available translators:", result);
+    return Promise.resolve(result);
 });
 
 channel.provide("hybrid_translator_update_config", (detail) => {

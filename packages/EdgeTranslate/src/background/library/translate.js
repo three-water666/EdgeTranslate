@@ -60,17 +60,25 @@ class TranslatorManager {
      */
     provideServices() {
         // Translate service.
-        this.channel.provide("translate", (params) => this.translate(params.text, params.position));
+        this.channel.provide("translate", (params, sender) =>
+            this.translate(params.text, params.position, sender.tab.id)
+        );
 
         // Pronounce service.
-        this.channel.provide("pronounce", (params) => {
+        this.channel.provide("pronounce", (params, sender) => {
             let speed = params.speed;
             if (!speed) {
                 speed = this.TTS_SPEED;
                 this.TTS_SPEED = speed === "fast" ? "slow" : "fast";
             }
 
-            return this.pronounce(params.pronouncing, params.text, params.language, speed);
+            return this.pronounce(
+                params.pronouncing,
+                params.text,
+                params.language,
+                speed,
+                sender.tab.id
+            );
         });
 
         // Get available translators service.
@@ -144,7 +152,7 @@ class TranslatorManager {
      */
     async getCurrentTabId() {
         let tabId = -1;
-        const tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        const tabs = await promiseTabs.query({ active: true, lastFocusedWindow: true });
         if (!tabs || tabs.length === 0) {
             return -1;
         }
@@ -234,13 +242,9 @@ class TranslatorManager {
      *
      * @returns {Promise<void>} translate finished Promise
      */
-    async translate(text, position) {
+    async translate(text, position, currentTabId) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
-
-        // get current tab id
-        const currentTabId = await this.getCurrentTabId();
-        if (currentTabId === -1) return;
 
         /**
          * Get current time as timestamp.
@@ -315,17 +319,13 @@ class TranslatorManager {
      *
      * @returns {Promise<void>} pronounce finished Promise
      */
-    async pronounce(pronouncing, text, language, speed) {
+    async pronounce(pronouncing, text, language, speed, currentTabId) {
         // ⚠️ MV3 WARNING: this.localTTS.speak() might fail if it uses
         // DOM APIs like new Audio() or speechSynthesis.
         // Use chrome.tts or chrome.offscreen API instead.
 
         // Ensure that configurations have been initialized.
         await this.config_loader;
-
-        // get current tab id
-        const currentTabId = await this.getCurrentTabId();
-        if (currentTabId === -1) return;
 
         let lang = language;
         let timestamp = new Date().getTime();
@@ -405,9 +405,11 @@ class TranslatorManager {
      * @returns {Array<String>} available translators Promise.
      */
     async getAvailableTranslators(detail) {
-        return ["HybridTranslate"].concat(
-            await this.channel.request("hybrid_translator_get_available_translators", detail)
+        const availableTranslators = await this.channel.request(
+            "hybrid_translator_get_available_translators",
+            detail
         );
+        return ["HybridTranslate"].concat(availableTranslators);
     }
 
     /**

@@ -29,37 +29,34 @@ class Channel {
          * Register massage listener.
          */
         chrome.runtime.onMessage.addListener(
-            (async (message, sender) => {
-                let parsed;
-                try {
-                    parsed = JSON.parse(message);
-                } catch (e) {
-                    console.error(`Bad message: ${message}`, e);
-                    return;
-                }
+            ((message, sender, callback) => {
+                let parsed = JSON.parse(message);
+
                 if (!parsed || !parsed.type) {
                     console.error(`Bad message: ${message}`);
                     return;
                 }
+
                 switch (parsed.type) {
                     case "event":
                         this._eventManager.emit(parsed.event, parsed.detail, sender);
-                        return;
+                        callback && callback();
+                        break;
                     case "service": {
                         const server = this._services.get(parsed.service);
-                        if (!server) return;
-                        try {
-                            const result = await server(parsed.params, sender);
-                            return result;
-                        } catch (error) {
-                            console.error(`Service ${parsed.service} failed:`, error);
-                            return { error: error.message || "Service execution failed" };
-                        }
+                        if (!server) break;
+
+                        // We can call the callback only when we really provide the requested service.
+                        server(parsed.params, sender).then(
+                            (result) => callback && callback(result)
+                        );
+                        return true;
                     }
                     default:
                         console.error(`Unknown message type: ${message.type}`);
-                        return;
+                        break;
                 }
+                return;
             }).bind(this)
         );
     }
@@ -83,7 +80,16 @@ class Channel {
      */
     request(service, params) {
         const message = JSON.stringify({ type: "service", service, params });
-        return chrome.runtime.sendMessage(message);
+
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(message, (result) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
     }
 
     /**
@@ -125,9 +131,9 @@ class Channel {
      */
     emit(event, detail) {
         let message = JSON.stringify({ type: "event", event, detail });
-        chrome.runtime.sendMessage(message).catch((error) => {
-            if (error) {
-                console.error(error);
+        chrome.runtime.sendMessage(message, () => {
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
             }
         });
     }
@@ -178,7 +184,18 @@ class Channel {
             return null;
         }
 
-        return (tabId, message) => chrome.tabs.sendMessage(tabId, message);
+        // Chrome uses callback, wrap it up.
+        return (tabId, message) => {
+            return new Promise((resolve, reject) => {
+                chrome.tabs.sendMessage(tabId, message, (result) => {
+                    if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        };
     }
 }
 
