@@ -6,6 +6,19 @@
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**"]
         },
-        "test": {}
+        "test": {},
+        "dev:chrome": {
+            "dependsOn": ["^build"],
+            "cache": false,
+            "persistent": true
+        },
+        "build:chrome": {
+            "dependsOn": ["^build"],
+            "outputs": ["build/chrome/**"]
+        },
+        "pack:chrome": {
+            "dependsOn": ["^build"],
+            "outputs": ["build/**.zip"]
+        }
     }
 }
