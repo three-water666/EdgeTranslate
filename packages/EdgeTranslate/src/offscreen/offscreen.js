@@ -1,38 +1,52 @@
 import Channel from "common/scripts/channel.js";
-import {
-    TranslatorManager,
-    translatePage,
-    executeGoogleScript,
-} from "../background/library/translate.js";
+import { HybridTranslator } from "@edge_translate/translators";
 
 const channel = new Channel();
-const TRANSLATOR_MANAGER = new TranslatorManager(channel);
 
-channel.on("translate_by_offscreen", (detail) => {
-    const { tab, info } = detail;
-    channel
-        .requestToTab(tab.id, "get_selection")
-        .then(({ text, position }) => {
-            if (text) {
-                return TRANSLATOR_MANAGER.translate(text, position);
-            }
-            return Promise.reject();
-        })
-        .catch((error) => {
-            // If content scripts can not access the tab the selection, use info.selectionText instead.
-            if (info.selectionText.trim()) {
-                return TRANSLATOR_MANAGER.translate(info.selectionText, null);
-            }
-            return Promise.resolve(error);
-        });
+let HYBRID_TRANSLATOR;
+let TRANSLATORS;
+
+channel.on("new_hybrid_translator_instance", (detail) => {
+    if (HYBRID_TRANSLATOR) {
+        return;
+    }
+    const { configs, channel } = detail;
+    HYBRID_TRANSLATOR = new HybridTranslator(configs.HybridTranslatorConfig, channel);
+    TRANSLATORS = {
+        HybridTranslator: HYBRID_TRANSLATOR,
+        ...HYBRID_TRANSLATOR.REAL_TRANSLATORS,
+    };
+    console.log("Offscreen: New HybridTranslator instance created.");
 });
 
-channel.on("translate_page_by_offscreen", (detail) => {
-    const { channel } = detail;
-    translatePage(channel);
+channel.on("hybrid_translator_use_config", (detail) => {
+    HYBRID_TRANSLATOR.useConfig(detail);
 });
 
-channel.on("translate_page_google_by_offscreen", (detail) => {
-    const { channel } = detail;
-    executeGoogleScript(channel);
+channel.provide("hybrid_translator_get_available_translators", (detail) => {
+    return Promise.resolve(HYBRID_TRANSLATOR.getAvailableTranslatorsFor(detail.from, detail.to));
+});
+
+channel.provide("hybrid_translator_update_config", (detail) => {
+    return Promise.resolve(HYBRID_TRANSLATOR.updateConfigFor(detail.from, detail.to));
+});
+
+channel.provide("translator_detect_by_default_translator", async (detail) => {
+    const { DEFAULT_TRANSLATOR, text } = detail;
+    return Promise.resolve(TRANSLATORS[DEFAULT_TRANSLATOR].detect(text));
+});
+
+channel.provide("translator_by_default_translator", async (detail) => {
+    const { DEFAULT_TRANSLATOR, text, sl, tl } = detail;
+    return Promise.resolve(TRANSLATORS[DEFAULT_TRANSLATOR].translate(text, sl, tl));
+});
+
+channel.provide("translator_pronounce_by_default_translator", async (detail) => {
+    const { DEFAULT_TRANSLATOR, text, lang, speed } = detail;
+    return Promise.resolve(TRANSLATORS[DEFAULT_TRANSLATOR].pronounce(text, lang, speed));
+});
+
+channel.provide("translator_stop_pronounce_by_default_translator", async (detail) => {
+    const { DEFAULT_TRANSLATOR } = detail;
+    return Promise.resolve(TRANSLATORS[DEFAULT_TRANSLATOR].stopPronounce());
 });

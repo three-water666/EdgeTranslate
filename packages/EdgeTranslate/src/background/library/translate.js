@@ -1,4 +1,3 @@
-import { HybridTranslator } from "@edge_translate/translators";
 import { log } from "common/scripts/common.js";
 import { promiseTabs, delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
@@ -21,14 +20,11 @@ class TranslatorManager {
             ["HybridTranslatorConfig", "DefaultTranslator", "languageSetting", "OtherSettings"],
             DEFAULT_SETTINGS
         ).then((configs) => {
-            // Init hybrid translator.
-            this.HYBRID_TRANSLATOR = new HybridTranslator(configs.HybridTranslatorConfig, channel);
-
-            // Supported translators.
-            this.TRANSLATORS = {
-                HybridTranslate: this.HYBRID_TRANSLATOR,
-                ...this.HYBRID_TRANSLATOR.REAL_TRANSLATORS,
-            };
+            // 移除了 HYBRID_TRANSLATOR TRANSLATORS
+            this.channel.emit("new_hybrid_translator_instance", {
+                configs,
+                channel,
+            });
 
             // Mutual translating mode flag.
             this.IN_MUTUAL_MODE = configs.OtherSettings.MutualTranslate || false;
@@ -79,7 +75,7 @@ class TranslatorManager {
 
         // Get available translators service.
         this.channel.provide("get_available_translators", (params) =>
-            Promise.resolve(this.getAvailableTranslators(params))
+            this.getAvailableTranslators(params)
         );
 
         // Update default translator service.
@@ -118,7 +114,8 @@ class TranslatorManager {
                     await this.config_loader;
 
                     if (changes["HybridTranslatorConfig"]) {
-                        this.HYBRID_TRANSLATOR.useConfig(
+                        this.channel.emit(
+                            "hybrid_translator_use_config",
                             changes["HybridTranslatorConfig"].newValue
                         );
                     }
@@ -216,7 +213,12 @@ class TranslatorManager {
         // Ensure that configurations have been initialized.
         await this.config_loader;
 
-        return this.TRANSLATORS[this.DEFAULT_TRANSLATOR].detect(text);
+        const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+
+        return await this.channel.request("translator_detect_by_default_translator", {
+            DEFAULT_TRANSLATOR,
+            text,
+        });
     }
 
     /**
@@ -279,7 +281,13 @@ class TranslatorManager {
             }
 
             // Do translate.
-            let result = await this.TRANSLATORS[this.DEFAULT_TRANSLATOR].translate(text, sl, tl);
+            const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+            let result = await this.channel.request("translator_by_default_translator", {
+                DEFAULT_TRANSLATOR,
+                text,
+                sl,
+                tl,
+            });
             result.sourceLanguage = sl;
             result.targetLanguage = tl;
 
@@ -331,18 +339,29 @@ class TranslatorManager {
         });
 
         try {
+            const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
             if (language === "auto") {
-                lang = await this.TRANSLATORS[this.DEFAULT_TRANSLATOR].detect(text);
+                lang = await this.channel.request("translator_detect_by_default_translator", {
+                    DEFAULT_TRANSLATOR,
+                    text,
+                });
             }
 
-            await this.TRANSLATORS[this.DEFAULT_TRANSLATOR].pronounce(text, lang, speed).catch(
-                ((error) => {
-                    // API pronouncing failed, try local TTS service.
-                    if (!this.localTTS.speak(text, lang, speed)) {
-                        throw error;
-                    }
-                }).bind(this)
-            );
+            await this.channel
+                .request("translator_pronounce_by_default_translator", {
+                    DEFAULT_TRANSLATOR,
+                    text,
+                    lang,
+                    speed,
+                })
+                .catch(
+                    ((error) => {
+                        // API pronouncing failed, try local TTS service.
+                        if (!this.localTTS.speak(text, lang, speed)) {
+                            throw error;
+                        }
+                    }).bind(this)
+                );
 
             // Inform current tab pronouncing finished.
             this.channel.emitToTabs(currentTabId, "pronouncing_finished", {
@@ -371,7 +390,10 @@ class TranslatorManager {
         // Ensure that configurations have been initialized.
         await this.config_loader;
 
-        this.TRANSLATORS[this.DEFAULT_TRANSLATOR].stopPronounce();
+        const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+        this.channel.request("translator_stop_pronounce_by_default_translator", {
+            DEFAULT_TRANSLATOR,
+        });
         this.localTTS.pause();
     }
 
@@ -382,9 +404,9 @@ class TranslatorManager {
      *
      * @returns {Array<String>} available translators Promise.
      */
-    getAvailableTranslators(detail) {
+    async getAvailableTranslators(detail) {
         return ["HybridTranslate"].concat(
-            this.HYBRID_TRANSLATOR.getAvailableTranslatorsFor(detail.from, detail.to)
+            await this.channel.request("hybrid_translator_get_available_translators", detail)
         );
     }
 
@@ -399,10 +421,10 @@ class TranslatorManager {
         let selectedTranslator = this.DEFAULT_TRANSLATOR;
 
         // Get translators supporting new language setting.
-        let availableTranslators = this.getAvailableTranslators(detail);
+        let availableTranslators = await this.getAvailableTranslators(detail);
 
         // Update hybrid translator config.
-        const newConfig = this.HYBRID_TRANSLATOR.updateConfigFor(detail.from, detail.to);
+        const newConfig = await this.channel.request("hybrid_translator_update_config", detail);
         // Update config.
         chrome.storage.sync.set({ HybridTranslatorConfig: newConfig });
 
