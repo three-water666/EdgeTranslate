@@ -31,7 +31,14 @@ export class promiseTabs {
      * equal to chrome.tabs.create
      */
     static create(createProperties) {
-        return chrome.tabs.create(createProperties);
+        return new Promise((resolve, reject) => {
+            chrome.tabs.create(createProperties, (tab) => {
+                if (chrome.runtime.lastError) {
+                    return reject(chrome.runtime.lastError.message);
+                }
+                resolve(tab);
+            });
+        });
     }
 
     /**
@@ -39,21 +46,14 @@ export class promiseTabs {
      */
     static query(queryInfo) {
         return new Promise((resolve, reject) => {
-            chrome.tabs
-                .query(queryInfo)
-                .then((tabs) => {
-                    if (!tabs || !tabs[0] || tabs[0].id < 0) {
-                        return reject({
-                            error: "The query has no results",
-                        });
-                    }
-                    return resolve(tabs);
-                })
-                .catch((err) => {
+            chrome.tabs.query(queryInfo, (tabs) => {
+                if (chrome.runtime.lastError || !tabs[0] || tabs[0].id < 0) {
                     return reject({
-                        error: err.message || "Unknown query error",
+                        error: chrome.runtime.lastError || "The query has no results",
                     });
-                });
+                }
+                return resolve(tabs);
+            });
         });
     }
 }

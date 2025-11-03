@@ -14,65 +14,62 @@ const DISABLED_MARK = "X";
 /**
  * 将当前页面的url添加到黑名单
  */
-async function addUrlBlacklist() {
-    await addBlacklist("urls", async () => {
-        await disableItems([
-            "add_url_blacklist",
-            "add_domain_blacklist",
-            "remove_domain_blacklist",
-        ]);
-        await enableItems(["remove_url_blacklist"]);
+function addUrlBlacklist() {
+    addBlacklist("urls", () => {
+        disableItems(["add_url_blacklist", "add_domain_blacklist", "remove_domain_blacklist"]);
+
+        enableItems(["remove_url_blacklist"]);
     });
 
     // change the badge text when add url to blacklist
-    await chrome.action.setBadgeText({ text: DISABLED_MARK });
+    chrome.browserAction.setBadgeText({ text: DISABLED_MARK });
 }
 
 /**
  * 将当前页面的url移出黑名单
  */
-async function removeUrlBlacklist() {
-    await removeBlacklist("urls", async () => {
-        await disableItems(["remove_url_blacklist", "remove_domain_blacklist"]);
-        await enableItems(["add_url_blacklist", "add_domain_blacklist"]);
+function removeUrlBlacklist() {
+    removeBlacklist("urls", () => {
+        disableItems(["remove_url_blacklist", "remove_domain_blacklist"]);
+
+        enableItems(["add_url_blacklist", "add_domain_blacklist"]);
     });
 
     // clear the badge text when remove url from blacklist
-    await chrome.action.setBadgeText({ text: "" });
+    chrome.browserAction.setBadgeText({ text: "" });
 }
 
 /**
  * 将当前页面的域名添加到黑名单
  */
-async function addDomainBlacklist() {
-    await addBlacklist("domains", async () => {
-        await disableItems(["add_url_blacklist", "add_domain_blacklist", "remove_url_blacklist"]);
-        await enableItems(["remove_domain_blacklist"]);
+function addDomainBlacklist() {
+    addBlacklist("domains", () => {
+        disableItems(["add_url_blacklist", "add_domain_blacklist", "remove_url_blacklist"]);
+
+        enableItems(["remove_domain_blacklist"]);
     });
 
     // change the badge text when add domain to blacklist
-    await chrome.action.setBadgeText({ text: DISABLED_MARK });
+    chrome.browserAction.setBadgeText({ text: DISABLED_MARK });
 }
 
 /**
  * 将当前页面的域名移出黑名单
  */
-async function removeDomainBlacklist() {
-    await removeBlacklist("domains", async (blacklist, url) => {
+function removeDomainBlacklist() {
+    removeBlacklist("domains", (blacklist, url) => {
         // 如果该url还在url黑名单中
         if (blacklist.urls[url]) {
-            await disableItems([
-                "add_url_blacklist",
-                "add_domain_blacklist",
-                "remove_domain_blacklist",
-            ]);
-            await enableItems(["remove_url_blacklist"]);
+            disableItems(["add_url_blacklist", "add_domain_blacklist", "remove_domain_blacklist"]);
+
+            enableItems(["remove_url_blacklist"]);
         } else {
-            await disableItems(["remove_url_blacklist", "remove_domain_blacklist"]);
-            await enableItems(["add_url_blacklist", "add_domain_blacklist"]);
+            disableItems(["remove_url_blacklist", "remove_domain_blacklist"]);
+
+            enableItems(["add_url_blacklist", "add_domain_blacklist"]);
 
             // clear the badge text when remove domain from blacklist
-            await chrome.action.setBadgeText({ text: "" });
+            chrome.browserAction.setBadgeText({ text: "" });
         }
     });
 }
@@ -83,17 +80,19 @@ async function removeDomainBlacklist() {
  * @param {String} field 决定将url拉黑还是将域名拉黑
  * @param {Function} callback 回调
  */
-async function addBlacklist(field, callback) {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs && tabs[0]) {
-        const result = await getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS);
-        let blacklist = result.blacklist;
-        let value = field === "urls" ? tabs[0].url : getDomain(tabs[0].url);
-        blacklist[field][value] = true;
-
-        await chrome.storage.sync.set({ blacklist });
-        await callback(blacklist, tabs[0].url);
-    }
+function addBlacklist(field, callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs[0]) {
+            getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS).then((result) => {
+                let blacklist = result.blacklist;
+                let value = field === "urls" ? tabs[0].url : getDomain(tabs[0].url);
+                blacklist[field][value] = true;
+                chrome.storage.sync.set({ blacklist }, () => {
+                    callback(blacklist, tabs[0].url);
+                });
+            });
+        }
+    });
 }
 
 /**
@@ -102,19 +101,21 @@ async function addBlacklist(field, callback) {
  * @param {String} field 决定从域名黑名单中移出还是从url黑名单中移出
  * @param {Function} callback 回调
  */
-async function removeBlacklist(field, callback) {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs && tabs[0]) {
-        const result = await getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS);
-        let blacklist = result.blacklist;
-        let value = field === "urls" ? tabs[0].url : getDomain(tabs[0].url);
-        if (blacklist[field][value]) {
-            delete blacklist[field][value];
+function removeBlacklist(field, callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs[0]) {
+            getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS).then((result) => {
+                let blacklist = result.blacklist;
+                let value = field === "urls" ? tabs[0].url : getDomain(tabs[0].url);
+                if (blacklist[field][value]) {
+                    delete blacklist[field][value];
+                }
+                chrome.storage.sync.set({ blacklist }, () => {
+                    callback(blacklist, tabs[0].url);
+                });
+            });
         }
-
-        await chrome.storage.sync.set({ blacklist });
-        await callback(blacklist, tabs[0].url);
-    }
+    });
 }
 
 /**
@@ -122,32 +123,31 @@ async function removeBlacklist(field, callback) {
  *
  * @param {String} url 切换到的页面的url
  */
-async function updateBLackListMenu(url) {
-    const result = await getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS);
+function updateBLackListMenu(url) {
+    getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS).then((result) => {
+        if (result.blacklist.domains[getDomain(url)]) {
+            disableItems(["add_url_blacklist", "remove_url_blacklist", "add_domain_blacklist"]);
 
-    if (result.blacklist.domains[getDomain(url)]) {
-        await disableItems(["add_url_blacklist", "remove_url_blacklist", "add_domain_blacklist"]);
-        await enableItems(["remove_domain_blacklist"]);
+            enableItems(["remove_domain_blacklist"]);
 
-        // the domain is in the blacklist and update the badge text
-        await chrome.action.setBadgeText({ text: DISABLED_MARK });
-    } else if (result.blacklist.urls[url]) {
-        await disableItems([
-            "add_url_blacklist",
-            "add_domain_blacklist",
-            "remove_domain_blacklist",
-        ]);
-        await enableItems(["remove_url_blacklist"]);
+            // the domain is in the blacklist and update the badge text
+            chrome.browserAction.setBadgeText({ text: DISABLED_MARK });
+        } else if (result.blacklist.urls[url]) {
+            disableItems(["add_url_blacklist", "add_domain_blacklist", "remove_domain_blacklist"]);
 
-        // the url is in the blacklist and update the badge text
-        await chrome.action.setBadgeText({ text: DISABLED_MARK });
-    } else {
-        await disableItems(["remove_url_blacklist", "remove_domain_blacklist"]);
-        await enableItems(["add_url_blacklist", "add_domain_blacklist"]);
+            enableItems(["remove_url_blacklist"]);
 
-        // the url and domain is not in the blacklist and clear the badge text
-        await chrome.action.setBadgeText({ text: "" });
-    }
+            // the url is in the blacklist and update the badge text
+            chrome.browserAction.setBadgeText({ text: DISABLED_MARK });
+        } else {
+            disableItems(["remove_url_blacklist", "remove_domain_blacklist"]);
+
+            enableItems(["add_url_blacklist", "add_domain_blacklist"]);
+
+            // the url and domain is not in the blacklist and clear the badge text
+            chrome.browserAction.setBadgeText({ text: "" });
+        }
+    });
 }
 
 /**
@@ -155,18 +155,21 @@ async function updateBLackListMenu(url) {
  *
  * @param {String} items
  */
-async function enableItems(items) {
-    const promises = items.map(async (item) => {
-        try {
-            await chrome.contextMenus.update(item, {
+function enableItems(items) {
+    items.forEach((item) => {
+        chrome.contextMenus.update(
+            item,
+            {
                 enabled: true,
                 visible: true,
-            });
-        } catch (error) {
-            log(`Chrome runtime error: ${error}`);
-        }
+            },
+            () => {
+                if (chrome.runtime.lastError) {
+                    log(`Chrome runtime error: ${chrome.runtime.lastError}`);
+                }
+            }
+        );
     });
-    await Promise.all(promises);
 }
 
 /**
@@ -174,16 +177,19 @@ async function enableItems(items) {
  *
  * @param {String} items
  */
-async function disableItems(items) {
-    const promises = items.map(async (item) => {
-        try {
-            await chrome.contextMenus.update(item, {
+function disableItems(items) {
+    items.forEach((item) => {
+        chrome.contextMenus.update(
+            item,
+            {
                 enabled: false,
                 visible: false,
-            });
-        } catch (error) {
-            log(`Chrome runtime error: ${error}`);
-        }
+            },
+            () => {
+                if (chrome.runtime.lastError) {
+                    log(`Chrome runtime error: ${chrome.runtime.lastError}`);
+                }
+            }
+        );
     });
-    await Promise.all(promises);
 }
