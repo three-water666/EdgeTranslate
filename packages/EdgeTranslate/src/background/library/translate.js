@@ -17,15 +17,9 @@ class TranslatorManager {
          * @type {Promise<Void>} Initialize configurations.
          */
         this.config_loader = getOrSetDefaultSettings(
-            ["HybridTranslatorConfig", "DefaultTranslator", "languageSetting", "OtherSettings"],
+            ["DefaultTranslator", "languageSetting", "OtherSettings"],
             DEFAULT_SETTINGS
         ).then((configs) => {
-            // 移除了 HYBRID_TRANSLATOR TRANSLATORS
-            this.channel.emit("new_hybrid_translator_instance", {
-                configs,
-                channel,
-            });
-
             // Mutual translating mode flag.
             this.IN_MUTUAL_MODE = configs.OtherSettings.MutualTranslate || false;
 
@@ -51,6 +45,28 @@ class TranslatorManager {
          */
         this.provideServices();
         this.listenToEvents();
+    }
+
+    async hasOffscreenDocument(path) {
+        const existingContexts = await chrome.runtime.getContexts({
+            contextTypes: ["OFFSCREEN_DOCUMENT"],
+            documentUrls: [chrome.runtime.getURL(path)],
+        });
+        return existingContexts.length > 0;
+    }
+
+    async createOffscreenDocument() {
+        const path = "offscreen/offscreen.html";
+        if (await this.hasOffscreenDocument(path)) {
+            console.log("Service Worker: Offscreen 文档已存在。");
+            return;
+        }
+        console.log("Service Worker: Offscreen 文档不存在，正在创建...");
+        await chrome.offscreen.createDocument({
+            url: path,
+            reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK, chrome.offscreen.Reason.DOM_PARSER],
+            justification: "用于播放通知声音和解析HTML内容",
+        });
     }
 
     /**
@@ -90,6 +106,17 @@ class TranslatorManager {
         this.channel.provide("update_default_translator", (detail) =>
             this.updateDefaultTranslator(detail.translator)
         );
+
+        this.channel.provide("get_translator_config", async () => {
+            console.log("Service Worker: Received config request from Offscreen.");
+
+            const configs = await getOrSetDefaultSettings(
+                ["HybridTranslatorConfig"],
+                DEFAULT_SETTINGS
+            );
+
+            return Promise.resolve(configs);
+        });
     }
 
     /**
@@ -117,6 +144,7 @@ class TranslatorManager {
                 if (area === "sync") {
                     // Ensure that configurations have been initialized.
                     await this.config_loader;
+                    await this.createOffscreenDocument();
 
                     if (changes["HybridTranslatorConfig"]) {
                         this.channel.emit(
@@ -209,6 +237,7 @@ class TranslatorManager {
     async detect(text) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
         const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
 
@@ -234,6 +263,7 @@ class TranslatorManager {
     async translate(text, position) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
         // get current tab id
         const currentTabId = await this.getCurrentTabId();
@@ -315,6 +345,7 @@ class TranslatorManager {
     async pronounce(pronouncing, text, language, speed) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
         // get current tab id
         const currentTabId = await this.getCurrentTabId();
@@ -379,6 +410,7 @@ class TranslatorManager {
     async stopPronounce() {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
         const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
         this.channel.request("translator_stop_pronounce_by_default_translator", {

@@ -215,163 +215,125 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     }
 });
 
-async function init() {
-    /**
-     * Create communication channel.
-     */
-    const channel = new Channel();
+/**
+ * Create communication channel.
+ */
+const channel = new Channel();
 
-    // 检查是否已经有 Offscreen 文档
-    async function hasOffscreenDocument(path) {
-        // getContexts 是新 API，用于查找正在运行的插件页面
-        const existingContexts = await chrome.runtime.getContexts({
-            contextTypes: ["OFFSCREEN_DOCUMENT"],
-            documentUrls: [chrome.runtime.getURL(path)],
-        });
-        return existingContexts.length > 0;
-    }
+const TRANSLATOR_MANAGER = new TranslatorManager(channel);
 
-    // 创建 Offscreen 文档
-    async function createOffscreenDocument() {
-        const path = "offscreen/offscreen.html";
-        if (await hasOffscreenDocument(path)) {
-            console.log("Service Worker: Offscreen 文档已存在。");
-            return;
-        }
-
-        console.log("Service Worker: Offscreen 文档不存在，正在创建...");
-        await chrome.offscreen.createDocument({
-            url: path,
-            // 告诉 Chrome 你为什么需要这个页面
-            reasons: [
-                chrome.offscreen.Reason.AUDIO_PLAYBACK, // 如果你要放音乐
-                chrome.offscreen.Reason.DOM_PARSER, // 如果你要解析DOM
-            ],
-            justification: "用于播放通知声音和解析HTML内容",
-        });
-    }
-
-    await createOffscreenDocument();
-
-    const TRANSLATOR_MANAGER = new TranslatorManager(channel);
-
-    /**
-     * 添加点击菜单后的处理事件
-     */
-    chrome.contextMenus.onClicked.addListener((info, tab) => {
-        switch (info.menuItemId) {
-            case "translate":
-                channel
-                    .requestToTab(tab.id, "get_selection")
-                    .then(({ text, position }) => {
-                        if (text) {
-                            return TRANSLATOR_MANAGER.translate(text, position);
-                        }
-                        return Promise.reject();
-                    })
-                    .catch((error) => {
-                        // If content scripts can not access the tab the selection, use info.selectionText instead.
-                        if (info.selectionText.trim()) {
-                            return TRANSLATOR_MANAGER.translate(info.selectionText, null);
-                        }
-                        return Promise.resolve(error);
-                    });
-                break;
-            case "translate_page":
-                translatePage(channel);
-                break;
-            case "translate_page_google":
-                executeGoogleScript(channel);
-                break;
-            case "settings":
-                chrome.runtime.openOptionsPage();
-                break;
-            case "shortcut":
-                chrome.tabs.create({
-                    url: "chrome://extensions/shortcuts",
+/**
+ * 添加点击菜单后的处理事件
+ */
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    switch (info.menuItemId) {
+        case "translate":
+            channel
+                .requestToTab(tab.id, "get_selection")
+                .then(({ text, position }) => {
+                    if (text) {
+                        return TRANSLATOR_MANAGER.translate(text, position);
+                    }
+                    return Promise.reject();
+                })
+                .catch((error) => {
+                    // If content scripts can not access the tab the selection, use info.selectionText instead.
+                    if (info.selectionText.trim()) {
+                        return TRANSLATOR_MANAGER.translate(info.selectionText, null);
+                    }
+                    return Promise.resolve(error);
                 });
-                break;
-            case "add_url_blacklist":
-                addUrlBlacklist();
-                break;
-            case "remove_url_blacklist":
-                removeUrlBlacklist();
-                break;
-            case "add_domain_blacklist":
-                addDomainBlacklist();
-                break;
-            case "remove_domain_blacklist":
-                removeDomainBlacklist();
-                break;
-            default:
-                break;
-        }
-    });
+            break;
+        case "translate_page":
+            translatePage(channel);
+            break;
+        case "translate_page_google":
+            executeGoogleScript(channel);
+            break;
+        case "settings":
+            chrome.runtime.openOptionsPage();
+            break;
+        case "shortcut":
+            chrome.tabs.create({
+                url: "chrome://extensions/shortcuts",
+            });
+            break;
+        case "add_url_blacklist":
+            addUrlBlacklist();
+            break;
+        case "remove_url_blacklist":
+            removeUrlBlacklist();
+            break;
+        case "add_domain_blacklist":
+            addDomainBlacklist();
+            break;
+        case "remove_domain_blacklist":
+            removeDomainBlacklist();
+            break;
+        default:
+            break;
+    }
+});
 
-    /**
-     * 添加tab切换事件监听，用于更新黑名单信息
-     */
-    chrome.tabs.onActivated.addListener((activeInfo) => {
-        chrome.tabs.get(activeInfo.tabId, (tab) => {
-            if (tab.url && tab.url.length > 0) {
-                updateBLackListMenu(tab.url);
-            }
-        });
-    });
-
-    /**
-     * 添加tab刷新事件监听，用于更新黑名单信息
-     */
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-        if (tab.active && tab.url && tab.url.length > 0) {
+/**
+ * 添加tab切换事件监听，用于更新黑名单信息
+ */
+chrome.tabs.onActivated.addListener((activeInfo) => {
+    chrome.tabs.get(activeInfo.tabId, (tab) => {
+        if (tab.url && tab.url.length > 0) {
             updateBLackListMenu(tab.url);
         }
     });
+});
 
-    /**
-     * Redirect tab when redirect event happens.
-     */
-    channel.on("redirect", (detail, sender) =>
-        chrome.tabs.update(sender.tab.id, { url: detail.url })
-    );
+/**
+ * 添加tab刷新事件监听，用于更新黑名单信息
+ */
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (tab.active && tab.url && tab.url.length > 0) {
+        updateBLackListMenu(tab.url);
+    }
+});
 
-    /**
-     * Open options page when open_options_page button clicked.
-     */
-    channel.on("open_options_page", () => chrome.runtime.openOptionsPage());
+/**
+ * Redirect tab when redirect event happens.
+ */
+channel.on("redirect", (detail, sender) => chrome.tabs.update(sender.tab.id, { url: detail.url }));
 
-    /**
-     * Forward page translate event back to pages.
-     */
-    channel.on("page_translate_event", (detail, sender) => {
-        channel.emitToTabs(sender.tab.id, "page_translate_event", detail);
+/**
+ * Open options page when open_options_page button clicked.
+ */
+channel.on("open_options_page", () => chrome.runtime.openOptionsPage());
+
+/**
+ * Forward page translate event back to pages.
+ */
+channel.on("page_translate_event", (detail, sender) => {
+    channel.emitToTabs(sender.tab.id, "page_translate_event", detail);
+});
+
+/**
+ * Provide UI language detecting service.
+ */
+channel.provide("get_lang", () => {
+    return Promise.resolve({
+        lang: BROWSER_LANGUAGES_MAP[chrome.i18n.getUILanguage()],
     });
+});
 
-    /**
-     * Provide UI language detecting service.
-     */
-    channel.provide("get_lang", () => {
-        return Promise.resolve({
-            lang: BROWSER_LANGUAGES_MAP[chrome.i18n.getUILanguage()],
-        });
-    });
-
-    /**
-     *  将快捷键消息转发给content_scripts
-     */
-    chrome.commands.onCommand.addListener((command) => {
-        switch (command) {
-            case "translate_page":
-                translatePage(channel);
-                break;
-            default:
-                promiseTabs
-                    .query({ active: true, currentWindow: true })
-                    .then((tabs) => channel.emitToTabs(tabs[0].id, "command", { command }))
-                    .catch(() => {});
-                break;
-        }
-    });
-}
-
-init();
+/**
+ *  将快捷键消息转发给content_scripts
+ */
+chrome.commands.onCommand.addListener((command) => {
+    switch (command) {
+        case "translate_page":
+            translatePage(channel);
+            break;
+        default:
+            promiseTabs
+                .query({ active: true, currentWindow: true })
+                .then((tabs) => channel.emitToTabs(tabs[0].id, "command", { command }))
+                .catch(() => {});
+            break;
+    }
+});
