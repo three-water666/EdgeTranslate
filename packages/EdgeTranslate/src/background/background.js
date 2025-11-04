@@ -96,14 +96,14 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         chrome.contextMenus.create({
             id: "settings",
             title: chrome.i18n.getMessage("Settings"),
-            contexts: ["browser_action"],
+            contexts: ["action"],
         });
     }
 
     chrome.contextMenus.create({
         id: "shortcut",
         title: chrome.i18n.getMessage("ShortcutSetting"),
-        contexts: ["browser_action"],
+        contexts: ["action"],
     });
 
     chrome.contextMenus.create({
@@ -115,13 +115,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     chrome.contextMenus.create({
         id: "translate_page_google",
         title: chrome.i18n.getMessage("TranslatePageGoogle"),
-        contexts: ["browser_action"],
+        contexts: ["action"],
     });
 
     chrome.contextMenus.create({
         id: "add_url_blacklist",
         title: chrome.i18n.getMessage("AddUrlBlacklist"),
-        contexts: ["browser_action"],
+        contexts: ["action"],
         enabled: false,
         visible: false,
     });
@@ -129,7 +129,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     chrome.contextMenus.create({
         id: "add_domain_blacklist",
         title: chrome.i18n.getMessage("AddDomainBlacklist"),
-        contexts: ["browser_action"],
+        contexts: ["action"],
         enabled: false,
         visible: false,
     });
@@ -137,7 +137,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     chrome.contextMenus.create({
         id: "remove_url_blacklist",
         title: chrome.i18n.getMessage("RemoveUrlBlacklist"),
-        contexts: ["browser_action"],
+        contexts: ["action"],
         enabled: false,
         visible: false,
     });
@@ -145,7 +145,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     chrome.contextMenus.create({
         id: "remove_domain_blacklist",
         title: chrome.i18n.getMessage("RemoveDomainBlacklist"),
-        contexts: ["browser_action"],
+        contexts: ["action"],
         enabled: false,
         visible: false,
     });
@@ -153,11 +153,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
     const oldRuleIds = existingRules.map((rule) => rule.id);
 
-    await chrome.declarativeNetRequest.updateDynamicRules({
+    chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: oldRuleIds,
         addRules: [RULE_CSP_ALL, RULE_CSP_DEEPL, RULE_GOOGLE_TTS, RULE_QQ_FANYI],
     });
-
     // 只有在生产环境下，才会展示说明页面
     if (process.env.NODE_ENV === "production") {
         if (details.reason === "install") {
@@ -220,7 +219,32 @@ chrome.runtime.onInstalled.addListener(async (details) => {
  */
 const channel = new Channel();
 
+/**
+ * Create translator manager and register event listeners and service providers.
+ */
 const TRANSLATOR_MANAGER = new TranslatorManager(channel);
+
+/**
+ * 监听用户点击通知事件
+ */
+chrome.notifications.onClicked.addListener((notificationId) => {
+    switch (notificationId) {
+        case "update_notification":
+            chrome.tabs.create({
+                // 为releases页面创建一个新的标签页
+                url: "https://github.com/EdgeTranslate/EdgeTranslate/releases",
+            });
+            break;
+        case "data_collection_notification":
+            chrome.tabs.create({
+                // 为设置页面单独创建一个标签页
+                url: chrome.runtime.getURL("options/options.html#google-analytics"),
+            });
+            break;
+        default:
+            break;
+    }
+});
 
 /**
  * 添加点击菜单后的处理事件
