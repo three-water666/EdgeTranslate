@@ -427,6 +427,7 @@ class TranslatorManager {
      * @returns {Array<String>} available translators Promise.
      */
     async getAvailableTranslators(detail) {
+        await this.createOffscreenDocument();
         const availableTranslators = await this.channel.request(
             "hybrid_translator_get_available_translators",
             detail
