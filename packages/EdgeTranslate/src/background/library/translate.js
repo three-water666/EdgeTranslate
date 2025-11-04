@@ -514,17 +514,29 @@ function translatePage(channel) {
  *
  * @param {import("../../common/scripts/channel.js").default} channel Communication channel.
  */
-function executeGoogleScript(channel) {
-    chrome.tabs.executeScript({ file: "/google/init.js" }, (result) => {
-        if (chrome.runtime.lastError) {
-            log(`Chrome runtime error: ${chrome.runtime.lastError}`);
-            log(`Detail: ${result}`);
-        } else {
-            promiseTabs.query({ active: true, currentWindow: true }).then((tabs) => {
-                channel.emitToTabs(tabs[0].id, "start_page_translate", { translator: "google" });
-            });
+async function executeGoogleScript(channel) {
+    let tabs;
+    try {
+        tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            log("No active tab found to execute script.");
+            return;
         }
-    });
+        const tabId = tabs[0].id;
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["/google/init.js"],
+        });
+        channel.emitToTabs(tabId, "start_page_translate", { translator: "google" });
+    } catch (e) {
+        if (tabs && tabs.length > 0) {
+            log(`Failed to execute script on tab ${tabs[0].id} (${tabs[0].url}): ${e.message}`);
+        } else if (e instanceof Error) {
+            log(`Chrome runtime error: ${e.message}`);
+        } else {
+            log(`Chrome runtime error: ${String(e)}`);
+        }
+    }
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };
