@@ -1,4 +1,3 @@
-import { HybridTranslator } from "@edge_translate/translators";
 import { log } from "common/scripts/common.js";
 import { promiseTabs, delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
@@ -18,18 +17,9 @@ class TranslatorManager {
          * @type {Promise<Void>} Initialize configurations.
          */
         this.config_loader = getOrSetDefaultSettings(
-            ["HybridTranslatorConfig", "DefaultTranslator", "languageSetting", "OtherSettings"],
+            ["DefaultTranslator", "languageSetting", "OtherSettings"],
             DEFAULT_SETTINGS
         ).then((configs) => {
-            // Init hybrid translator.
-            this.HYBRID_TRANSLATOR = new HybridTranslator(configs.HybridTranslatorConfig, channel);
-
-            // Supported translators.
-            this.TRANSLATORS = {
-                HybridTranslate: this.HYBRID_TRANSLATOR,
-                ...this.HYBRID_TRANSLATOR.REAL_TRANSLATORS,
-            };
-
             // Mutual translating mode flag.
             this.IN_MUTUAL_MODE = configs.OtherSettings.MutualTranslate || false;
 
@@ -57,6 +47,28 @@ class TranslatorManager {
         this.listenToEvents();
     }
 
+    async hasOffscreenDocument(path) {
+        const existingContexts = await chrome.runtime.getContexts({
+            contextTypes: ["OFFSCREEN_DOCUMENT"],
+            documentUrls: [chrome.runtime.getURL(path)],
+        });
+        return existingContexts.length > 0;
+    }
+
+    async createOffscreenDocument() {
+        const path = "offscreen/offscreen.html";
+        if (await this.hasOffscreenDocument(path)) {
+            console.log("Service Worker: Offscreen 文档已存在。");
+            return;
+        }
+        console.log("Service Worker: Offscreen 文档不存在，正在创建...");
+        await chrome.offscreen.createDocument({
+            url: path,
+            reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK, chrome.offscreen.Reason.DOM_PARSER],
+            justification: "用于播放通知声音和解析HTML内容",
+        });
+    }
+
     /**
      * Register service providers.
      *
@@ -79,13 +91,24 @@ class TranslatorManager {
 
         // Get available translators service.
         this.channel.provide("get_available_translators", (params) =>
-            Promise.resolve(this.getAvailableTranslators(params))
+            this.getAvailableTranslators(params)
         );
 
         // Update default translator service.
         this.channel.provide("update_default_translator", (detail) =>
             this.updateDefaultTranslator(detail.translator)
         );
+
+        this.channel.provide("get_translator_config", async () => {
+            console.log("Service Worker: Received config request from Offscreen.");
+
+            const configs = await getOrSetDefaultSettings(
+                ["HybridTranslatorConfig"],
+                DEFAULT_SETTINGS
+            );
+
+            return Promise.resolve(configs);
+        });
     }
 
     /**
@@ -113,9 +136,11 @@ class TranslatorManager {
                 if (area === "sync") {
                     // Ensure that configurations have been initialized.
                     await this.config_loader;
+                    await this.createOffscreenDocument();
 
                     if (changes["HybridTranslatorConfig"]) {
-                        this.HYBRID_TRANSLATOR.useConfig(
+                        this.channel.emit(
+                            "hybrid_translator_use_config",
                             changes["HybridTranslatorConfig"].newValue
                         );
                     }
@@ -204,8 +229,14 @@ class TranslatorManager {
     async detect(text) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
-        return this.TRANSLATORS[this.DEFAULT_TRANSLATOR].detect(text);
+        const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+
+        return await this.channel.request("translator_detect_by_default_translator", {
+            DEFAULT_TRANSLATOR,
+            text,
+        });
     }
 
     /**
@@ -224,6 +255,7 @@ class TranslatorManager {
     async translate(text, position) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
         // get current tab id
         const currentTabId = await this.getCurrentTabId();
@@ -268,7 +300,13 @@ class TranslatorManager {
             }
 
             // Do translate.
-            let result = await this.TRANSLATORS[this.DEFAULT_TRANSLATOR].translate(text, sl, tl);
+            const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+            let result = await this.channel.request("translator_by_default_translator", {
+                DEFAULT_TRANSLATOR,
+                text,
+                sl,
+                tl,
+            });
             result.sourceLanguage = sl;
             result.targetLanguage = tl;
 
@@ -299,6 +337,7 @@ class TranslatorManager {
     async pronounce(pronouncing, text, language, speed) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
         // get current tab id
         const currentTabId = await this.getCurrentTabId();
@@ -316,18 +355,29 @@ class TranslatorManager {
         });
 
         try {
+            const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
             if (language === "auto") {
-                lang = await this.TRANSLATORS[this.DEFAULT_TRANSLATOR].detect(text);
+                lang = await this.channel.request("translator_detect_by_default_translator", {
+                    DEFAULT_TRANSLATOR,
+                    text,
+                });
             }
 
-            await this.TRANSLATORS[this.DEFAULT_TRANSLATOR].pronounce(text, lang, speed).catch(
-                ((error) => {
-                    // API pronouncing failed, try local TTS service.
-                    if (!this.localTTS.speak(text, lang, speed)) {
-                        throw error;
-                    }
-                }).bind(this)
-            );
+            await this.channel
+                .request("translator_pronounce_by_default_translator", {
+                    DEFAULT_TRANSLATOR,
+                    text,
+                    lang,
+                    speed,
+                })
+                .catch(
+                    ((error) => {
+                        // API pronouncing failed, try local TTS service.
+                        if (!this.localTTS.speak(text, lang, speed)) {
+                            throw error;
+                        }
+                    }).bind(this)
+                );
 
             // Inform current tab pronouncing finished.
             this.channel.emitToTabs(currentTabId, "pronouncing_finished", {
@@ -352,8 +402,12 @@ class TranslatorManager {
     async stopPronounce() {
         // Ensure that configurations have been initialized.
         await this.config_loader;
+        await this.createOffscreenDocument();
 
-        this.TRANSLATORS[this.DEFAULT_TRANSLATOR].stopPronounce();
+        const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+        this.channel.request("translator_stop_pronounce_by_default_translator", {
+            DEFAULT_TRANSLATOR,
+        });
         this.localTTS.pause();
     }
 
@@ -364,10 +418,13 @@ class TranslatorManager {
      *
      * @returns {Array<String>} available translators Promise.
      */
-    getAvailableTranslators(detail) {
-        return ["HybridTranslate"].concat(
-            this.HYBRID_TRANSLATOR.getAvailableTranslatorsFor(detail.from, detail.to)
+    async getAvailableTranslators(detail) {
+        await this.createOffscreenDocument();
+        const availableTranslators = await this.channel.request(
+            "hybrid_translator_get_available_translators",
+            detail
         );
+        return ["HybridTranslate"].concat(availableTranslators);
     }
 
     /**
@@ -381,10 +438,10 @@ class TranslatorManager {
         let selectedTranslator = this.DEFAULT_TRANSLATOR;
 
         // Get translators supporting new language setting.
-        let availableTranslators = this.getAvailableTranslators(detail);
+        let availableTranslators = await this.getAvailableTranslators(detail);
 
         // Update hybrid translator config.
-        const newConfig = this.HYBRID_TRANSLATOR.updateConfigFor(detail.from, detail.to);
+        const newConfig = await this.channel.request("hybrid_translator_update_config", detail);
         // Update config.
         chrome.storage.sync.set({ HybridTranslatorConfig: newConfig });
 
@@ -449,17 +506,29 @@ function translatePage(channel) {
  *
  * @param {import("../../common/scripts/channel.js").default} channel Communication channel.
  */
-function executeGoogleScript(channel) {
-    chrome.tabs.executeScript({ file: "/google/init.js" }, (result) => {
-        if (chrome.runtime.lastError) {
-            log(`Chrome runtime error: ${chrome.runtime.lastError}`);
-            log(`Detail: ${result}`);
-        } else {
-            promiseTabs.query({ active: true, currentWindow: true }).then((tabs) => {
-                channel.emitToTabs(tabs[0].id, "start_page_translate", { translator: "google" });
-            });
+async function executeGoogleScript(channel) {
+    let tabs;
+    try {
+        tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            log("No active tab found to execute script.");
+            return;
         }
-    });
+        const tabId = tabs[0].id;
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["/google/init.js"],
+        });
+        channel.emitToTabs(tabId, "start_page_translate", { translator: "google" });
+    } catch (e) {
+        if (tabs && tabs.length > 0) {
+            log(`Failed to execute script on tab ${tabs[0].id} (${tabs[0].url}): ${e.message}`);
+        } else if (e instanceof Error) {
+            log(`Chrome runtime error: ${e.message}`);
+        } else {
+            log(`Chrome runtime error: ${String(e)}`);
+        }
+    }
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };

@@ -1,17 +1,105 @@
 {
+    "name": "__MSG_AppName__",
+    "description": "__MSG_Description__",
+    "version": "3.0.0",
+    "default_locale": "en",
     "background": {
-        "persistent": true
+        "service_worker": "./background/background.js"
     },
+    "action": {
+        "default_popup": "./popup/popup.html",
+        "default_icon": {
+            "16": "icon/icon16.png",
+            "48": "icon/icon48.png",
+            "128": "icon/icon128.png"
+        }
+    },
+    "commands": {
+        "_execute_action": {
+            "suggested_key": {
+                "default": "Alt+Q"
+            }
+        },
+        "change_language_setting": {
+            "description": "__MSG_ChangeLanguageSetting__"
+        },
+        "translate_selected": {
+            "description": "__MSG_TranslateSelectedText__"
+        },
+        "fix_result_frame": {
+            "suggested_key": {
+                "default": "Alt+X"
+            },
+            "description": "__MSG_FixResultFrame__"
+        },
+        "close_result_frame": {
+            "suggested_key": {
+                "default": "Alt+C"
+            },
+            "description": "__MSG_CloseResultFrame__"
+        },
+        "exchange_source_target_lang": {
+            "suggested_key": {
+                "default": "Alt+S"
+            },
+            "description": "__MSG_ExchangeSourceAndTargetLanguage__"
+        },
+        "pronounce_selected": {
+            "description": "__MSG_PronounceSelected__"
+        },
+        "pronounce_original": {
+            "description": "__MSG_PronounceOriginal__"
+        },
+        "pronounce_translated": {
+            "description": "__MSG_PronounceTranslated__"
+        },
+        "copy_result": {
+            "description": "__MSG_CopyResult__"
+        },
+        "change_mutual_translate": {
+            "description": "__MSG_MutualTranslation__"
+        },
+        "translate_page": {
+            "description": "__MSG_TranslatePage__"
+        },
+        "cancel_page_translate": {
+            "description": "__MSG_CancelPageTranslate__"
+        },
+        "toggle_page_translate_banner": {
+            "description": "__MSG_TogglePageTranslateBanner__"
+        }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["**/*.css", "**/*.png", "google/*"],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "icons": {
+        "16": "icon/icon16.png",
+        "48": "icon/icon48.png",
+        "128": "icon/icon128.png"
+    },
+    "options_ui": {
+        "page": "./options/options.html",
+        "open_in_tab": true
+    },
+    "manifest_version": 3,
     "permissions": [
         "notifications",
         "contextMenus",
         "storage",
         "cookies",
         "tabs",
-        "<all_urls>",
         "webRequest",
-        "webRequestBlocking"
+        "declarativeNetRequest",
+        "alarms",
+        "scripting",
+        "tts",
+        "offscreen",
+        "activeTab"
     ],
+    "host_permissions": ["<all_urls>"],
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
@@ -27,14 +115,11 @@
         {
             "matches": ["<all_urls>"],
             "js": ["./content/banner_controller.js"]
-        },
-        {
-            "matches": ["*://*.deepl.com/*"],
-            "js": ["./content/deepl_injector.js"],
-            "all_frames": true
         }
     ],
-    "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension://hfjbmagddngcpeloejdejnfgbamkjaeg/ chrome-extension://aibcglbfblnogfjhbcmmpobjhnomhcdo/; object-src 'self'",
-    "minimum_chrome_version": "55",
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
+    "minimum_chrome_version": "88",
     "homepage_url": "https://github.com/EdgeTranslate/EdgeTranslate/wiki"
 }

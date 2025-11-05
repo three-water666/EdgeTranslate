@@ -6,89 +6,119 @@ import {
     removeDomainBlacklist,
     updateBLackListMenu,
 } from "./library/blacklist.js";
-import { sendHitRequest } from "./library/analytics.js";
 import { promiseTabs } from "common/scripts/promise.js";
 import Channel from "common/scripts/channel.js";
-import { getDomain } from "common/scripts/common.js";
 // map language abbreviation from browser languages to translation languages
 import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
 import { DEFAULT_SETTINGS, setDefaultSettings } from "common/scripts/settings.js";
 
-/**
- * BEGIN SETTING UP CONTEXT MENUS
- */
-chrome.contextMenus.create({
-    id: "translate",
-    title: `${chrome.i18n.getMessage("Translate")} '%s'`,
-    contexts: ["selection"],
-});
+const RULE_CSP_ALL = {
+    id: 1,
+    priority: 1,
+    action: {
+        type: "modifyHeaders",
+        responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
+    },
+    condition: {
+        resourceTypes: ["main_frame", "sub_frame"],
+    },
+};
 
-// Add an entry to options page for Firefox as it doesn't have one.
-if (BROWSER_ENV === "firefox") {
-    chrome.contextMenus.create({
-        id: "settings",
-        title: chrome.i18n.getMessage("Settings"),
-        contexts: ["browser_action"],
-    });
-}
-
-chrome.contextMenus.create({
-    id: "shortcut",
-    title: chrome.i18n.getMessage("ShortcutSetting"),
-    contexts: ["browser_action"],
-});
-
-chrome.contextMenus.create({
-    id: "translate_page",
-    title: chrome.i18n.getMessage("TranslatePage"),
-    contexts: ["page"],
-});
-
-chrome.contextMenus.create({
-    id: "translate_page_google",
-    title: chrome.i18n.getMessage("TranslatePageGoogle"),
-    contexts: ["browser_action"],
-});
-
-chrome.contextMenus.create({
-    id: "add_url_blacklist",
-    title: chrome.i18n.getMessage("AddUrlBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-
-chrome.contextMenus.create({
-    id: "add_domain_blacklist",
-    title: chrome.i18n.getMessage("AddDomainBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-
-chrome.contextMenus.create({
-    id: "remove_url_blacklist",
-    title: chrome.i18n.getMessage("RemoveUrlBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-
-chrome.contextMenus.create({
-    id: "remove_domain_blacklist",
-    title: chrome.i18n.getMessage("RemoveDomainBlacklist"),
-    contexts: ["browser_action"],
-    enabled: false,
-    visible: false,
-});
-/**
- * END SETTING UP CONTEXT MENUS
- */
+const RULE_GOOGLE_TTS = {
+    id: 3,
+    priority: 1,
+    action: {
+        type: "modifyHeaders",
+        responseHeaders: [
+            {
+                header: "cross-origin-resource-policy",
+                operation: "set",
+                value: "cross-origin",
+            },
+        ],
+    },
+    condition: {
+        urlFilter: "*://translate.google.cn/*",
+        resourceTypes: ["xmlhttprequest", "media", "other"],
+    },
+};
 
 /**
- * 初始化插件配置。
+ * 插件安装和更新时的初始化。
  */
 chrome.runtime.onInstalled.addListener(async (details) => {
+    chrome.contextMenus.create({
+        id: "translate",
+        title: `${chrome.i18n.getMessage("Translate")} '%s'`,
+        contexts: ["selection"],
+    });
+
+    // Add an entry to options page for Firefox as it doesn't have one.
+    if (BROWSER_ENV === "firefox") {
+        chrome.contextMenus.create({
+            id: "settings",
+            title: chrome.i18n.getMessage("Settings"),
+            contexts: ["action"],
+        });
+    }
+
+    chrome.contextMenus.create({
+        id: "shortcut",
+        title: chrome.i18n.getMessage("ShortcutSetting"),
+        contexts: ["action"],
+    });
+
+    chrome.contextMenus.create({
+        id: "translate_page",
+        title: chrome.i18n.getMessage("TranslatePage"),
+        contexts: ["page"],
+    });
+
+    chrome.contextMenus.create({
+        id: "translate_page_google",
+        title: chrome.i18n.getMessage("TranslatePageGoogle"),
+        contexts: ["action"],
+    });
+
+    chrome.contextMenus.create({
+        id: "add_url_blacklist",
+        title: chrome.i18n.getMessage("AddUrlBlacklist"),
+        contexts: ["action"],
+        enabled: false,
+        visible: false,
+    });
+
+    chrome.contextMenus.create({
+        id: "add_domain_blacklist",
+        title: chrome.i18n.getMessage("AddDomainBlacklist"),
+        contexts: ["action"],
+        enabled: false,
+        visible: false,
+    });
+
+    chrome.contextMenus.create({
+        id: "remove_url_blacklist",
+        title: chrome.i18n.getMessage("RemoveUrlBlacklist"),
+        contexts: ["action"],
+        enabled: false,
+        visible: false,
+    });
+
+    chrome.contextMenus.create({
+        id: "remove_domain_blacklist",
+        title: chrome.i18n.getMessage("RemoveDomainBlacklist"),
+        contexts: ["action"],
+        enabled: false,
+        visible: false,
+    });
+
+    const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const oldRuleIds = existingRules.map((rule) => rule.id);
+
+    chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: [RULE_CSP_ALL, RULE_GOOGLE_TTS],
+    });
     // 只有在生产环境下，才会展示说明页面
     if (process.env.NODE_ENV === "production") {
         if (details.reason === "install") {
@@ -101,18 +131,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             // 告知用户数据收集相关信息
             chrome.notifications.create("data_collection_notification", {
                 type: "basic",
-                iconUrl: "./icon/icon128.png",
+                iconUrl: chrome.runtime.getURL("icon/icon128.png"),
                 title: chrome.i18n.getMessage("AppName"),
                 message: chrome.i18n.getMessage("DataCollectionNotice"),
             });
-
-            // 尝试发送安装事件
-            setTimeout(() => {
-                sendHitRequest("background", "event", {
-                    ec: "installation", // event category
-                    ea: "installation", // event label
-                });
-            }, 10 * 60 * 1000); // 10 min
         } else if (details.reason === "update") {
             await new Promise((resolve) => {
                 chrome.storage.sync.get((result) => {
@@ -143,7 +165,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             // 从旧版本更新，引导用户查看更新日志
             chrome.notifications.create("update_notification", {
                 type: "basic",
-                iconUrl: "./icon/icon128.png",
+                iconUrl: chrome.runtime.getURL("icon/icon128.png"),
                 title: chrome.i18n.getMessage("AppName"),
                 message: chrome.i18n.getMessage("ExtensionUpdated"),
             });
@@ -301,123 +323,3 @@ chrome.commands.onCommand.addListener((command) => {
             break;
     }
 });
-
-/**
- * Modify the CSP header of translate requests.
- */
-chrome.webRequest.onHeadersReceived.addListener(
-    (details) => ({
-        responseHeaders: details.responseHeaders.map((header) =>
-            /^content-security-policy$/i.test(header.name)
-                ? {
-                      name: header.name,
-                      value: header.value
-                          .replaceAll(
-                              // Remove 'none' and "none".
-                              /((^|;)\s*(default-src|script-src|img-src|connect-src|frame-src))\s+['"]none['"]/g,
-                              "$1 "
-                          )
-                          .replaceAll(
-                              // Add Google Page Translate related domains.
-                              // The last "\s" is added to prevent matching script-src-attr, script-src-elem, etc..
-                              /((^|;)\s*(default-src|script-src|img-src|connect-src))\s/g,
-                              // eslint-disable-next-line prefer-template
-                              "$1 'unsafe-inline' translate.googleapis.com translate.google.com *.google.com *.gstatic.com " +
-                                  chrome.runtime.getURL("") +
-                                  " "
-                          )
-                          .replaceAll(/((^|;)\s*frame-src)\s/g, "$1 'self' "), // Allow frame-src to the page itself.
-                  }
-                : header
-        ),
-    }),
-    { urls: ["*://*/*"], types: ["main_frame", "sub_frame"] },
-    ["blocking", "responseHeaders"]
-);
-
-/**
- * Modify the CSP header of DeepL home page.
- */
-chrome.webRequest.onHeadersReceived.addListener(
-    (details) => ({
-        responseHeaders: details.responseHeaders.map((header) =>
-            /^content-security-policy$/i.test(header.name)
-                ? {
-                      name: header.name,
-                      value: header.value.replaceAll(/frame-ancestors [^;]*;?/g, ""),
-                  }
-                : header
-        ),
-    }),
-    { urls: ["*://*.deepl.com/*"], types: ["main_frame", "sub_frame"] },
-    ["blocking", "responseHeaders"]
-);
-
-/**
- * Modify the cross-origin-resource-policy header of Google TTS response.
- */
-chrome.webRequest.onHeadersReceived.addListener(
-    (details) => {
-        for (let header of details.responseHeaders) {
-            if (header.name.toLowerCase() === "cross-origin-resource-policy") {
-                // console.log(JSON.stringify(header));
-                header.value = "cross-origin";
-                break;
-            }
-        }
-
-        return { responseHeaders: details.responseHeaders };
-    },
-    { urls: ["*://translate.google.cn/*"] },
-    // Browser compatibility.
-    BROWSER_ENV === "chrome"
-        ? ["blocking", "responseHeaders", "extraHeaders"]
-        : ["blocking", "responseHeaders"]
-);
-
-/**
- * Modify the origin header of translate requests.
- */
-chrome.webRequest.onBeforeSendHeaders.addListener(
-    (details) => {
-        let modified = false;
-        let origin = `https://${getDomain(details.url)}`;
-
-        // log("requesting " + details.url);
-        for (let header of details.requestHeaders) {
-            // log(header);
-            if (header.name.toLowerCase() === "origin") {
-                // log("changed origin: " + header.value);
-                header.value = origin;
-                modified = true;
-                break;
-            }
-        }
-
-        // Origin header has not been set.
-        if (!modified) {
-            details.requestHeaders.push({ name: "Origin", value: origin });
-        }
-
-        return { requestHeaders: details.requestHeaders };
-    },
-    { urls: ["*://fanyi.qq.com/*"] },
-    // Browser compatibility.
-    BROWSER_ENV === "chrome"
-        ? ["blocking", "requestHeaders", "extraHeaders"]
-        : ["blocking", "requestHeaders"]
-);
-
-// send basic hit data to google analytics
-setTimeout(() => {
-    sendHitRequest("background", "pageview", null);
-}, 60 * 1000);
-
-/**
- * dynamic importing hot reload function only in development env
- */
-if (BUILD_ENV === "development" && BROWSER_ENV === "chrome") {
-    import("./library/hot_reload.js").then((module) => {
-        module.hotReload();
-    });
-}
