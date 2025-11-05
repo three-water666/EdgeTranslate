@@ -17,7 +17,7 @@ async function doInitialization() {
         }
         HYBRID_TRANSLATOR = new HybridTranslator(configs.HybridTranslatorConfig, channel);
         TRANSLATORS = {
-            HybridTranslator: HYBRID_TRANSLATOR,
+            HybridTranslate: HYBRID_TRANSLATOR,
             ...HYBRID_TRANSLATOR.REAL_TRANSLATORS,
         };
         console.log("Offscreen: New HybridTranslator instance created via request.");
@@ -43,7 +43,7 @@ channel.on("new_hybrid_translator_instance", (detail) => {
     const { configs, channel } = detail;
     HYBRID_TRANSLATOR = new HybridTranslator(configs.HybridTranslatorConfig, channel);
     TRANSLATORS = {
-        HybridTranslator: HYBRID_TRANSLATOR,
+        HybridTranslate: HYBRID_TRANSLATOR,
         ...HYBRID_TRANSLATOR.REAL_TRANSLATORS,
     };
     console.log("Offscreen: New HybridTranslator instance created.");
