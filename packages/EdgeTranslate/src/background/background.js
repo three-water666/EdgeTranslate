@@ -131,7 +131,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             // 告知用户数据收集相关信息
             chrome.notifications.create("data_collection_notification", {
                 type: "basic",
-                iconUrl: "./icon/icon128.png",
+                iconUrl: chrome.runtime.getURL("icon/icon128.png"),
                 title: chrome.i18n.getMessage("AppName"),
                 message: chrome.i18n.getMessage("DataCollectionNotice"),
             });
@@ -165,7 +165,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             // 从旧版本更新，引导用户查看更新日志
             chrome.notifications.create("update_notification", {
                 type: "basic",
-                iconUrl: "./icon/icon128.png",
+                iconUrl: chrome.runtime.getURL("icon/icon128.png"),
                 title: chrome.i18n.getMessage("AppName"),
                 message: chrome.i18n.getMessage("ExtensionUpdated"),
             });
