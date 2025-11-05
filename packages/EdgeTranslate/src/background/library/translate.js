@@ -76,25 +76,17 @@ class TranslatorManager {
      */
     provideServices() {
         // Translate service.
-        this.channel.provide("translate", (params, sender) =>
-            this.translate(params.text, params.position, sender.tab.id)
-        );
+        this.channel.provide("translate", (params) => this.translate(params.text, params.position));
 
         // Pronounce service.
-        this.channel.provide("pronounce", (params, sender) => {
+        this.channel.provide("pronounce", (params) => {
             let speed = params.speed;
             if (!speed) {
                 speed = this.TTS_SPEED;
                 this.TTS_SPEED = speed === "fast" ? "slow" : "fast";
             }
 
-            return this.pronounce(
-                params.pronouncing,
-                params.text,
-                params.language,
-                speed,
-                sender.tab.id
-            );
+            return this.pronounce(params.pronouncing, params.text, params.language, speed);
         });
 
         // Get available translators service.
