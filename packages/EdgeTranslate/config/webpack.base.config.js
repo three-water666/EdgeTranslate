@@ -11,7 +11,6 @@ module.exports = {
         "/content/notice/notice": "./src/content/notice/notice.js",
         "/popup/popup": "./src/popup/popup.js",
         "/options/options": "./src/options/options.js",
-        "/content/deepl_injector": "./src/content/deepl_injector.js",
     },
     output: {
         filename: "[name].js",

@@ -1,7 +1,5 @@
 import BingTranslator from "./translators/bing";
 import GoogleTranslator from "./translators/google";
-import BaiduTranslator from "./translators/baidu";
-import DeeplTranslator from "./translators/deepl";
 import HybridTranslator from "./translators/hybrid";
 import axios from "./axios";
 
@@ -231,8 +229,6 @@ export {
     HybridTranslator,
     BingTranslator,
     GoogleTranslator,
-    BaiduTranslator,
-    DeeplTranslator,
 };
 export type { HybridSupportedTranslators, HybridConfig, Selections } from "./translators/hybrid";
 export * from "./types";

@@ -20,26 +20,10 @@ const RULE_CSP_ALL = {
         responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
     },
     condition: {
-        // 对应原 "urls": ["*://*/*"]
-        // 你必须在 manifest.json 的 host_permissions 中请求 "<all_urls>" 或 "*://*/*"
         resourceTypes: ["main_frame", "sub_frame"],
     },
 };
 
-const RULE_CSP_DEEPL = {
-    id: 2,
-    priority: 2, // 优先级更高，确保在 deepl.com 上也生效
-    action: {
-        type: "modifyHeaders",
-        responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
-    },
-    condition: {
-        urlFilter: "*://*.deepl.com/*",
-        resourceTypes: ["main_frame", "sub_frame"],
-    },
-};
-
-// 规则 3: 修改 Google TTS 的 CORP 头部
 const RULE_GOOGLE_TTS = {
     id: 3,
     priority: 1,
@@ -55,29 +39,7 @@ const RULE_GOOGLE_TTS = {
     },
     condition: {
         urlFilter: "*://translate.google.cn/*",
-        // 原代码未指定类型，这里选择可能相关的类型
         resourceTypes: ["xmlhttprequest", "media", "other"],
-    },
-};
-
-// 规则 4: 修改 QQ 翻译的 Origin 头部
-const RULE_QQ_FANYI = {
-    id: 4,
-    priority: 1,
-    action: {
-        type: "modifyHeaders",
-        requestHeaders: [
-            {
-                header: "origin",
-                operation: "set",
-                value: "https://fanyi.qq.com",
-            },
-        ],
-    },
-    condition: {
-        urlFilter: "*://fanyi.qq.com/*",
-        // 假定这是 API 请求
-        resourceTypes: ["xmlhttprequest"],
     },
 };
 
@@ -155,7 +117,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
     chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: oldRuleIds,
-        addRules: [RULE_CSP_ALL, RULE_CSP_DEEPL, RULE_GOOGLE_TTS, RULE_QQ_FANYI],
+        addRules: [RULE_CSP_ALL, RULE_GOOGLE_TTS],
     });
     // 只有在生产环境下，才会展示说明页面
     if (process.env.NODE_ENV === "production") {
