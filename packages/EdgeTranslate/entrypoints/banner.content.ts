@@ -1,5 +1,11 @@
-import Channel from "common/scripts/channel.js";
-import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
+import Channel from "common/scripts/channel";
+import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings";
+
+declare global {
+    interface Window {
+        EdgeTranslateBannerController: any;
+    }
+}
 
 export default defineContentScript({
     matches: ["<all_urls>"],
@@ -8,6 +14,10 @@ export default defineContentScript({
          * Control the visibility of page translator banners.
          */
         class BannerController {
+            channel: Channel;
+            currentTranslator: string | null;
+            canceller: (() => void) | null;
+
             constructor() {
                 // Communication channel.
                 this.channel = new Channel();
@@ -27,7 +37,7 @@ export default defineContentScript({
             addListeners() {
                 this.channel.on(
                     "start_page_translate",
-                    ((detail) => {
+                    ((detail: any) => {
                         switch (detail.translator) {
                             case "google": {
                                 // Google page translator runs in website context, so we use window.postMessage
@@ -46,7 +56,7 @@ export default defineContentScript({
                     }).bind(this)
                 );
 
-                this.channel.on("command", (detail) => {
+                this.channel.on("command", (detail: any) => {
                     switch (detail.command) {
                         case "toggle_page_translate_banner":
                             this.toggleBanner();
@@ -63,7 +73,7 @@ export default defineContentScript({
              * @param {boolean} visible the visibility of banner frame.
              * @returns {void} nothing
              */
-            toggleBannerFrame(visible) {
+            toggleBannerFrame(visible: boolean) {
                 switch (this.currentTranslator) {
                     case "google": {
                         let banner = document.getElementById(":0.container");
@@ -86,7 +96,7 @@ export default defineContentScript({
              * @param {Number} distance the distance to move.
              * @param {boolean} absolute whether the distance is relative or absolute.
              */
-            movePage(property, distance, absolute) {
+            movePage(property: string, distance: number, absolute: boolean) {
                 let orig = document.body.style.getPropertyValue(property);
                 try {
                     // The property has value originally.
@@ -107,7 +117,7 @@ export default defineContentScript({
              * @param {Object} msg the message content.
              * @returns {void} nothing
              */
-            googleMessageHandler(msg) {
+            googleMessageHandler(msg: any) {
                 let data = JSON.parse(msg.data);
                 if (!data.type || data.type !== "edge_translate_page_translate_event") return;
 
@@ -132,7 +142,9 @@ export default defineContentScript({
 
                         // If the banner is destroyed, we should cancel listeners.
                         if (data.distance <= 0) {
-                            this.canceller();
+                            if (this.canceller) {
+                                this.canceller();
+                            }
                             this.canceller = null;
                             this.currentTranslator = null;
                         }

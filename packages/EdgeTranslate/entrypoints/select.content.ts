@@ -1,7 +1,16 @@
-import { getDomain } from "common/scripts/common.js";
-import { isPDFjsPDFViewer, detectSelect } from "../components/common.js";
-import Channel from "common/scripts/channel.js";
-import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
+import { getDomain } from "common/scripts/common";
+import { isPDFjsPDFViewer, detectSelect } from "../components/common";
+import Channel from "common/scripts/channel";
+import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings";
+
+declare global {
+    interface Window {
+        isDisplayingResult: boolean;
+        translateResult: {
+            originalText: string;
+        };
+    }
+}
 
 const ImageData =
     "data:image/png;base64,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";
@@ -22,11 +31,11 @@ export default defineContentScript({
         /**
          * Initiate translation button.
          */
-        let translationButtonContainer = document.createElement("iframe");
+        let translationButtonContainer: HTMLIFrameElement | HTMLDivElement = document.createElement("iframe");
         const iframeContainer = translationButtonContainer;
         // Note: some websites can't get contentDocument e.g. https://raw.githubusercontent.com/git/git/master/Documentation/RelNotes/2.40.0.txt. So I use shadow DOM as a fallback.
         document.documentElement.appendChild(translationButtonContainer);
-        if (translationButtonContainer.contentDocument === null) {
+        if ((translationButtonContainer as HTMLIFrameElement).contentDocument === null) {
             translationButtonContainer = document.createElement("div");
             renderButton();
         }
@@ -81,11 +90,13 @@ export default defineContentScript({
                 overflow: "hidden",
                 background: "transparent",
             };
-            Object.assign(
-                translationButtonContainer.contentDocument?.documentElement.style || {},
-                CleanStyle
-            );
-            Object.assign(translationButtonContainer.contentDocument?.body.style || {}, CleanStyle);
+            
+            const doc = (translationButtonContainer as HTMLIFrameElement).contentDocument;
+            if (doc) {
+                Object.assign(doc.documentElement.style, CleanStyle);
+                Object.assign(doc.body.style, CleanStyle);
+            }
+            
             translationButton.addEventListener("mousedown", buttonClickHandler);
             translationButton.addEventListener("contextmenu", (e) => e.preventDefault());
         }
@@ -95,7 +106,7 @@ export default defineContentScript({
         let originScrollY = 0; // record the original scroll Y position(before scroll event)
         let originPositionX = 0; // record the original X position of selection icon(before scroll event)
         let originPositionY = 0; // record the original Y position of selection icon(before scroll event)
-        let scrollingElement = window; // store the specific scrolling element. In normal web pages, window is the scrolling object, while in pdf.js viewer, "#viewerContainer" is the scrolling element.
+        let scrollingElement: Element | Window = window; // store the specific scrolling element. In normal web pages, window is the scrolling object, while in pdf.js viewer, "#viewerContainer" is the scrolling element.
         // store the name of scroll property according to scrollingElement(pageXOffset for window and scrollLeft for pdf.js element)
         let scrollPropertyX = "pageXOffset";
         let scrollPropertyY = "pageYOffset";
@@ -103,11 +114,11 @@ export default defineContentScript({
         let ButtonPositionSetting = "TopRight";
 
         // Fetch the button position setting.
-        getOrSetDefaultSettings("LayoutSettings", DEFAULT_SETTINGS).then((result) => {
+        getOrSetDefaultSettings("LayoutSettings", DEFAULT_SETTINGS).then((result: any) => {
             ButtonPositionSetting = result.LayoutSettings.SelectTranslatePosition;
         });
         // Update the button position setting when the setting is changed.
-        chrome.storage.onChanged.addListener((changes, area) => {
+        chrome.storage.onChanged.addListener((changes: any, area: any) => {
             if (area !== "sync" || !changes.LayoutSettings) return;
             ButtonPositionSetting = changes.LayoutSettings.newValue.SelectTranslatePosition;
         });
@@ -129,7 +140,7 @@ export default defineContentScript({
             document.addEventListener("mousedown", () => {
                 disappearButton();
                 // whether user take a select action
-                detectSelect(document, (event) => {
+                detectSelect(document, (event: any) => {
                     selectTranslate(event);
                 });
             });
@@ -151,7 +162,7 @@ export default defineContentScript({
              * @param {MouseEvent} event mouse event of mouse up , double click or triple click
              * @param {boolean} isDoubleClick whether the event type is double click or triple click, set false by default
              */
-            async function selectTranslate(event, isDoubleClick = false) {
+            async function selectTranslate(event: any, isDoubleClick = false) {
                 console.log("EdgeTranslate: selectTranslate triggered", event);
                 if (!shouldTranslate()) {
                     console.log("EdgeTranslate: shouldTranslate returned false");
@@ -164,7 +175,7 @@ export default defineContentScript({
                      return;
                 }
 
-                getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
+                getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result: any) => {
                     if (!result.OtherSettings) return;
 
                     let OtherSettings = result.OtherSettings;
@@ -193,7 +204,7 @@ export default defineContentScript({
          *
          * @param {MouseEvent} event 鼠标点击事件
          */
-        function buttonClickHandler(event) {
+        function buttonClickHandler(event: any) {
             event.preventDefault();
             event.stopPropagation();
             if (event.button === 0) {
@@ -206,7 +217,7 @@ export default defineContentScript({
         /**
          * Use this function to show the translation buttion.
          */
-        function showButton(event) {
+        function showButton(event: any) {
             document.documentElement.appendChild(translationButtonContainer);
             // Ensure the container is visible and has a high z-index
             translationButtonContainer.style.position = "absolute";
@@ -256,7 +267,9 @@ export default defineContentScript({
             translationButtonContainer.style.left = `${XPosition}px`;
 
             // record original position of the selection icon and the start mouse scrolling position
+            // @ts-ignore
             originScrollX = scrollingElement[scrollPropertyX];
+            // @ts-ignore
             originScrollY = scrollingElement[scrollPropertyY];
             originPositionX = XPosition;
             originPositionY = YPosition;
@@ -272,7 +285,7 @@ export default defineContentScript({
             let selection = window.getSelection();
             let text = "";
             let position;
-            if (selection.rangeCount > 0) {
+            if (selection && selection.rangeCount > 0) {
                 text = selection.toString().trim();
                 if (isPDFjsPDFViewer()) {
                     /**
@@ -299,7 +312,7 @@ export default defineContentScript({
             let selection = getSelection();
             if (selection.text && selection.text.length > 0) {
                 channel.request("translate", selection).then(() => {
-                    getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
+                    getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result: any) => {
                         // to check whether user need to cancel text selection after translation finished
                         if (result.OtherSettings && result.OtherSettings["CancelTextSelection"]) {
                             cancelTextSelection();
@@ -317,8 +330,9 @@ export default defineContentScript({
          */
         function shouldTranslate() {
             let selectionObject = window.getSelection();
+            if (!selectionObject) return false;
             let selectionText = selectionObject.toString().trim();
-            if (import.meta.env.BROWSER === "firefox")
+            if ((import.meta.env as any).BROWSER === "firefox")
                 // on firefox, we don't need to tell the focusNode type because in input elements, selectionText is ""
                 return (
                     selectionText.length > 0 &&
@@ -331,10 +345,11 @@ export default defineContentScript({
              * @param {Node} node the node to be filtered
              * @returns {boolean} if the node should be passed
              */
-            const filterNode = (node) => {
+            const filterNode = (node: any) => {
                 if (node.nodeType === Node.TEXT_NODE) return true;
                 // BODY is a special case. see https://github.com/EdgeTranslate/EdgeTranslate/issues/531
                 if (node.nodeType === Node.ELEMENT_NODE) return ["BODY"].includes(node.tagName);
+                return false;
             };
 
             return (
@@ -374,7 +389,9 @@ export default defineContentScript({
          */
         function scrollHandler() {
             if (HasButtonShown) {
+                // @ts-ignore
                 let distanceX = originScrollX - scrollingElement[scrollPropertyX];
+                // @ts-ignore
                 let distanceY = originScrollY - scrollingElement[scrollPropertyY];
 
                 translationButtonContainer.style.left = `${originPositionX + distanceX}px`;
@@ -388,7 +405,7 @@ export default defineContentScript({
          * @returns {Promise<boolean>} result in promise form
          */
         function isInBlacklist() {
-            return getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS).then((result) => {
+            return getOrSetDefaultSettings("blacklist", DEFAULT_SETTINGS).then((result: any) => {
                 let url = window.location.href;
                 let blacklist = result.blacklist;
                 return blacklist.domains[getDomain(url)] || blacklist.urls[url];
@@ -400,16 +417,17 @@ export default defineContentScript({
          */
         function cancelTextSelection() {
             if (window.getSelection) {
-                if (window.getSelection().empty) {
+                const selection = window.getSelection();
+                if (selection && selection.empty) {
                     // Chrome
-                    window.getSelection().empty();
-                } else if (window.getSelection().removeAllRanges) {
+                    selection.empty();
+                } else if (selection && selection.removeAllRanges) {
                     // Firefox
-                    window.getSelection().removeAllRanges();
+                    selection.removeAllRanges();
                 }
-            } else if (document.selection) {
+            } else if ((document as any).selection) {
                 // IE
-                document.selection.empty();
+                (document as any).selection.empty();
             }
         }
 
@@ -417,21 +435,21 @@ export default defineContentScript({
          * 处理取消网页翻译的快捷键
          */
         function cancelPageTranslate() {
-            let checkAndClick = (button) => {
+            let checkAndClick = (button: any) => {
                 if (button !== null && button !== undefined) {
                     button.click();
                 }
             };
 
-            let frame = document.getElementById(":0.container");
+            let frame = document.getElementById(":0.container") as HTMLIFrameElement;
             if (frame !== null && frame !== undefined) {
-                let cancelButton = frame.contentDocument.getElementById(":0.close");
+                let cancelButton = frame.contentDocument?.getElementById(":0.close");
                 checkAndClick(cancelButton);
             }
 
-            frame = document.getElementById("OUTFOX_JTR_BAR");
+            frame = document.getElementById("OUTFOX_JTR_BAR") as HTMLIFrameElement;
             if (frame !== null && frame !== undefined) {
-                let cancelButton = frame.contentDocument.getElementById("OUTFOX_JTR_BAR_CLOSE");
+                let cancelButton = frame.contentDocument?.getElementById("OUTFOX_JTR_BAR_CLOSE");
                 checkAndClick(cancelButton);
             }
         }
@@ -441,7 +459,7 @@ export default defineContentScript({
          * This function can get the inner parent of the container.
          * @param {HTMLIFrameElement|HTMLDivElement} container
          */
-        function getInnerParent(container) {
+        function getInnerParent(container: any) {
             if (container.tagName === "IFRAME") return container.contentDocument.body;
 
             if (container.shadowRoot) return container.shadowRoot;
@@ -454,7 +472,7 @@ export default defineContentScript({
         channel.provide("get_selection", () => Promise.resolve(getSelection()));
 
         // handler for shortcut command
-        channel.on("command", (detail) => {
+        channel.on("command", (detail: any) => {
             switch (detail.command) {
                 case "translate_selected":
                     translateSubmit();

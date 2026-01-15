@@ -11,7 +11,7 @@ let initializationPromise = null;
 async function doInitialization() {
     try {
         console.log("Offscreen: Woke up. Requesting config from Service Worker...");
-        const configs = await channel.request("get_translator_config");
+        const configs: any = await channel.request("get_translator_config", null);
         if (!configs) {
             throw new Error("Failed to get config from Service Worker.");
         }
@@ -32,7 +32,7 @@ function initializeTranslator() {
     if (initializationPromise) {
         return initializationPromise;
     }
-    initializationPromise = doInitialization();
+    initializationPromise = doInitialization() as any;
     return initializationPromise;
 }
 

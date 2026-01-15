@@ -12,34 +12,41 @@ import Channel from "common/scripts/channel.js";
 import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
 import { DEFAULT_SETTINGS, setDefaultSettings } from "common/scripts/settings.js";
 
-const RULE_CSP_ALL = {
+const RULE_CSP_ALL: chrome.declarativeNetRequest.Rule = {
     id: 1,
     priority: 1,
     action: {
-        type: "modifyHeaders",
-        responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
+        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+        responseHeaders: [{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.REMOVE }],
     },
     condition: {
-        resourceTypes: ["main_frame", "sub_frame"],
+        resourceTypes: [
+            chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+            chrome.declarativeNetRequest.ResourceType.SUB_FRAME
+        ],
     },
 };
 
-const RULE_GOOGLE_TTS = {
+const RULE_GOOGLE_TTS: chrome.declarativeNetRequest.Rule = {
     id: 3,
     priority: 1,
     action: {
-        type: "modifyHeaders",
+        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
         responseHeaders: [
             {
                 header: "cross-origin-resource-policy",
-                operation: "set",
+                operation: chrome.declarativeNetRequest.HeaderOperation.SET,
                 value: "cross-origin",
             },
         ],
     },
     condition: {
         urlFilter: "*://translate.google.cn/*",
-        resourceTypes: ["xmlhttprequest", "media", "other"],
+        resourceTypes: [
+            chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
+            chrome.declarativeNetRequest.ResourceType.MEDIA,
+            chrome.declarativeNetRequest.ResourceType.OTHER
+        ],
     },
 };
 
@@ -136,7 +143,7 @@ export default defineBackground(() => {
                     message: chrome.i18n.getMessage("DataCollectionNotice"),
                 });
             } else if (details.reason === "update") {
-                await new Promise((resolve) => {
+                await new Promise<void>((resolve) => {
                     chrome.storage.sync.get((result) => {
                         let buffer = result; // use var buffer as a pointer
                         setDefaultSettings(buffer, DEFAULT_SETTINGS); // assign default value to buffer
@@ -212,11 +219,12 @@ export default defineBackground(() => {
      * 添加点击菜单后的处理事件
      */
     chrome.contextMenus.onClicked.addListener((info, tab) => {
+        if (!tab || !tab.id) return;
         switch (info.menuItemId) {
             case "translate":
                 channel
-                    .requestToTab(tab.id, "get_selection")
-                    .then(({ text, position }) => {
+                    .requestToTab(tab.id, "get_selection", null)
+                    .then(({ text, position }: any) => {
                         if (text) {
                             return TRANSLATOR_MANAGER.translate(text, position);
                         }
@@ -224,8 +232,8 @@ export default defineBackground(() => {
                     })
                     .catch((error) => {
                         // If content scripts can not access the tab the selection, use info.selectionText instead.
-                        if (info.selectionText.trim()) {
-                            return TRANSLATOR_MANAGER.translate(info.selectionText, null);
+                        if (info.selectionText && info.selectionText.trim()) {
+                            return TRANSLATOR_MANAGER.translate(info.selectionText, null as any);
                         }
                         return Promise.resolve(error);
                     });
