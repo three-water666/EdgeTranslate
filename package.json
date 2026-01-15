@@ -23,11 +23,14 @@
     "url": "https://github.com/EdgeTranslate/EdgeTranslate.git"
   },
   "scripts": {
-    "build": "turbo run build",
-    "test": "turbo run test",
-    "dev:chrome": "turbo run dev:chrome --filter=edge_translate",
-    "build:chrome": "turbo run build:chrome --filter=edge_translate",
-    "pack:chrome": "turbo run pack:chrome --filter=edge_translate",
+    "dev": "pnpm --filter edge_translate run dev",
+    "dev:firefox": "pnpm --filter edge_translate run dev:firefox",
+    "build": "pnpm --filter edge_translate run build",
+    "build:firefox": "pnpm --filter edge_translate run build:firefox",
+    "zip": "pnpm --filter edge_translate run zip",
+    "zip:firefox": "pnpm --filter edge_translate run zip:firefox",
+    "test": "pnpm --filter edge_translate run test",
+    "format": "pnpm --filter edge_translate run format",
     "prepare": "husky"
   },
   "devDependencies": {

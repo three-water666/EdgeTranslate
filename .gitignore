@@ -11,3 +11,4 @@
 **/*.log
 .trae/
 .turbo/
+.output/

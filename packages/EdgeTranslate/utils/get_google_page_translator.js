@@ -2,8 +2,8 @@ const fs = require("fs");
 const axios = require("axios").default;
 const socks = require("socks-proxy-agent").SocksProxyAgent;
 
-const ELEMENT_JS_DIR = "static/google/elms";
-const LANGUAGE_NAMES_DIR = "static/google/lans";
+const ELEMENT_JS_DIR = "public/google/elms";
+const LANGUAGE_NAMES_DIR = "public/google/lans";
 
 const LANGUAGES = [
     "af",
