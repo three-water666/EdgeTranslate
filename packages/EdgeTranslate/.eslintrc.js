@@ -11,7 +11,7 @@ module.exports = {
         node: true,
         browser: true,
         es6: true,
-        "jest/globals": true,
+        jest: true,
     },
     extends: ["eslint:recommended", "preact", "prettier", "plugin:prettier/recommended"],
     globals: {
