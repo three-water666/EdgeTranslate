@@ -33,20 +33,20 @@ const DEFAULT_SETTINGS = {
     DefaultPageTranslator: "GooglePageTranslate",
     HybridTranslatorConfig: {
         // The translators used in current hybrid translate.
-        translators: ["BaiduTranslate", "BingTranslate", "GoogleTranslate"],
+        translators: ["BingTranslate", "GoogleTranslate"],
 
         // The translators for each item.
         selections: {
             // ATTENTION: The following four items MUST HAVE THE SAME TRANSLATOR!
-            originalText: "BaiduTranslate",
-            mainMeaning: "BaiduTranslate",
-            tPronunciation: "BaiduTranslate",
-            sPronunciation: "BaiduTranslate",
+            originalText: "GoogleTranslate",
+            mainMeaning: "GoogleTranslate",
+            tPronunciation: "GoogleTranslate",
+            sPronunciation: "GoogleTranslate",
 
             // For the following three items, any translator combination is OK.
             detailedMeanings: "BingTranslate",
             definitions: "GoogleTranslate",
-            examples: "BaiduTranslate",
+            examples: "GoogleTranslate",
         },
     },
     // Defines which contents in the translating result should be displayed.

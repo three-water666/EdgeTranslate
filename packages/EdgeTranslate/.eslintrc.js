@@ -28,5 +28,6 @@ module.exports = {
     rules: {
         quotes: ["error", "double"],
         "no-multiple-empty-lines": [0, { max: 100 }],
+        "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
 };
