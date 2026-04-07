@@ -12,6 +12,7 @@
     },
     "scripts": {
         "preinstall": "node scripts/enforce-pnpm.js",
+        "postinstall": "node scripts/patch-husky-pnpm.js",
         "build": "turbo run build",
         "test": "turbo run test --concurrency=1",
         "format:staged": "node scripts/format-staged-files.js",
