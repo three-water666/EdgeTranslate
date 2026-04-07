@@ -1,0 +1,19 @@
+module.exports = {
+    root: true,
+    parser: "@typescript-eslint/parser",
+    parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: "module",
+    },
+    env: {
+        node: true,
+        es6: true,
+        "jest/globals": true,
+    },
+    plugins: ["@typescript-eslint", "prettier"],
+    extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+    rules: {
+        quotes: ["error", "double"],
+        "prettier/prettier": ["error", { endOfLine: "lf" }],
+    },
+};

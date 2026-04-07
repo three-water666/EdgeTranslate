@@ -1,4 +1,4 @@
-﻿import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
+import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
 import {
     addUrlBlacklist,
     addDomainBlacklist,
