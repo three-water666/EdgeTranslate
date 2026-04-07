@@ -11,6 +11,7 @@ const eslint = require("gulp-eslint");
 const mergeStream = require("merge-stream");
 const minimist = require("minimist");
 const spawn = require("child_process").spawn;
+const { version } = require("./package.json");
 
 let args = minimist(process.argv.slice(2));
 let browser = args.browser || "chrome";
@@ -82,7 +83,7 @@ function setProductEnvironment(done) {
  */
 function clean() {
     let output_dir = `./build/${browser}/`;
-    let packageName = `edge_translate_${browser}.zip`;
+    let packageName = `edge_translate_${browser}_v${version}.zip`;
     return del([output_dir, `./build/${packageName}`]);
 }
 
@@ -96,7 +97,7 @@ function ensureOutputDirectory(done) {
  */
 function packToZip() {
     let match_dir = `./build/${browser}/**/*`;
-    let packageName = `edge_translate_${browser}.zip`;
+    let packageName = `edge_translate_${browser}_v${version}.zip`;
     return gulp.src(match_dir).pipe(zip(packageName)).pipe(gulp.dest("./build/"));
 }
 
@@ -183,6 +184,10 @@ function copyManifest() {
         .src(`./src/manifest_${browser}.json`)
         .pipe(
             through.obj(function (file, enc, cb) {
+                const manifest = JSON.parse(file.contents.toString(enc));
+                manifest.version = version;
+                manifest.version_name = version;
+                file.contents = Buffer.from(`${JSON.stringify(manifest, null, 4)}\n`);
                 file.basename = "manifest.json";
                 this.push(file);
                 cb();
