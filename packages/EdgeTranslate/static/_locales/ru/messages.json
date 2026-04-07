@@ -147,21 +147,9 @@
         "message": "Удалить этот домен из чёрного списка",
         "description": "Удаление домена просматриваемого сайта из чёрного списка."
     },
-    "DataCollectionNotice": {
-        "message": "Спасибо за использование Edge Translate! \nНам нужна статистика, чтобы улучшить пользовательский опыт. \nНажмите, чтобы увидеть варианты.",
-        "description": "Советы по сбору данных"
-    },
-    "PrivacyPolicyLink": {
-        "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/PrivacyPolicy.md",
-        "description": "Ссылка на политику конфиденциальности."
-    },
     "ExtensionInstalled": {
         "message": "Edge Translate установлен! Нажмите, чтобы изучить wiki!",
         "description": "Уведомление пользователю, об успешной установке расширения."
-    },
-    "WikiLink": {
-        "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/Introduction.md",
-        "description": "Ссылка на Wiki."
     },
     "ExtensionUpdated": {
         "message": "Edge Translate обновлён! Нажмите, чтобы посмотреть что нового.",
@@ -262,14 +250,6 @@
     "TranslatePageGoogle": {
         "message": "Перевести страницу с помощью Google",
         "description": "Перевод текущей страницы с помощью Google Translate API."
-    },
-    "UseGoogleAnalytics": {
-        "message": "Помочь улучшить расширение",
-        "description": "Используется инструмент Google Analytics, чтобы помочь нам улучшить Edge Translate."
-    },
-    "PrivacyPolicy": {
-        "message": "Политика конфиденциальности",
-        "description": "Политика конфиденциальности."
     },
     "Settings": {
         "message": "Настройки",

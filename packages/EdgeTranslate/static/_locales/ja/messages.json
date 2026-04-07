@@ -147,21 +147,9 @@
         "message": "このドメインをブラックリストから削除",
         "description": "ブラックリストから現在閲覧中のサイトのドメインを削除します。"
     },
-    "DataCollectionNotice": {
-        "message": "Edge Translateをご利用いただきありがとうございます! \n私たちはユーザーエクスペリエンスを改善するためにいくつかの統計が必要です。 \nクリックしてオプションを表示します。",
-        "description": "統計情報収集のお知らせ"
-    },
-    "PrivacyPolicyLink": {
-        "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/PrivacyPolicy.md",
-        "description": "Privacy policy link."
-    },
     "ExtensionInstalled": {
         "message": "Edge Translateが正常にインストールされました! クリックしてWikiを読みます!",
         "description": "拡張機能がインストールされたことをユーザーに通知する。"
-    },
-    "WikiLink": {
-        "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/Introduction.md",
-        "description": "Wiki link."
     },
     "ExtensionUpdated": {
         "message": "Edge Translateが正常に更新されました。クリックして新機能を見つけます!",
@@ -262,14 +250,6 @@
     "TranslatePageGoogle": {
         "message": "Googleでこのページを翻訳",
         "description": "Google翻訳APIで現在のページを翻訳します。"
-    },
-    "UseGoogleAnalytics": {
-        "message": "拡張機能の改善に役立つ統計を提供する",
-        "description": "Google Analyticsツールを使用して、Edge Translateを改善します。"
-    },
-    "PrivacyPolicy": {
-        "message": "プライバシーポリシー",
-        "description": "プライバシーポリシー"
     },
     "Settings": {
         "message": "設定",
