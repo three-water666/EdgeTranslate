@@ -14,13 +14,4 @@ window.onload = () => {
             url: `chrome://extensions/?id=${chrome.runtime.id}`,
         });
     });
-
-    const reasonsList = document.getElementById("reasonsList");
-    if (BROWSER_ENV === "firefox") {
-        const chromeReason = document.getElementById("chromeReason");
-        reasonsList.removeChild(chromeReason);
-    } else {
-        const firefoxReason = document.getElementById("firefoxReason");
-        reasonsList.removeChild(firefoxReason);
-    }
 };

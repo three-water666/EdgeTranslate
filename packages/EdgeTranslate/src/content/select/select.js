@@ -281,13 +281,6 @@ function translateSubmit() {
 function shouldTranslate() {
     let selectionObject = window.getSelection();
     let selectionText = selectionObject.toString().trim();
-    if (BROWSER_ENV === "firefox")
-        // on firefox, we don't need to tell the focusNode type because in input elements, selectionText is ""
-        return (
-            selectionText.length > 0 &&
-            // Do not re-translate translated text.
-            !(window.isDisplayingResult && window.translateResult.originalText === selectionText)
-        );
 
     /**
      * Filter out the nodes to avoid the translation button appearing in some unnecessary places.

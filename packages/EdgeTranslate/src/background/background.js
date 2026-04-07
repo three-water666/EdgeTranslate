@@ -53,15 +53,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         contexts: ["selection"],
     });
 
-    // Add an entry to options page for Firefox as it doesn't have one.
-    if (BROWSER_ENV === "firefox") {
-        chrome.contextMenus.create({
-            id: "settings",
-            title: chrome.i18n.getMessage("Settings"),
-            contexts: ["action"],
-        });
-    }
-
     chrome.contextMenus.create({
         id: "shortcut",
         title: chrome.i18n.getMessage("ShortcutSetting"),
@@ -214,9 +205,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             break;
         case "translate_page_google":
             executeGoogleScript(channel);
-            break;
-        case "settings":
-            chrome.runtime.openOptionsPage();
             break;
         case "shortcut":
             chrome.tabs.create({
