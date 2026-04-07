@@ -14,13 +14,12 @@
         "preinstall": "node scripts/enforce-pnpm.js",
         "prepare": "husky",
         "build": "turbo run build",
+        "package": "turbo run package --filter=edge_translate",
         "test": "turbo run test --concurrency=1",
         "format:staged": "node scripts/format-staged-files.js",
         "lint:staged": "node scripts/lint-staged-files.js",
         "check:staged-eol": "node scripts/check-staged-eol.js",
-        "dev:chrome": "turbo run dev:chrome --filter=edge_translate",
-        "build:chrome": "turbo run build:chrome --filter=edge_translate",
-        "pack:chrome": "turbo run pack:chrome --filter=edge_translate"
+        "dev": "turbo run dev --filter=edge_translate"
     },
     "devDependencies": {
         "@commitlint/cli": "^13.2.1",

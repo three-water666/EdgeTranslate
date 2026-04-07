@@ -5,11 +5,10 @@
     "scripts": {
         "test": "jest",
         "format": "eslint 'src/**/*.js' 'config/**/*.js' --fix",
-        "dev:chrome": "gulp dev --browser chrome",
-        "build:chrome": "gulp build --browser chrome",
-        "pack:chrome": "gulp pack --browser chrome",
-        "e2e:chrome": "SELENIUM_BROWSER=chrome jest -i --config './test/e2e/jest/jest.config.js'",
-        "build": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome"
+        "dev": "gulp dev --browser chrome",
+        "build": "gulp build --browser chrome",
+        "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
+        "e2e": "SELENIUM_BROWSER=chrome jest -i --config './test/e2e/jest/jest.config.js'"
     },
     "devDependencies": {
         "@babel/core": "^7.17.7",

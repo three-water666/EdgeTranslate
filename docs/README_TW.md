@@ -49,7 +49,13 @@ pnpm install
 建置擴充套件：
 
 ```shell
-pnpm build:chrome
+pnpm build
+```
+
+打包 zip：
+
+```shell
+pnpm package
 ```
 
 建置完成後，可在以下目錄找到解壓版擴充套件：

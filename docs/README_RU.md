@@ -49,7 +49,13 @@ pnpm install
 Соберите расширение:
 
 ```shell
-pnpm build:chrome
+pnpm build
+```
+
+Создайте zip-пакет:
+
+```shell
+pnpm package
 ```
 
 После сборки распакованная версия будет доступна в каталоге:

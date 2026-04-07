@@ -49,7 +49,13 @@ pnpm install
 Build the extension:
 
 ```shell
-pnpm build:chrome
+pnpm build
+```
+
+Create a zip package:
+
+```shell
+pnpm package
 ```
 
 After the build finishes, the unpacked extension output is available under:

@@ -1,4 +1,5 @@
 const del = require("del");
+const fs = require("fs");
 const gulp = require("gulp");
 const stylus = require("gulp-stylus");
 const through = require("through2");
@@ -33,6 +34,7 @@ exports.buildJS = gulp.series(setDevelopEnvironment, buildJS);
 exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
+    ensureOutputDirectory,
     gulp.parallel(eslintJS, buildJSDev, copyManifest, html, styl, packStatic),
     watcher
 );
@@ -43,6 +45,7 @@ exports.dev = gulp.series(
 exports.build = gulp.series(
     setProductEnvironment,
     clean,
+    ensureOutputDirectory,
     gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic)
 );
 
@@ -52,6 +55,7 @@ exports.build = gulp.series(
 exports.pack = gulp.series(
     setProductEnvironment,
     clean,
+    ensureOutputDirectory,
     gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic),
     packToZip
 );
@@ -86,6 +90,11 @@ function clean() {
     let output_dir = `./build/${browser}/`;
     let packageName = `edge_translate_${browser}.zip`;
     return del([output_dir, `./build/${packageName}`]);
+}
+
+function ensureOutputDirectory(done) {
+    fs.mkdirSync(`./build/${browser}/`, { recursive: true });
+    done();
 }
 
 /**

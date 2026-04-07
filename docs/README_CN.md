@@ -49,7 +49,13 @@ pnpm install
 构建扩展：
 
 ```shell
-pnpm build:chrome
+pnpm build
+```
+
+打包 zip：
+
+```shell
+pnpm package
 ```
 
 构建完成后，可在以下目录找到解压版扩展：
