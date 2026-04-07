@@ -12,7 +12,7 @@
     },
     "scripts": {
         "preinstall": "node scripts/enforce-pnpm.js",
-        "postinstall": "node scripts/patch-husky-pnpm.js",
+        "prepare": "husky",
         "build": "turbo run build",
         "test": "turbo run test --concurrency=1",
         "format:staged": "node scripts/format-staged-files.js",
@@ -33,7 +33,7 @@
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-html": "^6.2.0",
         "eslint-plugin-prettier": "^3.4.1",
-        "husky": "^4.3.8",
+        "husky": "9.1.7",
         "jest": "^27.5.1",
         "prettier": "^2.6.0",
         "turbo": "1.13.4"
@@ -41,12 +41,6 @@
     "config": {
         "commitizen": {
             "path": "./node_modules/cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "pre-commit": "pnpm format:staged && pnpm lint:staged && pnpm check:staged-eol",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
     },
     "packageManager": "pnpm@10.8.1"
