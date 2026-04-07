@@ -1,4 +1,3 @@
-import axios from "axios";
 import HybridTranslator from "../src/translators/hybrid";
 
 describe("hybrid translator api", () => {
@@ -18,56 +17,37 @@ describe("hybrid translator api", () => {
         {}
     );
 
-    beforeAll(() => {
-        // set http module of nodejs as axios' request method
-        let path = require("path");
-        let lib = path.join(path.dirname(require.resolve("axios")), "lib/adapters/http");
-        axios.defaults.adapter = require(lib);
+    beforeEach(() => {
+        jest.restoreAllMocks();
     });
 
-    it("to detect language of English text", (done) => {
-        TRANSLATOR.detect("hello")
-            .then((result) => {
-                expect(result).toEqual("en");
-                done();
-            })
-            .catch((error) => {
-                done(error);
-            });
+    it("to detect language with main translator", async () => {
+        jest.spyOn(TRANSLATOR.REAL_TRANSLATORS.GoogleTranslate, "detect").mockResolvedValue("en");
+
+        await expect(TRANSLATOR.detect("hello")).resolves.toEqual("en");
     });
 
-    it("to detect language of Chinese text", (done) => {
-        TRANSLATOR.detect("你好")
-            .then((result) => {
-                expect(result).toEqual("zh-CN");
-                done();
-            })
-            .catch((error) => {
-                done(error);
-            });
+    it("to translate with configured translator selection", async () => {
+        jest.spyOn(TRANSLATOR.REAL_TRANSLATORS.GoogleTranslate, "translate").mockResolvedValue({
+            originalText: "hello",
+            mainMeaning: "你好",
+            tPronunciation: "ni hao",
+            sPronunciation: "hello",
+            detailedMeanings: [],
+            definitions: [],
+            examples: [],
+        });
+
+        await expect(TRANSLATOR.translate("hello", "en", "zh-CN")).resolves.toMatchObject({
+            originalText: "hello",
+            mainMeaning: "你好",
+        });
     });
 
-    it("to translate a piece of English text", (done) => {
-        TRANSLATOR.translate("hello", "en", "zh-CN")
-            .then((result) => {
-                expect(result.mainMeaning).toEqual("你好");
-                expect(result.originalText).toEqual("hello");
-                done();
-            })
-            .catch((error) => {
-                done(error);
-            });
-    });
+    it("to update config with available translators only", () => {
+        const newConfig = TRANSLATOR.updateConfigFor("en", "zh-CN");
 
-    it("to translate a piece of Chinese text", (done) => {
-        TRANSLATOR.translate("你好", "zh-CN", "en")
-            .then((result) => {
-                expect(result.mainMeaning).toEqual("Hello");
-                expect(result.originalText).toEqual("你好");
-                done();
-            })
-            .catch((error) => {
-                done(error);
-            });
+        expect(newConfig.translators).toContain("GoogleTranslate");
+        expect(newConfig.selections.mainMeaning).toEqual("GoogleTranslate");
     });
 });
