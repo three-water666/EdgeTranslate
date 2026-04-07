@@ -171,15 +171,6 @@ class Channel {
      * @returns {Function | null} message sender
      */
     _getTabMessageSender() {
-        if (BROWSER_ENV === "firefox") {
-            if (!browser.tabs || !browser.tabs.sendMessage) {
-                return null;
-            }
-
-            // Firefox uses Promise, return directly.
-            return browser.tabs.sendMessage;
-        }
-
         if (!chrome.tabs || !chrome.tabs.sendMessage) {
             return null;
         }

@@ -1,4 +1,4 @@
-# 侧边翻译 - 网页划词翻译插件 | PDF翻译 | MV3 | 开源免费
+# Edge Translate - Web Selection Translation Extension | PDF Translation | MV3 | Free and Open Source
 
 
 Read this page in other languages:

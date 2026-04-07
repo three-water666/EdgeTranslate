@@ -6,14 +6,10 @@
         "test": "jest",
         "format": "eslint 'src/**/*.js' 'config/**/*.js' --fix",
         "dev:chrome": "gulp dev --browser chrome",
-        "dev:firefox": "gulp dev --browser firefox",
         "build:chrome": "gulp build --browser chrome",
-        "build:firefox": "gulp build --browser firefox",
         "pack:chrome": "gulp pack --browser chrome",
-        "pack:firefox": "gulp pack --browser firefox",
         "e2e:chrome": "SELENIUM_BROWSER=chrome jest -i --config './test/e2e/jest/jest.config.js'",
-        "e2e:firefox": "SELENIUM_BROWSER=firefox jest -i --config './test/e2e/jest/jest.config.js'",
-        "build": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome && node -e \"console.log('\\npacking package for firefox')\" && gulp pack --browser firefox"
+        "build": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome"
     },
     "devDependencies": {
         "@babel/core": "^7.17.7",
@@ -28,7 +24,6 @@
         "crypto": "^1.0.1",
         "css": "^3.0.0",
         "del": "^6.0.0",
-        "geckodriver": "^2.0.4",
         "gulp": "^4.0.2",
         "gulp-eslint": "^6.0.0",
         "gulp-stylus": "^2.7.1",
@@ -38,7 +33,6 @@
         "jest-chrome": "^0.7.2",
         "jest-image-snapshot": "^4.5.1",
         "jest-raw-loader": "^1.0.1",
-        "lodash": "^4.17.21",
         "merge-stream": "^2.0.0",
         "minimist": "^1.2.6",
         "mockttp": "^1.2.2",

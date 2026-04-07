@@ -1,4 +1,4 @@
-﻿import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
+import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
 import {
     addUrlBlacklist,
     addDomainBlacklist,
@@ -52,15 +52,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         title: `${chrome.i18n.getMessage("Translate")} '%s'`,
         contexts: ["selection"],
     });
-
-    // Add an entry to options page for Firefox as it doesn't have one.
-    if (BROWSER_ENV === "firefox") {
-        chrome.contextMenus.create({
-            id: "settings",
-            title: chrome.i18n.getMessage("Settings"),
-            contexts: ["action"],
-        });
-    }
 
     chrome.contextMenus.create({
         id: "shortcut",
@@ -214,9 +205,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             break;
         case "translate_page_google":
             executeGoogleScript(channel);
-            break;
-        case "settings":
-            chrome.runtime.openOptionsPage();
             break;
         case "shortcut":
             chrome.tabs.create({

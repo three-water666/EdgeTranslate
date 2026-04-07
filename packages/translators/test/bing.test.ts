@@ -1,23 +1,37 @@
-import axios from "axios";
+jest.mock("../src/axios", () => ({
+    __esModule: true,
+    default: {
+        get: jest.fn(),
+    },
+}));
+
+import axios from "../src/axios";
 import BingTranslator from "../src/translators/bing";
 
 describe("bing translator api", () => {
     const TRANSLATOR = new BingTranslator();
 
-    beforeAll(() => {
-        // set http module of nodejs as axios' request method
-        let path = require("path");
-        let lib = path.join(path.dirname(require.resolve("axios")), "lib/adapters/http");
-        axios.defaults.adapter = require(lib);
+    beforeEach(() => {
+        jest.restoreAllMocks();
     });
 
     it("to update IG and IID", async () => {
-        await TRANSLATOR.updateTokens().then(() => {
-            expect(typeof TRANSLATOR.IG).toEqual("string");
-            expect(TRANSLATOR.IG.length).toBeGreaterThan(0);
+        (axios.get as jest.Mock).mockResolvedValue({
+            data: `
+                IG:"TESTIG123"
+                var params_AbusePreventionHelper = [123456,"test-token",null];
+                <div id="rich_tta" data-iid="translator.1"></div>
+            `,
+            request: {
+                responseURL: "https://cn.bing.com/translator",
+            },
+        } as any);
 
-            expect(typeof TRANSLATOR.IID).toEqual("string");
-            expect(TRANSLATOR.IID!.length).toBeGreaterThan(0);
-        });
+        await TRANSLATOR.updateTokens();
+
+        expect(TRANSLATOR.IG).toEqual("TESTIG123");
+        expect(TRANSLATOR.IID).toEqual("translator.1");
+        expect(TRANSLATOR.token).toEqual("test-token");
+        expect(TRANSLATOR.key).toEqual("123456");
     });
 });
