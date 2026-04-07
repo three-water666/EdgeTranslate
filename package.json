@@ -11,8 +11,9 @@
         "url": "https://github.com/three-water666/EdgeTranslate.git"
     },
     "scripts": {
+        "preinstall": "node scripts/enforce-pnpm.js",
         "build": "turbo run build",
-        "test": "turbo run test",
+        "test": "turbo run test --concurrency=1",
         "format:staged": "node scripts/format-staged-files.js",
         "lint:staged": "node scripts/lint-staged-files.js",
         "check:staged-eol": "node scripts/check-staged-eol.js",
@@ -34,11 +35,8 @@
         "husky": "^4.3.8",
         "jest": "^27.5.1",
         "prettier": "^2.6.0",
-        "turbo": "^1.2.16"
+        "turbo": "1.13.4"
     },
-    "workspaces": [
-        "packages/*"
-    ],
     "config": {
         "commitizen": {
             "path": "./node_modules/cz-conventional-changelog"
@@ -46,9 +44,9 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "yarn format:staged && yarn lint:staged && yarn check:staged-eol",
+            "pre-commit": "pnpm format:staged && pnpm lint:staged && pnpm check:staged-eol",
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
     },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "pnpm@10.8.1"
 }
