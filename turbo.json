@@ -12,7 +12,7 @@
             "persistent": true
         },
         "package": {
-            "dependsOn": ["^build"],
+            "dependsOn": ["build", "^build"],
             "outputs": ["build/**.zip"]
         }
     }

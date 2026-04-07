@@ -52,13 +52,7 @@ exports.build = gulp.series(
 /**
  * A public task to build and zip a package in production mode
  */
-exports.pack = gulp.series(
-    setProductEnvironment,
-    clean,
-    ensureOutputDirectory,
-    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic),
-    packToZip
-);
+exports.pack = gulp.series(packToZip);
 /**
  * End public tasks' definition
  */
