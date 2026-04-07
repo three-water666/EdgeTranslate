@@ -11,12 +11,16 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: pnpm/action-setup@v4
               with:
-                  node-version: "12"
+                  version: 10.8.1
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
             - name: install dependencies
-              run: yarn install
+              run: pnpm install --frozen-lockfile
             - name: build packages for chrome and firefox
-              run: yarn build
+              run: pnpm build
             - name: run all tests
-              run: yarn test
+              run: pnpm test

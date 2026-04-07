@@ -1,4 +1,5 @@
 const del = require("del");
+const fs = require("fs");
 const gulp = require("gulp");
 const stylus = require("gulp-stylus");
 const through = require("through2");
@@ -33,6 +34,7 @@ exports.buildJS = gulp.series(setDevelopEnvironment, buildJS);
 exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
+    ensureOutputDirectory,
     gulp.parallel(eslintJS, buildJSDev, copyManifest, html, styl, packStatic),
     watcher
 );
@@ -43,18 +45,14 @@ exports.dev = gulp.series(
 exports.build = gulp.series(
     setProductEnvironment,
     clean,
+    ensureOutputDirectory,
     gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic)
 );
 
 /**
  * A public task to build and zip a package in production mode
  */
-exports.pack = gulp.series(
-    setProductEnvironment,
-    clean,
-    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic),
-    packToZip
-);
+exports.pack = gulp.series(packToZip);
 /**
  * End public tasks' definition
  */
@@ -86,6 +84,11 @@ function clean() {
     let output_dir = `./build/${browser}/`;
     let packageName = `edge_translate_${browser}.zip`;
     return del([output_dir, `./build/${packageName}`]);
+}
+
+function ensureOutputDirectory(done) {
+    fs.mkdirSync(`./build/${browser}/`, { recursive: true });
+    done();
 }
 
 /**
@@ -217,22 +220,37 @@ function styl() {
 function packStatic() {
     let output_dir = `./build/${browser}/`;
 
-    // static JS files except google JS
+    // Minify project-owned static JS, but copy vendored third-party bundles as-is.
     let staticJSFiles = gulp
-        .src("./static/**/!(element_main).js", {
-            base: "static",
-            since: gulp.lastRun(packStatic),
-        })
+        .src(
+            [
+                "./static/**/*.js",
+                "!./static/google/element_main.js",
+                "!./static/google/elms/**/*.js",
+                "!./static/pdf/lib/**/*.js",
+                "!./static/pdf/viewer.js",
+            ],
+            {
+                base: "static",
+                since: gulp.lastRun(packStatic),
+            }
+        )
         .pipe(terser().on("error", (error) => log(error)))
         .pipe(gulp.dest(output_dir));
 
-    // google page translation files
-    // Do not uglify element_main.js
-    let googleJS = gulp
-        .src("./static/google/element_main.js", {
-            base: "static",
-            since: gulp.lastRun(packStatic),
-        })
+    let vendoredJSFiles = gulp
+        .src(
+            [
+                "./static/google/element_main.js",
+                "./static/google/elms/**/*.js",
+                "./static/pdf/lib/**/*.js",
+                "./static/pdf/viewer.js",
+            ],
+            {
+                base: "static",
+                since: gulp.lastRun(packStatic),
+            }
+        )
         .pipe(gulp.dest(output_dir));
 
     // non-js static files
@@ -240,7 +258,7 @@ function packStatic() {
         .src("./static/**/!(*.js)", { base: "static" })
         .pipe(gulp.dest(output_dir));
 
-    return mergeStream([staticJSFiles, googleJS, staticOtherFiles]);
+    return mergeStream([staticJSFiles, vendoredJSFiles, staticOtherFiles]);
 }
 /**
  * End private tasks' definition

@@ -1,23 +1,18 @@
 {
     "$schema": "https://turborepo.org/schema.json",
-    "baseBranch": "origin/main",
     "pipeline": {
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**"]
         },
         "test": {},
-        "dev:chrome": {
+        "dev": {
             "dependsOn": ["^build"],
             "cache": false,
             "persistent": true
         },
-        "build:chrome": {
-            "dependsOn": ["^build"],
-            "outputs": ["build/chrome/**"]
-        },
-        "pack:chrome": {
-            "dependsOn": ["^build"],
+        "package": {
+            "dependsOn": ["build", "^build"],
             "outputs": ["build/**.zip"]
         }
     }

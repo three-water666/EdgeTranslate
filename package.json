@@ -11,14 +11,15 @@
         "url": "https://github.com/three-water666/EdgeTranslate.git"
     },
     "scripts": {
+        "preinstall": "node scripts/enforce-pnpm.js",
+        "prepare": "husky",
         "build": "turbo run build",
-        "test": "turbo run test",
+        "package": "turbo run package --filter=edge_translate",
+        "test": "turbo run test --concurrency=1",
         "format:staged": "node scripts/format-staged-files.js",
         "lint:staged": "node scripts/lint-staged-files.js",
         "check:staged-eol": "node scripts/check-staged-eol.js",
-        "dev:chrome": "turbo run dev:chrome --filter=edge_translate",
-        "build:chrome": "turbo run build:chrome --filter=edge_translate",
-        "pack:chrome": "turbo run pack:chrome --filter=edge_translate"
+        "dev": "turbo run dev --filter=edge_translate"
     },
     "devDependencies": {
         "@commitlint/cli": "^13.2.1",
@@ -31,24 +32,15 @@
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-html": "^6.2.0",
         "eslint-plugin-prettier": "^3.4.1",
-        "husky": "^4.3.8",
+        "husky": "9.1.7",
         "jest": "^27.5.1",
         "prettier": "^2.6.0",
-        "turbo": "^1.2.16"
+        "turbo": "1.13.4"
     },
-    "workspaces": [
-        "packages/*"
-    ],
     "config": {
         "commitizen": {
             "path": "./node_modules/cz-conventional-changelog"
         }
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "yarn format:staged && yarn lint:staged && yarn check:staged-eol",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "pnpm@10.8.1"
 }

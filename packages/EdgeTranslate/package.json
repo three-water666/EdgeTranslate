@@ -5,11 +5,10 @@
     "scripts": {
         "test": "jest",
         "format": "eslint 'src/**/*.js' 'config/**/*.js' --fix",
-        "dev:chrome": "gulp dev --browser chrome",
-        "build:chrome": "gulp build --browser chrome",
-        "pack:chrome": "gulp pack --browser chrome",
-        "e2e:chrome": "SELENIUM_BROWSER=chrome jest -i --config './test/e2e/jest/jest.config.js'",
-        "build": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome"
+        "dev": "gulp dev --browser chrome",
+        "build": "gulp build --browser chrome",
+        "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
+        "e2e": "SELENIUM_BROWSER=chrome jest -i --config './test/e2e/jest/jest.config.js'"
     },
     "devDependencies": {
         "@babel/core": "^7.17.7",
@@ -31,6 +30,7 @@
         "gulp-zip": "^5.1.0",
         "jest": "^27.5.1",
         "jest-chrome": "^0.7.2",
+        "jest-environment-jsdom": "27.5.1",
         "jest-image-snapshot": "^4.5.1",
         "jest-raw-loader": "^1.0.1",
         "merge-stream": "^2.0.0",
@@ -39,12 +39,13 @@
         "querystring": "^0.2.1",
         "raw-loader": "^4.0.2",
         "selenium-webdriver": "^4.1.1",
+        "through2": "^4.0.2",
         "webpack": "^5.70.0",
         "webpack-merge": "^5.8.0",
         "webpack-stream": "^6.1.2"
     },
     "dependencies": {
-        "@edge_translate/translators": "^0.1.4",
+        "@edge_translate/translators": "workspace:^",
         "dompurify": "^2.3.6",
         "preact": "^10.6.6",
         "preact-render-to-string": "^5.1.20",

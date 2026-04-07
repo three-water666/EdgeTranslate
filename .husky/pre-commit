@@ -1,0 +1,3 @@
+pnpm format:staged
+pnpm lint:staged
+pnpm check:staged-eol

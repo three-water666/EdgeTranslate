@@ -1,0 +1,9 @@
+packages:
+    - packages/*
+
+onlyBuiltDependencies:
+    - chromedriver
+    - core-js
+    - es5-ext
+    - esbuild
+    - husky
