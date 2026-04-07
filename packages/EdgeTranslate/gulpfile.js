@@ -220,22 +220,37 @@ function styl() {
 function packStatic() {
     let output_dir = `./build/${browser}/`;
 
-    // static JS files except google JS
+    // Minify project-owned static JS, but copy vendored third-party bundles as-is.
     let staticJSFiles = gulp
-        .src("./static/**/!(element_main).js", {
-            base: "static",
-            since: gulp.lastRun(packStatic),
-        })
+        .src(
+            [
+                "./static/**/*.js",
+                "!./static/google/element_main.js",
+                "!./static/google/elms/**/*.js",
+                "!./static/pdf/lib/**/*.js",
+                "!./static/pdf/viewer.js",
+            ],
+            {
+                base: "static",
+                since: gulp.lastRun(packStatic),
+            }
+        )
         .pipe(terser().on("error", (error) => log(error)))
         .pipe(gulp.dest(output_dir));
 
-    // google page translation files
-    // Do not uglify element_main.js
-    let googleJS = gulp
-        .src("./static/google/element_main.js", {
-            base: "static",
-            since: gulp.lastRun(packStatic),
-        })
+    let vendoredJSFiles = gulp
+        .src(
+            [
+                "./static/google/element_main.js",
+                "./static/google/elms/**/*.js",
+                "./static/pdf/lib/**/*.js",
+                "./static/pdf/viewer.js",
+            ],
+            {
+                base: "static",
+                since: gulp.lastRun(packStatic),
+            }
+        )
         .pipe(gulp.dest(output_dir));
 
     // non-js static files
@@ -243,7 +258,7 @@ function packStatic() {
         .src("./static/**/!(*.js)", { base: "static" })
         .pipe(gulp.dest(output_dir));
 
-    return mergeStream([staticJSFiles, googleJS, staticOtherFiles]);
+    return mergeStream([staticJSFiles, vendoredJSFiles, staticOtherFiles]);
 }
 /**
  * End private tasks' definition
