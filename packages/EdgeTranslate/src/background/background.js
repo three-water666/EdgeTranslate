@@ -1,4 +1,4 @@
-import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
+﻿import { TranslatorManager, translatePage, executeGoogleScript } from "./library/translate.js";
 import {
     addUrlBlacklist,
     addDomainBlacklist,
@@ -119,32 +119,22 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         removeRuleIds: oldRuleIds,
         addRules: [RULE_CSP_ALL, RULE_GOOGLE_TTS],
     });
-    // 只有在生产环境下，才会展示说明页面
+
     if (process.env.NODE_ENV === "production") {
         if (details.reason === "install") {
-            // 首次安装，引导用户查看wiki
             chrome.tabs.create({
-                // 为wiki页面创建一个新的标签页
-                url: chrome.i18n.getMessage("WikiLink"),
-            });
-
-            // 告知用户数据收集相关信息
-            chrome.notifications.create("data_collection_notification", {
-                type: "basic",
-                iconUrl: chrome.runtime.getURL("icon/icon128.png"),
-                title: chrome.i18n.getMessage("AppName"),
-                message: chrome.i18n.getMessage("DataCollectionNotice"),
+                url: "https://github.com/three-water666/EdgeTranslate",
             });
         } else if (details.reason === "update") {
             await new Promise((resolve) => {
                 chrome.storage.sync.get((result) => {
-                    let buffer = result; // use var buffer as a pointer
-                    setDefaultSettings(buffer, DEFAULT_SETTINGS); // assign default value to buffer
+                    let buffer = result;
+                    setDefaultSettings(buffer, DEFAULT_SETTINGS);
                     chrome.storage.sync.set(buffer, resolve);
                 });
             });
 
-            // Fix language setting compatibility between Edge Translate 2.x and 1.x.x.
+            // Fix language setting compatibility between 2.x and 1.x.x.
             chrome.storage.sync.get("languageSetting", (result) => {
                 if (!result.languageSetting) return;
 
@@ -162,7 +152,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 chrome.storage.sync.set(result);
             });
 
-            // 从旧版本更新，引导用户查看更新日志
             chrome.notifications.create("update_notification", {
                 type: "basic",
                 iconUrl: chrome.runtime.getURL("icon/icon128.png"),
@@ -170,9 +159,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 message: chrome.i18n.getMessage("ExtensionUpdated"),
             });
         }
-
-        // 卸载原因调查
-        chrome.runtime.setUninstallURL("https://wj.qq.com/s2/3265930/8f07/");
     }
 });
 
@@ -193,14 +179,7 @@ chrome.notifications.onClicked.addListener((notificationId) => {
     switch (notificationId) {
         case "update_notification":
             chrome.tabs.create({
-                // 为releases页面创建一个新的标签页
-                url: "https://github.com/EdgeTranslate/EdgeTranslate/releases",
-            });
-            break;
-        case "data_collection_notification":
-            chrome.tabs.create({
-                // 为设置页面单独创建一个标签页
-                url: chrome.runtime.getURL("options/options.html#google-analytics"),
+                url: "https://github.com/three-water666/EdgeTranslate/releases",
             });
             break;
         default:

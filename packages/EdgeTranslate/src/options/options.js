@@ -13,10 +13,6 @@ const channel = new Channel();
 window.onload = () => {
     i18nHTML();
 
-    // 设置不同语言的隐私政策链接
-    let PrivacyPolicyLink = document.getElementById("PrivacyPolicyLink");
-    PrivacyPolicyLink.setAttribute("href", chrome.i18n.getMessage("PrivacyPolicyLink"));
-
     /**
      * Set up hybrid translate config.
      */
