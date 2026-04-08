@@ -1,4 +1,4 @@
-export { isPDF, isChromePDFViewer, isPDFjsPDFViewer };
+export { isPDF, isChromePDFViewer, isPDFjsPDFViewer, isNativePDFViewer };
 
 /**
  * judge if this page is a pdf file
@@ -17,6 +17,10 @@ function isChromePDFViewer() {
             document.body.children[0] &&
             document.body.children[0].type === "application/pdf")
     );
+}
+
+function isNativePDFViewer() {
+    return isChromePDFViewer() && !isPDFjsPDFViewer();
 }
 
 /**
