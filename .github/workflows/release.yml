@@ -1,0 +1,45 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "v*"
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 10.8.1
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
+
+            - name: install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: verify tag matches extension version
+              run: |
+                  TAG_VERSION="${GITHUB_REF_NAME#v}"
+                  PACKAGE_VERSION="$(node -p "require('./packages/EdgeTranslate/package.json').version")"
+                  if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+                    echo "Tag version $TAG_VERSION does not match package version $PACKAGE_VERSION"
+                    exit 1
+                  fi
+
+            - name: package extension for chrome
+              run: pnpm package
+
+            - name: create github release
+              uses: softprops/action-gh-release@v2
+              with:
+                  generate_release_notes: true
+                  files: packages/EdgeTranslate/artifacts/*.zip

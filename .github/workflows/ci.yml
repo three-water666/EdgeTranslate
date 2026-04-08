@@ -2,9 +2,9 @@ name: CI
 
 on:
     push:
-        branches: ["master", "develop"]
+        branches: ["master"]
     pull_request:
-        branches: ["master", "develop"]
+        branches: ["master"]
 
 jobs:
     build:
@@ -20,7 +20,7 @@ jobs:
                   cache: "pnpm"
             - name: install dependencies
               run: pnpm install --frozen-lockfile
-            - name: build packages for chrome and firefox
+            - name: build extension for chrome
               run: pnpm build
             - name: run all tests
               run: pnpm test
