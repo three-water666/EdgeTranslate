@@ -12,9 +12,10 @@ function isPDF() {
  */
 function isChromePDFViewer() {
     return (
-        document.body &&
-        document.body.children[0] &&
-        document.body.children[0].type === "application/pdf"
+        document.contentType === "application/pdf" ||
+        (document.body &&
+            document.body.children[0] &&
+            document.body.children[0].type === "application/pdf")
     );
 }
 
