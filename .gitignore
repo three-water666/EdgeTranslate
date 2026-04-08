@@ -1,5 +1,6 @@
 **/build/
 **/dist/
+**/artifacts/
 **/node_modules/
 **/publish/
 **/*.zip

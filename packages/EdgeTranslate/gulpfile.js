@@ -16,6 +16,7 @@ const { version } = require("./package.json");
 let args = minimist(process.argv.slice(2));
 let browser = args.browser || "chrome";
 let environment; // store the type of environment: enum{production,development}
+const PACKAGE_OUTPUT_DIR = "./artifacts";
 
 /**
  * Define public tasks of gulp
@@ -84,7 +85,7 @@ function setProductEnvironment(done) {
 function clean() {
     let output_dir = `./build/${browser}/`;
     let packageName = `edge_translate_${browser}_v${version}.zip`;
-    return del([output_dir, `./build/${packageName}`]);
+    return del([output_dir, `${PACKAGE_OUTPUT_DIR}/${packageName}`]);
 }
 
 function ensureOutputDirectory(done) {
@@ -109,7 +110,7 @@ function touchHotReloadStamp(done) {
 function packToZip() {
     let match_dir = `./build/${browser}/**/*`;
     let packageName = `edge_translate_${browser}_v${version}.zip`;
-    return gulp.src(match_dir).pipe(zip(packageName)).pipe(gulp.dest("./build/"));
+    return gulp.src(match_dir).pipe(zip(packageName)).pipe(gulp.dest(PACKAGE_OUTPUT_DIR));
 }
 
 /**

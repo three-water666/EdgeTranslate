@@ -13,7 +13,7 @@
         },
         "package": {
             "dependsOn": ["build", "^build"],
-            "outputs": ["build/**.zip"]
+            "outputs": ["artifacts/**"]
         }
     }
 }
