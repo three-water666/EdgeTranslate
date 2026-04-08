@@ -36,7 +36,7 @@ exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
     ensureOutputDirectory,
-    gulp.parallel(eslintJS, buildJSDev, copyManifest, html, styl, packStatic),
+    gulp.parallel(eslintJS, buildJSDev, copyManifest, html, styl, packStatic, touchHotReloadStamp),
     watcher
 );
 
@@ -92,6 +92,17 @@ function ensureOutputDirectory(done) {
     done();
 }
 
+function touchHotReloadStamp(done) {
+    if (environment !== "development") {
+        done();
+        return;
+    }
+
+    const stampPath = `./build/${browser}/hot-reload.json`;
+    fs.writeFileSync(stampPath, `${JSON.stringify({ updatedAt: Date.now() })}\n`);
+    done();
+}
+
 /**
  * A private task to zip the built package
  */
@@ -107,10 +118,13 @@ function packToZip() {
  */
 function watcher(done) {
     gulp.watch("./src/**/*.{js,jsx}").on("change", gulp.series(eslintJS));
-    gulp.watch("./src/manifest_chrome.json").on("change", gulp.series(copyManifest));
-    gulp.watch("./src/**/*.html").on("change", gulp.series(html));
-    gulp.watch("./static/**/*").on("change", gulp.series(packStatic));
-    gulp.watch("./src/**/*.styl").on("change", gulp.series(styl));
+    gulp.watch("./src/manifest_chrome.json").on(
+        "change",
+        gulp.series(copyManifest, touchHotReloadStamp)
+    );
+    gulp.watch("./src/**/*.html").on("change", gulp.series(html, touchHotReloadStamp));
+    gulp.watch("./static/**/*").on("change", gulp.series(packStatic, touchHotReloadStamp));
+    gulp.watch("./src/**/*.styl").on("change", gulp.series(styl, touchHotReloadStamp));
     done();
 }
 
@@ -147,6 +161,28 @@ function buildJS() {
             BUILD_ENV: JSON.stringify(environment),
         })
     );
+
+    if (environment === "development") {
+        webpack_config.plugins.push({
+            apply(compiler) {
+                compiler.hooks.thisCompilation.tap("HotReloadStampPlugin", (compilation) => {
+                    compilation.hooks.processAssets.tap(
+                        {
+                            name: "HotReloadStampPlugin",
+                            stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+                        },
+                        () => {
+                            const source = `${JSON.stringify({ updatedAt: Date.now() })}\n`;
+                            compilation.emitAsset(
+                                "hot-reload.json",
+                                new webpack.sources.RawSource(source)
+                            );
+                        }
+                    );
+                });
+            },
+        });
+    }
 
     return gulp
         .src("./src/**/*.js", { base: "src" })

@@ -2,6 +2,7 @@ import { log } from "common/scripts/common.js";
 import { promiseTabs, delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
 import LocalTTS from "./local_tts.js";
+import { ensureOffscreenDocument } from "./offscreen.js";
 
 class TranslatorManager {
     /**
@@ -47,28 +48,9 @@ class TranslatorManager {
         this.listenToEvents();
     }
 
-    async hasOffscreenDocument(path) {
-        const existingContexts = await chrome.runtime.getContexts({
-            contextTypes: ["OFFSCREEN_DOCUMENT"],
-            documentUrls: [chrome.runtime.getURL(path)],
-        });
-        return existingContexts.length > 0;
-    }
-
     async createOffscreenDocument() {
-        const path = "offscreen/offscreen.html";
-        if (await this.hasOffscreenDocument(path)) {
-            console.log("Service Worker: Offscreen 文档已存在。");
-            return;
-        }
-        console.log("Service Worker: Offscreen 文档不存在，正在创建...");
-        await chrome.offscreen.createDocument({
-            url: path,
-            reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK, chrome.offscreen.Reason.DOM_PARSER],
-            justification: "用于播放通知声音和解析HTML内容",
-        });
+        await ensureOffscreenDocument();
     }
-
     /**
      * Register service providers.
      *
