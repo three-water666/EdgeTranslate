@@ -1,7 +1,14 @@
 import Channel from "common/scripts/channel.js";
 import { HybridTranslator } from "@edge_translate/translators";
+import { startHotReload } from "./hot_reload.js";
 
 const channel = new Channel();
+
+channel.on("hot_reload_start", (detail) => {
+    startHotReload(detail).catch((error) => {
+        console.error("Offscreen: Failed to start hot reload.", error);
+    });
+});
 
 let HYBRID_TRANSLATOR;
 let TRANSLATORS;

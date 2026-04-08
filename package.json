@@ -19,7 +19,7 @@
         "format:staged": "node scripts/format-staged-files.js",
         "lint:staged": "node scripts/lint-staged-files.js",
         "check:staged-eol": "node scripts/check-staged-eol.js",
-        "dev": "turbo run dev --filter=edge_translate"
+        "dev": "turbo run dev"
     },
     "devDependencies": {
         "@commitlint/cli": "^13.2.1",

@@ -6,6 +6,7 @@ import {
     removeDomainBlacklist,
     updateBLackListMenu,
 } from "./library/blacklist.js";
+import { hotReload } from "./library/hot_reload.js";
 import { promiseTabs } from "common/scripts/promise.js";
 import Channel from "common/scripts/channel.js";
 // map language abbreviation from browser languages to translation languages
@@ -23,6 +24,10 @@ const RULE_CSP_ALL = {
         resourceTypes: ["main_frame", "sub_frame"],
     },
 };
+
+if (typeof BUILD_ENV !== "undefined" && BUILD_ENV === "development") {
+    hotReload();
+}
 
 const RULE_GOOGLE_TTS = {
     id: 3,
