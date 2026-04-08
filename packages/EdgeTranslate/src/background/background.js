@@ -12,6 +12,7 @@ import Channel from "common/scripts/channel.js";
 // map language abbreviation from browser languages to translation languages
 import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
 import { DEFAULT_SETTINGS, setDefaultSettings } from "common/scripts/settings.js";
+import { resolveContextMenuSelection } from "./library/context_menu.js";
 
 const RULE_CSP_ALL = {
     id: 1,
@@ -191,16 +192,22 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         case "translate":
             channel
                 .requestToTab(tab.id, "get_selection")
-                .then(({ text, position }) => {
-                    if (text) {
-                        return TRANSLATOR_MANAGER.translate(text, position);
-                    }
-                    return Promise.reject();
+                .then((selection) => {
+                    const resolvedSelection = resolveContextMenuSelection(info, selection);
+                    if (!resolvedSelection) return Promise.reject();
+
+                    return TRANSLATOR_MANAGER.translate(
+                        resolvedSelection.text,
+                        resolvedSelection.position
+                    );
                 })
                 .catch((error) => {
-                    // If content scripts can not access the tab the selection, use info.selectionText instead.
-                    if (info.selectionText.trim()) {
-                        return TRANSLATOR_MANAGER.translate(info.selectionText, null);
+                    const resolvedSelection = resolveContextMenuSelection(info);
+                    if (resolvedSelection) {
+                        return TRANSLATOR_MANAGER.translate(
+                            resolvedSelection.text,
+                            resolvedSelection.position
+                        );
                     }
                     return Promise.resolve(error);
                 });
