@@ -1,0 +1,4 @@
+interface:
+    display_name: "Extension Release"
+    short_description: "Version, tag, and push this extension release"
+    default_prompt: "Use $extension-release to bump the EdgeTranslate extension version, create the release commit and tag, then push to GitHub."
