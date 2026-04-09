@@ -1,5 +1,6 @@
 import Channel from "common/scripts/channel.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
+import Notifier from "./display/library/notifier/notifier.js";
 
 /**
  * Control the visibility of page translator banners.
@@ -8,6 +9,7 @@ class BannerController {
     constructor() {
         // Communication channel.
         this.channel = new Channel();
+        this.notifier = new Notifier("center");
 
         // Allowed translator: google.
         this.currentTranslator = null;
@@ -51,6 +53,23 @@ class BannerController {
                 default:
                     break;
             }
+        });
+
+        this.channel.on("page_translate_unavailable", (detail) => {
+            if (detail?.translator !== "google") {
+                return;
+            }
+
+            this.currentTranslator = null;
+            this.canceller?.();
+            this.canceller = null;
+
+            this.notifier.notify({
+                type: "info",
+                title: chrome.i18n.getMessage("AppName"),
+                detail: "当前页面暂不支持网页翻译，请改用划词翻译或侧边翻译。",
+                duration: 3000,
+            });
         });
     }
 
@@ -105,7 +124,12 @@ class BannerController {
      * @returns {void} nothing
      */
     googleMessageHandler(msg) {
-        let data = JSON.parse(msg.data);
+        let data;
+        try {
+            data = JSON.parse(msg.data);
+        } catch (_error) {
+            return;
+        }
         if (!data.type || data.type !== "edge_translate_page_translate_event") return;
 
         switch (data.event) {

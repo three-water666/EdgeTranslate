@@ -14,18 +14,6 @@ import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
 import { DEFAULT_SETTINGS, setDefaultSettings } from "common/scripts/settings.js";
 import { resolveContextMenuSelection } from "./library/context_menu.js";
 
-const RULE_CSP_ALL = {
-    id: 1,
-    priority: 1,
-    action: {
-        type: "modifyHeaders",
-        responseHeaders: [{ header: "content-security-policy", operation: "remove" }],
-    },
-    condition: {
-        resourceTypes: ["main_frame", "sub_frame"],
-    },
-};
-
 if (typeof BUILD_ENV !== "undefined" && BUILD_ENV === "development") {
     hotReload();
 }
@@ -114,7 +102,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
     chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: oldRuleIds,
-        addRules: [RULE_CSP_ALL, RULE_GOOGLE_TTS],
+        addRules: [RULE_GOOGLE_TTS],
     });
 
     if (process.env.NODE_ENV === "production") {
@@ -275,6 +263,15 @@ channel.on("open_options_page", () => chrome.runtime.openOptionsPage());
  */
 channel.on("page_translate_event", (detail, sender) => {
     channel.emitToTabs(sender.tab.id, "page_translate_event", detail);
+});
+
+/**
+ * Forward page translate availability event back to the current page.
+ */
+channel.on("page_translate_unavailable", (detail, sender) => {
+    if (sender.tab?.id) {
+        channel.emitToTabs(sender.tab.id, "page_translate_unavailable", detail);
+    }
 });
 
 /**
