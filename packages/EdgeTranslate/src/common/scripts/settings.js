@@ -28,6 +28,9 @@ const DEFAULT_SETTINGS = {
         CancelTextSelection: false,
         UsePDFjs: true,
     },
+    OCRSettings: {
+        Languages: ["eng", "chi_sim"],
+    },
     DefaultTranslator: "GoogleTranslate",
     DefaultPageTranslator: "GooglePageTranslate",
     HybridTranslatorConfig: {

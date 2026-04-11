@@ -59,11 +59,19 @@ window.onload = () => {
                         const target = event.target;
                         const settingItemPath = target.getAttribute("setting-path").split(/\s/g);
                         const settingItemValue = getSetting(result, settingItemPath);
+                        const isOcrLanguageSetting =
+                            settingItemPath.join(" ") === "OCRSettings Languages";
 
                         // if user checked this option, add value to setting array
                         if (target.checked) settingItemValue.push(target.value);
                         // if user unchecked this option, delete value from setting array
-                        else settingItemValue.splice(settingItemValue.indexOf(target.value), 1);
+                        else {
+                            if (isOcrLanguageSetting && settingItemValue.length === 1) {
+                                target.checked = true;
+                                return;
+                            }
+                            settingItemValue.splice(settingItemValue.indexOf(target.value), 1);
+                        }
                         saveOption(result, settingItemPath, settingItemValue);
                     };
                     break;

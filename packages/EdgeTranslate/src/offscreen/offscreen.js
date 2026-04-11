@@ -1,6 +1,7 @@
 import Channel from "common/scripts/channel.js";
 import { HybridTranslator } from "@edge_translate/translators";
 import { startHotReload } from "./hot_reload.js";
+import { recognizeScreenshotArea } from "./ocr.js";
 
 const channel = new Channel();
 
@@ -95,4 +96,8 @@ channel.provide("translator_stop_pronounce_by_default_translator", async (detail
     await initializeTranslator();
     const { DEFAULT_TRANSLATOR } = detail;
     return Promise.resolve(TRANSLATORS[DEFAULT_TRANSLATOR].stopPronounce());
+});
+
+channel.provide("ocr_image", async (detail) => {
+    return Promise.resolve(recognizeScreenshotArea(detail));
 });

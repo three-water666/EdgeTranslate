@@ -183,6 +183,14 @@
         "message": "デフォルトのページ翻訳",
         "description": "デフォルトのページ翻訳"
     },
+    "OCRSettings": {
+        "message": "OCR 設定",
+        "description": "OCR 設定。"
+    },
+    "OCRSettingsHint": {
+        "message": "スクリーンショット翻訳で使う OCR 言語を選択します。言語を増やすほど認識は遅くなる場合があります。",
+        "description": "OCR 言語設定のヒント。"
+    },
     "LayoutSettings": {
         "message": "レイアウト設定",
         "description": "翻訳結果の表示方法を選択します。"
@@ -234,6 +242,26 @@
     "GooglePageTranslate": {
         "message": "Googleページ翻訳",
         "description": "Google翻訳APIで現在のページを翻訳します。"
+    },
+    "ScreenshotTranslate": {
+        "message": "スクリーンショット翻訳",
+        "description": "選択した画像領域の文字を翻訳します"
+    },
+    "ScreenshotTranslateHint": {
+        "message": "ドラッグして範囲を選択し、Esc でキャンセル",
+        "description": "OCR範囲選択時のヒント"
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "選択した範囲から文字を認識できませんでした。",
+        "description": "スクリーンショットから文字を認識できなかった"
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "スクリーンショット OCR の起動に失敗しました。拡張機能を再読み込みしてもう一度試してください。",
+        "description": "スクリーンショット OCR の起動に失敗した"
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "このページではスクリーンショット翻訳を利用できません。",
+        "description": "現在のページではスクリーンショット翻訳を利用できない"
     },
     "TranslatePage": {
         "message": "このページを翻訳する",

@@ -183,6 +183,14 @@
         "message": "Default Page Translator",
         "description": "Default page translator."
     },
+    "OCRSettings": {
+        "message": "OCR Settings",
+        "description": "OCR settings."
+    },
+    "OCRSettingsHint": {
+        "message": "Choose the OCR languages to load for screenshot translation. More languages may slow recognition.",
+        "description": "Hint for OCR language settings."
+    },
     "LayoutSettings": {
         "message": "Layout Settings",
         "description": "Choose how to display the translating results."
@@ -234,6 +242,26 @@
     "GooglePageTranslate": {
         "message": "Google Page Trans.",
         "description": "Translate current page with Google translate api."
+    },
+    "ScreenshotTranslate": {
+        "message": "Screenshot Trans.",
+        "description": "Translate text from a screenshot selection."
+    },
+    "ScreenshotTranslateHint": {
+        "message": "Drag to select an area, press Esc to cancel",
+        "description": "Hint shown when selecting screenshot OCR area."
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "No text was recognized in the selected area.",
+        "description": "No text recognized from screenshot."
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "Screenshot OCR failed to start. Please reload the extension and try again.",
+        "description": "Screenshot OCR failed."
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "Screenshot translation is not available on this page.",
+        "description": "Screenshot translation is unavailable on current page."
     },
     "TranslatePage": {
         "message": "Translate this page",

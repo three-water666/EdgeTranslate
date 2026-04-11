@@ -183,6 +183,14 @@
         "message": "Переводчик страниц по умолчанию",
         "description": "Переводчик страниц по умолчанию."
     },
+    "OCRSettings": {
+        "message": "Настройки OCR",
+        "description": "Настройки OCR."
+    },
+    "OCRSettingsHint": {
+        "message": "Выберите языки OCR для перевода по снимку. Чем больше языков включено, тем медленнее может быть распознавание.",
+        "description": "Подсказка для настроек языков OCR."
+    },
     "LayoutSettings": {
         "message": "Настройки макета",
         "description": "Выбор способа отображения результатов перевода."
@@ -234,6 +242,26 @@
     "GooglePageTranslate": {
         "message": "Переводчик страниц Google",
         "description": "Перевод текущей страницы с помощью Google Translate API."
+    },
+    "ScreenshotTranslate": {
+        "message": "Перевод снимка",
+        "description": "Перевести текст из выделенного снимка."
+    },
+    "ScreenshotTranslateHint": {
+        "message": "Выделите область мышью, нажмите Esc для отмены",
+        "description": "Подсказка при выборе области для OCR."
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "В выбранной области не удалось распознать текст.",
+        "description": "Текст не распознан на снимке."
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "Не удалось запустить OCR по снимку. Перезагрузите расширение и попробуйте снова.",
+        "description": "Не удалось запустить OCR по снимку."
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "Перевод по снимку недоступен на этой странице.",
+        "description": "Перевод по снимку недоступен на текущей странице."
     },
     "TranslatePage": {
         "message": "Перевести эту страницу",

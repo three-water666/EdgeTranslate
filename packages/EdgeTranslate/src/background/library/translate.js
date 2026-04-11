@@ -91,6 +91,13 @@ class TranslatorManager {
 
             return Promise.resolve(configs);
         });
+
+        this.channel.provide("get_ocr_settings", async () => {
+            const configs = await getOrSetDefaultSettings(["OCRSettings"], DEFAULT_SETTINGS);
+            return Promise.resolve(configs.OCRSettings);
+        });
+
+        this.channel.provide("screenshot_translate", () => this.screenshotTranslate());
     }
 
     /**
@@ -243,6 +250,14 @@ class TranslatorManager {
         const currentTabId = await this.getCurrentTabId();
         if (currentTabId === -1) return;
 
+        return this.translateOnTab(currentTabId, text, position);
+    }
+
+    async translateOnTab(tabId, text, position) {
+        // Ensure that configurations have been initialized.
+        await this.config_loader;
+        await this.createOffscreenDocument();
+
         /**
          * Get current time as timestamp.
          *
@@ -255,7 +270,7 @@ class TranslatorManager {
         let timestamp = new Date().getTime();
 
         // Inform current tab translating started.
-        this.channel.emitToTabs(currentTabId, "start_translating", {
+        this.channel.emitToTabs(tabId, "start_translating", {
             text,
             position,
             timestamp,
@@ -293,17 +308,57 @@ class TranslatorManager {
             result.targetLanguage = tl;
 
             // Send translating result to current tab.
-            this.channel.emitToTabs(currentTabId, "translating_finished", {
+            this.channel.emitToTabs(tabId, "translating_finished", {
                 timestamp,
                 ...result,
             });
         } catch (error) {
             // Inform current tab translating failed.
-            this.channel.emitToTabs(currentTabId, "translating_error", {
+            this.channel.emitToTabs(tabId, "translating_error", {
                 error,
                 timestamp,
             });
         }
+    }
+
+    async screenshotTranslate() {
+        await this.config_loader;
+        await this.createOffscreenDocument();
+
+        const tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        const currentTab = tabs[0];
+
+        let selection;
+        try {
+            selection = await this.channel.requestToTab(currentTab.id, "select_capture_area");
+        } catch (error) {
+            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateUnsupported"));
+            throw error;
+        }
+
+        if (!selection || !selection.rect) return;
+
+        const screenshotUrl = await captureVisibleTab(currentTab.windowId);
+        let text;
+        try {
+            text = await this.channel.request("ocr_image", {
+                screenshotUrl,
+                rect: selection.rect,
+                viewportWidth: selection.viewportWidth,
+                viewportHeight: selection.viewportHeight,
+            });
+        } catch (error) {
+            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateFailed"));
+            throw error;
+        }
+
+        const cleanedText = typeof text === "string" ? text.trim() : "";
+        if (!cleanedText) {
+            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateNoText"));
+            return;
+        }
+
+        return this.translateOnTab(currentTab.id, cleanedText, selection.position);
     }
 
     /**
@@ -511,6 +566,29 @@ async function executeGoogleScript(channel) {
             log(`Chrome runtime error: ${String(e)}`);
         }
     }
+}
+
+function captureVisibleTab(windowId) {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.captureVisibleTab(windowId, { format: "png" }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+            }
+            resolve(dataUrl);
+        });
+    });
+}
+
+function notifyScreenshotTranslate(message) {
+    if (!message) return;
+
+    chrome.notifications.create({
+        type: "basic",
+        iconUrl: chrome.runtime.getURL("icon/icon128.png"),
+        title: chrome.i18n.getMessage("AppName"),
+        message,
+    });
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };

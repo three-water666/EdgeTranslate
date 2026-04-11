@@ -183,6 +183,14 @@
         "message": "默认网页翻译器",
         "description": "默认网页翻译器。"
     },
+    "OCRSettings": {
+        "message": "OCR 设置",
+        "description": "OCR 设置。"
+    },
+    "OCRSettingsHint": {
+        "message": "选择截图翻译要启用的 OCR 语言。启用越多，识别可能越慢。",
+        "description": "OCR 语言设置提示"
+    },
     "LayoutSettings": {
         "message": "布局设置",
         "description": "调整翻译结果展示框的布局"
@@ -234,6 +242,26 @@
     "GooglePageTranslate": {
         "message": "谷歌网页翻译",
         "description": "使用谷歌翻译的api翻译当前页面。"
+    },
+    "ScreenshotTranslate": {
+        "message": "截图翻译",
+        "description": "翻译截图区域中的文字"
+    },
+    "ScreenshotTranslateHint": {
+        "message": "拖动鼠标选择区域，按 Esc 取消",
+        "description": "截图 OCR 选区时显示的提示"
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "所选区域没有识别到文字。",
+        "description": "截图未识别到文字"
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "截图 OCR 启动失败，请重新加载扩展后再试。",
+        "description": "截图 OCR 启动失败"
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "当前页面暂不支持截图翻译。",
+        "description": "当前页面不支持截图翻译"
     },
     "TranslatePage": {
         "message": "翻译此页",

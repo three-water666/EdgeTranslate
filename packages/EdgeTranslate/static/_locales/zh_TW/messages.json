@@ -183,6 +183,14 @@
         "message": "默認網頁翻譯器",
         "description": "選擇默認網頁翻譯器。"
     },
+    "OCRSettings": {
+        "message": "OCR 設定",
+        "description": "OCR 設定。"
+    },
+    "OCRSettingsHint": {
+        "message": "選擇截圖翻譯要啟用的 OCR 語言。啟用越多，辨識可能越慢。",
+        "description": "OCR 語言設定提示"
+    },
     "LayoutSettings": {
         "message": "佈局設定",
         "description": "調整翻譯結果展示框的佈局"
@@ -234,6 +242,26 @@
     "GooglePageTranslate": {
         "message": "谷歌網頁翻譯",
         "description": "使用谷歌翻譯的api翻譯當前頁面。"
+    },
+    "ScreenshotTranslate": {
+        "message": "截圖翻譯",
+        "description": "翻譯截圖區域中的文字"
+    },
+    "ScreenshotTranslateHint": {
+        "message": "拖曳滑鼠選取區域，按 Esc 取消",
+        "description": "截圖 OCR 選區時顯示的提示"
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "所選區域沒有辨識到文字。",
+        "description": "截圖未辨識到文字"
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "截圖 OCR 啟動失敗，請重新載入擴充功能後再試。",
+        "description": "截圖 OCR 啟動失敗"
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "目前頁面暫不支援截圖翻譯。",
+        "description": "目前頁面不支援截圖翻譯"
     },
     "TranslatePage": {
         "message": "翻譯此頁",

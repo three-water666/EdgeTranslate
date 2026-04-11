@@ -55,6 +55,18 @@ importers:
             "@edge_translate/translators":
                 specifier: workspace:^
                 version: link:../translators
+            "@tesseract.js-data/chi_sim":
+                specifier: ^1.0.0
+                version: 1.0.0
+            "@tesseract.js-data/eng":
+                specifier: ^1.0.0
+                version: 1.0.0
+            "@tesseract.js-data/jpn":
+                specifier: ^1.0.0
+                version: 1.0.0
+            "@tesseract.js-data/kor":
+                specifier: ^1.0.0
+                version: 1.0.0
             dompurify:
                 specifier: ^2.3.6
                 version: 2.5.9
@@ -79,6 +91,9 @@ importers:
             styled-components:
                 specifier: 5.3.0
                 version: 5.3.0(@babel/core@7.29.0)(react-dom@17.0.2(react@17.0.2))(react-is@18.3.1)(react@17.0.2)
+            tesseract.js:
+                specifier: ^7.0.0
+                version: 7.0.0
         devDependencies:
             "@babel/core":
                 specifier: ^7.17.7
@@ -1868,6 +1883,30 @@ packages:
             }
         engines: { node: ">=10" }
 
+    "@tesseract.js-data/chi_sim@1.0.0":
+        resolution:
+            {
+                integrity: sha512-iuErURkPbECDUazgsLn/r3c+tU2y5o5S/w14d0A/YiagfsjYyZKgTo75RUpsGJ311qtu0dIX4hqnXAAjmqf2CA==,
+            }
+
+    "@tesseract.js-data/eng@1.0.0":
+        resolution:
+            {
+                integrity: sha512-mbTumm6KQPUHyzTPQaF3ObXYnx0SqqfV2nabqFVQBwD6Kl7PhGSLSzOlfFTWy0P3BjghaSKA2W9GB19Jk+ZcTg==,
+            }
+
+    "@tesseract.js-data/jpn@1.0.0":
+        resolution:
+            {
+                integrity: sha512-nUq2xHUjiWE6FRqkvLIIbByLZ39B8qNaBSOnVP4XIKGPKtZ1e0hiRnK7WhPfl8A+Fe7aNE1u/QoXXUym3TbSCA==,
+            }
+
+    "@tesseract.js-data/kor@1.0.0":
+        resolution:
+            {
+                integrity: sha512-tepYhsYiRJ8E44R27MHxVteEDDLfYQxuvM6u4JlEHcCYqwpefvI5TGzoMgB67kunOvtyEJYtT5zfJ/6R6FVU9w==,
+            }
+
     "@testim/chrome-version@1.1.4":
         resolution:
             {
@@ -3284,6 +3323,12 @@ packages:
         resolution:
             {
                 integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==,
+            }
+
+    bmp-js@0.1.0:
+        resolution:
+            {
+                integrity: sha512-vHdS19CnY3hwiNdkaqk93DvjVLfbEcI8mys4UjuWrlX1haDmroo8o4xCzh4wD6DGV6HxRCyauwhHRqMTfERtjw==,
             }
 
     bn.js@4.12.3:
@@ -6434,6 +6479,12 @@ packages:
             }
         engines: { node: ">=0.10.0" }
 
+    idb-keyval@6.2.2:
+        resolution:
+            {
+                integrity: sha512-yjD9nARJ/jb1g+CvD0tlhUHOrJ9Sy0P8T9MF3YaLlHnSRpwPfpTX0XIvpmw3gAJUmEu3FiICLBDPXVwyEvrleg==,
+            }
+
     ieee754@1.2.1:
         resolution:
             {
@@ -8774,6 +8825,13 @@ packages:
             }
         engines: { node: ">=6" }
 
+    opencollective-postinstall@2.0.3:
+        resolution:
+            {
+                integrity: sha512-8AV/sCtuzUeTo8gQK5qDZzARrulB3egtLzFgteqB2tcT4Mw7B8Kt7JcDHmltjz6FOAHsvTevk70gZEbhM4ZS9Q==,
+            }
+        hasBin: true
+
     optionator@0.8.3:
         resolution:
             {
@@ -9656,6 +9714,12 @@ packages:
         resolution:
             {
                 integrity: sha512-zrceR/XhGYU/d/opr2EKO7aRHUeiBI8qjtfHqADTwZd6Szfy16la6kqD0MIUs5z5hx6AaKa+PixpPrR289+I0A==,
+            }
+
+    regenerator-runtime@0.13.11:
+        resolution:
+            {
+                integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==,
             }
 
     regex-not@1.0.2:
@@ -10914,6 +10978,18 @@ packages:
         engines: { node: ">=10" }
         hasBin: true
 
+    tesseract.js-core@7.0.0:
+        resolution:
+            {
+                integrity: sha512-WnNH518NzmbSq9zgTPeoF8c+xmilS8rFIl1YKbk/ptuuc7p6cLNELNuPAzcmsYw450ca6bLa8j3t0VAtq435Vw==,
+            }
+
+    tesseract.js@7.0.0:
+        resolution:
+            {
+                integrity: sha512-exPBkd+z+wM1BuMkx/Bjv43OeLBxhL5kKWsz/9JY+DXcXdiBjiAch0V49QR3oAJqCaL5qURE0vx9Eo+G5YE7mA==,
+            }
+
     test-exclude@6.0.0:
         resolution:
             {
@@ -11740,6 +11816,12 @@ packages:
                 integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==,
             }
 
+    wasm-feature-detect@1.8.0:
+        resolution:
+            {
+                integrity: sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==,
+            }
+
     watchpack-chokidar2@2.0.1:
         resolution:
             {
@@ -12214,6 +12296,12 @@ packages:
                 integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==,
             }
         engines: { node: ">=10" }
+
+    zlibjs@0.3.1:
+        resolution:
+            {
+                integrity: sha512-+J9RrgTKOmlxFSDHo0pI1xM6BLVUv+o0ZT9ANtCxGkjIVCCUdx9alUF8Gm+dGLKbkkkidWIHFDZHDMpfITt4+w==,
+            }
 
 snapshots:
     "@ardatan/aggregate-error@0.0.6":
@@ -13675,6 +13763,14 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    "@tesseract.js-data/chi_sim@1.0.0": {}
+
+    "@tesseract.js-data/eng@1.0.0": {}
+
+    "@tesseract.js-data/jpn@1.0.0": {}
+
+    "@tesseract.js-data/kor@1.0.0": {}
+
     "@testim/chrome-version@1.1.4": {}
 
     "@tootallnate/once@1.1.2": {}
@@ -14653,6 +14749,8 @@ snapshots:
             readable-stream: 3.6.2
 
     bluebird@3.7.2: {}
+
+    bmp-js@0.1.0: {}
 
     bn.js@4.12.3: {}
 
@@ -16935,6 +17033,8 @@ snapshots:
         dependencies:
             safer-buffer: 2.1.2
 
+    idb-keyval@6.2.2: {}
+
     ieee754@1.2.1: {}
 
     iferr@0.1.5: {}
@@ -18818,6 +18918,8 @@ snapshots:
         dependencies:
             mimic-fn: 2.1.0
 
+    opencollective-postinstall@2.0.3: {}
+
     optionator@0.8.3:
         dependencies:
             deep-is: 0.1.4
@@ -19356,6 +19458,8 @@ snapshots:
             regenerate: 1.4.2
 
     regenerate@1.4.2: {}
+
+    regenerator-runtime@0.13.11: {}
 
     regex-not@1.0.2:
         dependencies:
@@ -20189,6 +20293,22 @@ snapshots:
             commander: 2.20.3
             source-map-support: 0.5.21
 
+    tesseract.js-core@7.0.0: {}
+
+    tesseract.js@7.0.0:
+        dependencies:
+            bmp-js: 0.1.0
+            idb-keyval: 6.2.2
+            is-url: 1.2.4
+            node-fetch: 2.6.13
+            opencollective-postinstall: 2.0.3
+            regenerator-runtime: 0.13.11
+            tesseract.js-core: 7.0.0
+            wasm-feature-detect: 1.8.0
+            zlibjs: 0.3.1
+        transitivePeerDependencies:
+            - encoding
+
     test-exclude@6.0.0:
         dependencies:
             "@istanbuljs/schema": 0.1.3
@@ -20675,6 +20795,8 @@ snapshots:
         dependencies:
             makeerror: 1.0.12
 
+    wasm-feature-detect@1.8.0: {}
+
     watchpack-chokidar2@2.0.1(supports-color@7.2.0):
         dependencies:
             chokidar: 2.1.8(supports-color@7.2.0)
@@ -21030,3 +21152,5 @@ snapshots:
     yn@3.1.1: {}
 
     yocto-queue@0.1.0: {}
+
+    zlibjs@0.3.1: {}

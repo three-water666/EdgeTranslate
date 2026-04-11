@@ -170,6 +170,12 @@ function addEventListener() {
     document.getElementById("google-page-translate").addEventListener("click", () => {
         channel.emit("translate_page_google", {});
     });
+    document.getElementById("screenshot-translate").addEventListener("click", () => {
+        channel.request("screenshot_translate", {}).catch(() => {});
+        setTimeout(() => {
+            window.close();
+        }, 0);
+    });
 }
 
 /**
