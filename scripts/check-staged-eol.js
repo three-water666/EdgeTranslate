@@ -3,6 +3,7 @@
 const { execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const { isExcludedStagedFile } = require("./staged-file-filters");
 
 const repoRoot = path.resolve(__dirname, "..");
 const textExtensions = new Set([
@@ -45,7 +46,9 @@ function hasCrlf(filePath) {
 }
 
 function main() {
-    const stagedFiles = getStagedFiles().filter(shouldCheck);
+    const stagedFiles = getStagedFiles()
+        .filter((filePath) => !isExcludedStagedFile(filePath))
+        .filter(shouldCheck);
     const invalidFiles = stagedFiles.filter(hasCrlf);
 
     if (invalidFiles.length === 0) {

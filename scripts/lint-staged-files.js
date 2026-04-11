@@ -2,6 +2,7 @@
 
 const { execFileSync, execSync } = require("child_process");
 const path = require("path");
+const { isExcludedStagedFile } = require("./staged-file-filters");
 
 const repoRoot = path.resolve(__dirname, "..");
 const edgeTranslateExtensions = new Set([".js", ".jsx"]);
@@ -48,7 +49,7 @@ function shouldLintTranslators(filePath) {
 }
 
 function main() {
-    const stagedFiles = getStagedFiles();
+    const stagedFiles = getStagedFiles().filter((filePath) => !isExcludedStagedFile(filePath));
     const edgeTranslateFiles = stagedFiles.filter(shouldLintEdgeTranslate);
     const translatorsFiles = stagedFiles.filter(shouldLintTranslators);
 

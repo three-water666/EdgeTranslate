@@ -2,6 +2,7 @@
 
 const { execFileSync, execSync } = require("child_process");
 const path = require("path");
+const { isExcludedStagedFile } = require("./staged-file-filters");
 
 const repoRoot = path.resolve(__dirname, "..");
 const textExtensions = new Set([
@@ -56,7 +57,9 @@ function shouldFormat(filePath) {
 }
 
 function main() {
-    const files = getStagedFiles().filter(shouldFormat);
+    const files = getStagedFiles()
+        .filter((filePath) => !isExcludedStagedFile(filePath))
+        .filter(shouldFormat);
     if (files.length === 0) {
         return;
     }
