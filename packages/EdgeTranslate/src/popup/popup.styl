@@ -99,7 +99,14 @@ footer {
 
     a {
         color: gray;
+        text-decoration: none;
     }
+}
+
+.footer-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .footer-link {
@@ -108,10 +115,23 @@ footer {
     gap: 4px;
 }
 
-.github-icon {
+.footer-link:hover {
+    color: #555;
+}
+
+.footer-link:active {
+    color: color-primary;
+}
+
+.footer-icon {
     width: 12px;
     height: 12px;
     flex: 0 0 auto;
+}
+
+#open-options .footer-icon {
+    width: 12px;
+    height: 12px;
 }
 .multiple {
     flex: 1 1 60%;

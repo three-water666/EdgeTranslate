@@ -176,6 +176,7 @@ function addEventListener() {
             window.close();
         }, 0);
     });
+    document.getElementById("open-options").addEventListener("click", openOptionsPage);
 }
 
 /**
@@ -273,6 +274,11 @@ function showSourceTarget() {
     } else {
         inputElement.placeholder = `${sourceLanguageString} <=> ${targetLanguageString}`;
     }
+}
+
+function openOptionsPage(event) {
+    event.preventDefault();
+    chrome.runtime.openOptionsPage();
 }
 
 /**
