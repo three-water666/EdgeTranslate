@@ -2,6 +2,7 @@ import Channel from "common/scripts/channel.js";
 import { HybridTranslator } from "@edge_translate/translators";
 import { startHotReload } from "./hot_reload.js";
 import {
+    cancelOcrLanguageDownloads,
     deleteOcrLanguages,
     downloadOcrLanguages,
     getOcrLanguageStatus,
@@ -118,6 +119,10 @@ channel.provide("download_ocr_languages", async (detail = {}) => {
 
 channel.provide("delete_ocr_languages", async (detail = {}) => {
     return Promise.resolve(deleteOcrLanguages(detail.languages));
+});
+
+channel.provide("cancel_ocr_language_downloads", async (detail = {}) => {
+    return Promise.resolve(cancelOcrLanguageDownloads(detail.languages));
 });
 
 channel.provide("reset_ocr_worker", async () => {

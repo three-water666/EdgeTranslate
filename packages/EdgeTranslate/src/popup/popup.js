@@ -170,12 +170,9 @@ function addEventListener() {
     document.getElementById("google-page-translate").addEventListener("click", () => {
         channel.emit("translate_page_google", {});
     });
-    document.getElementById("screenshot-translate").addEventListener("click", () => {
-        channel.request("screenshot_translate", {}).catch(() => {});
-        setTimeout(() => {
-            window.close();
-        }, 0);
-    });
+    document
+        .getElementById("screenshot-translate")
+        .addEventListener("click", handleScreenshotTranslateClick);
     document.getElementById("open-options").addEventListener("click", openOptionsPage);
 }
 
@@ -259,6 +256,39 @@ function translatePreSubmit(event) {
     }
 }
 
+async function handleScreenshotTranslateClick() {
+    const activeLanguages = await getActiveOcrLanguages().catch(() => []);
+    if (activeLanguages.length === 0) {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL("options/options.html#ocr-settings"),
+        });
+        setTimeout(() => {
+            window.close();
+        }, 0);
+        return;
+    }
+
+    channel.request("screenshot_translate", {}).catch(() => {});
+    setTimeout(() => {
+        window.close();
+    }, 0);
+}
+
+async function getActiveOcrLanguages() {
+    const ocrSettings = await channel.request("get_ocr_settings");
+    const selectedLanguages =
+        Array.isArray(ocrSettings?.EnabledLanguages) && ocrSettings.EnabledLanguages.length > 0
+            ? ocrSettings.EnabledLanguages
+            : Array.isArray(ocrSettings?.Languages) && ocrSettings.Languages.length > 0
+            ? ocrSettings.Languages
+            : ["eng", "chi_sim"];
+    const statusMap = await channel.request("get_ocr_download_status", {
+        languages: selectedLanguages,
+    });
+
+    return selectedLanguages.filter((language) => statusMap?.[language]?.downloaded);
+}
+
 /**
  * show source language and target language hint in placeholder of input element
  */
@@ -277,7 +307,7 @@ function showSourceTarget() {
 }
 
 function openOptionsPage(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     chrome.runtime.openOptionsPage();
 }
 

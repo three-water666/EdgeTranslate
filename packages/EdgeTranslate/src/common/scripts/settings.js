@@ -29,7 +29,7 @@ const DEFAULT_SETTINGS = {
         UsePDFjs: true,
     },
     OCRSettings: {
-        Languages: ["eng", "chi_sim"],
+        EnabledLanguages: ["eng", "chi_sim"],
     },
     DefaultTranslator: "GoogleTranslate",
     DefaultPageTranslator: "GooglePageTranslate",

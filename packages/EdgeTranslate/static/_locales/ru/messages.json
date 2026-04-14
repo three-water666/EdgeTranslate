@@ -188,20 +188,85 @@
         "description": "Настройки OCR."
     },
     "OCRSettingsHint": {
-        "message": "Выберите языки OCR для перевода по снимку. Чем больше языков включено, тем медленнее может быть распознавание.",
+        "message": "OCR — это распознавание текста на изображении. Перед использованием перевода по скриншоту нужно скачать и включить нужный языковой пакет; какой пакет скачаете и включите, такой язык и сможете распознавать. Чем больше языков включено, тем медленнее может быть распознавание.",
         "description": "Подсказка для настроек языков OCR."
     },
     "OCRDownloadHint": {
-        "message": "Языковые данные OCR не входят в пакет расширения. Загружайте только нужные языки и при необходимости удаляйте их, чтобы освободить место.",
+        "message": "Языковые данные OCR не входят в пакет расширения. Их можно скачать прямо здесь или скачать самостоятельно и затем загрузить вручную. После загрузки язык можно включить для OCR по скриншоту. Текущий источник загрузки: jsDelivr.",
         "description": "Подсказка по загрузке языковых данных OCR."
+    },
+    "OCRSearchPlaceholder": {
+        "message": "Поиск по названию языка или коду, например english / eng",
+        "description": "Подсказка в поле поиска языков OCR."
+    },
+    "OCRFilterAll": {
+        "message": "Все",
+        "description": "Фильтр языков OCR: все."
+    },
+    "OCRFilterDownloaded": {
+        "message": "Скачано",
+        "description": "Фильтр языков OCR: скачано."
+    },
+    "OCRFilterEnabled": {
+        "message": "Включено",
+        "description": "Фильтр языков OCR: включено."
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "Не скачано",
+        "description": "Фильтр языков OCR: не скачано."
     },
     "OCRDownloadButton": {
         "message": "Скачать",
         "description": "Скачать языковые данные OCR."
     },
+    "OCRStopButton": {
+        "message": "Остановить",
+        "description": "Остановить загрузку языковых данных OCR."
+    },
+    "OCRUploadButton": {
+        "message": "Загрузить",
+        "description": "Загрузить локальный языковой пакет OCR."
+    },
+    "OCREnableButton": {
+        "message": "Включить",
+        "description": "Включить язык OCR."
+    },
+    "OCRDisableButton": {
+        "message": "Выключить",
+        "description": "Выключить язык OCR."
+    },
     "OCRDeleteButton": {
         "message": "Удалить",
         "description": "Удалить языковые данные OCR."
+    },
+    "OCRSourceLabel": {
+        "message": "Источник",
+        "description": "Метка источника загрузки OCR."
+    },
+    "OCROpenSourceLink": {
+        "message": "Открыть ссылку загрузки",
+        "description": "Открыть ссылку загрузки языкового пакета OCR."
+    },
+    "OCRStateEnabled": {
+        "message": "Включено",
+        "description": "Язык OCR включён."
+    },
+    "OCRStateDisabled": {
+        "message": "Выключено",
+        "description": "Язык OCR выключен."
+    },
+    "OCRStateUnknown": {
+        "message": "Неизвестно",
+        "description": "Неизвестное состояние OCR."
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "Имя файла не совпадает. Для $language$ нужен $file1$ или $file2$.",
+        "placeholders": {
+            "language": { "content": "$1" },
+            "file1": { "content": "$2" },
+            "file2": { "content": "$3" }
+        },
+        "description": "Несоответствие имени файла OCR при загрузке."
     },
     "OCRActionFailed": {
         "message": "Не удалось выполнить операцию с ресурсами OCR",
@@ -238,6 +303,26 @@
     "OCRStatusFinalizing": {
         "message": "Завершение",
         "description": "Завершение загрузки языковых данных OCR."
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "сетевая ошибка",
+        "description": "Тип ошибки OCR: сеть."
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "Тип ошибки OCR: не найдено."
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "Тип ошибки OCR: доступ запрещён."
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "отменено",
+        "description": "Тип ошибки OCR: отменено."
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "неизвестно",
+        "description": "Тип ошибки OCR: неизвестно."
     },
     "LayoutSettings": {
         "message": "Настройки макета",

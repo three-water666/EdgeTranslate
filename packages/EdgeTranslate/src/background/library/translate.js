@@ -112,6 +112,11 @@ class TranslatorManager {
             return Promise.resolve(this.channel.request("delete_ocr_languages", detail));
         });
 
+        this.channel.provide("cancel_ocr_language_downloads", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("cancel_ocr_language_downloads", detail));
+        });
+
         this.channel.provide("screenshot_translate", () => this.screenshotTranslate());
     }
 

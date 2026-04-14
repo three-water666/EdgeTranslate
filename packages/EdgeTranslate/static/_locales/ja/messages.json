@@ -188,20 +188,85 @@
         "description": "OCR 設定。"
     },
     "OCRSettingsHint": {
-        "message": "スクリーンショット翻訳で使う OCR 言語を選択します。言語を増やすほど認識は遅くなる場合があります。",
+        "message": "OCR は画像内の文字を認識する機能です。スクリーンショット翻訳を使う前に、必要な言語データをダウンロードして有効にしてください。ダウンロードして有効にした言語を認識できます。言語を増やすほど認識は遅くなる場合があります。",
         "description": "OCR 言語設定のヒント。"
     },
     "OCRDownloadHint": {
-        "message": "OCR 言語データは拡張機能に同梱されません。必要な言語だけをダウンロードし、不要になれば削除して容量を空けられます。",
+        "message": "言語データは拡張機能に同梱されません。ここで直接ダウンロードすることも、自分でダウンロードして後からアップロードすることもできます。ダウンロード後、その言語をスクリーンショット OCR に有効化できます。現在のダウンロード元は jsDelivr です。",
         "description": "OCR 言語データのダウンロード案内"
+    },
+    "OCRSearchPlaceholder": {
+        "message": "言語名またはコードで検索（例: english / eng）",
+        "description": "OCR 言語検索入力のプレースホルダー"
+    },
+    "OCRFilterAll": {
+        "message": "すべて",
+        "description": "OCR 言語フィルター: すべて"
+    },
+    "OCRFilterDownloaded": {
+        "message": "ダウンロード済み",
+        "description": "OCR 言語フィルター: ダウンロード済み"
+    },
+    "OCRFilterEnabled": {
+        "message": "有効",
+        "description": "OCR 言語フィルター: 有効"
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "未ダウンロード",
+        "description": "OCR 言語フィルター: 未ダウンロード"
     },
     "OCRDownloadButton": {
         "message": "ダウンロード",
         "description": "OCR 言語データをダウンロードする"
     },
+    "OCRStopButton": {
+        "message": "停止",
+        "description": "OCR 言語データのダウンロードを停止する"
+    },
+    "OCRUploadButton": {
+        "message": "アップロード",
+        "description": "ローカル OCR 言語データをアップロードする"
+    },
+    "OCREnableButton": {
+        "message": "有効化",
+        "description": "OCR 言語を有効化する"
+    },
+    "OCRDisableButton": {
+        "message": "無効化",
+        "description": "OCR 言語を無効化する"
+    },
     "OCRDeleteButton": {
         "message": "削除",
         "description": "OCR 言語データを削除する"
+    },
+    "OCRSourceLabel": {
+        "message": "取得元",
+        "description": "OCR ダウンロード元ラベル"
+    },
+    "OCROpenSourceLink": {
+        "message": "ダウンロード先を開く",
+        "description": "OCR 言語データのダウンロード先を開く"
+    },
+    "OCRStateEnabled": {
+        "message": "有効",
+        "description": "OCR 言語は有効"
+    },
+    "OCRStateDisabled": {
+        "message": "無効",
+        "description": "OCR 言語は無効"
+    },
+    "OCRStateUnknown": {
+        "message": "不明",
+        "description": "不明な OCR 状態"
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "ファイル名が一致しません。$language$ では $file1$ または $file2$ が必要です。",
+        "placeholders": {
+            "language": { "content": "$1" },
+            "file1": { "content": "$2" },
+            "file2": { "content": "$3" }
+        },
+        "description": "OCR アップロード時のファイル名不一致"
     },
     "OCRActionFailed": {
         "message": "OCR リソースの操作に失敗しました",
@@ -238,6 +303,26 @@
     "OCRStatusFinalizing": {
         "message": "仕上げ中",
         "description": "OCR 言語データを仕上げ中"
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "ネットワークエラー",
+        "description": "OCR エラー種別: ネットワーク"
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "OCR エラー種別: 見つからない"
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "OCR エラー種別: アクセス拒否"
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "キャンセル済み",
+        "description": "OCR エラー種別: キャンセル"
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "不明",
+        "description": "OCR エラー種別: 不明"
     },
     "LayoutSettings": {
         "message": "レイアウト設定",

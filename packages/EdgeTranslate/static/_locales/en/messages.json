@@ -188,20 +188,85 @@
         "description": "OCR settings."
     },
     "OCRSettingsHint": {
-        "message": "Choose the OCR languages to load for screenshot translation. More languages may slow recognition.",
+        "message": "OCR means recognizing text inside images. Before using screenshot translation, download and enable the language package you need; downloading and enabling a language package lets OCR recognize that language. Enabling more languages may slow recognition.",
         "description": "Hint for OCR language settings."
     },
     "OCRDownloadHint": {
-        "message": "OCR language data is not bundled with the extension. Download only the languages you need and remove them later to free space.",
+        "message": "OCR language data is not bundled with the extension. You can download it directly here, or download it yourself and upload it later. Once downloaded, that language can be enabled for screenshot OCR. Current source: jsDelivr.",
         "description": "Hint for OCR language package downloads."
+    },
+    "OCRSearchPlaceholder": {
+        "message": "Search language name or code, e.g. english / eng",
+        "description": "Placeholder for OCR language search input."
+    },
+    "OCRFilterAll": {
+        "message": "All",
+        "description": "OCR language filter: all."
+    },
+    "OCRFilterDownloaded": {
+        "message": "Downloaded",
+        "description": "OCR language filter: downloaded."
+    },
+    "OCRFilterEnabled": {
+        "message": "Enabled",
+        "description": "OCR language filter: enabled."
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "Not Downloaded",
+        "description": "OCR language filter: not downloaded."
     },
     "OCRDownloadButton": {
         "message": "Download",
         "description": "Download OCR language data."
     },
+    "OCRStopButton": {
+        "message": "Stop",
+        "description": "Stop downloading OCR language data."
+    },
+    "OCRUploadButton": {
+        "message": "Upload",
+        "description": "Upload a local OCR language package."
+    },
+    "OCREnableButton": {
+        "message": "Enable",
+        "description": "Enable OCR language."
+    },
+    "OCRDisableButton": {
+        "message": "Disable",
+        "description": "Disable OCR language."
+    },
     "OCRDeleteButton": {
         "message": "Delete",
         "description": "Delete OCR language data."
+    },
+    "OCRSourceLabel": {
+        "message": "Source",
+        "description": "OCR download source label."
+    },
+    "OCROpenSourceLink": {
+        "message": "Open download link",
+        "description": "Open the OCR language package download link."
+    },
+    "OCRStateEnabled": {
+        "message": "Enabled",
+        "description": "OCR language enabled."
+    },
+    "OCRStateDisabled": {
+        "message": "Disabled",
+        "description": "OCR language disabled."
+    },
+    "OCRStateUnknown": {
+        "message": "Unknown",
+        "description": "Unknown OCR state."
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "File name does not match. $language$ requires $file1$ or $file2$.",
+        "placeholders": {
+            "language": { "content": "$1" },
+            "file1": { "content": "$2" },
+            "file2": { "content": "$3" }
+        },
+        "description": "OCR upload file name mismatch."
     },
     "OCRActionFailed": {
         "message": "OCR resource action failed",
@@ -238,6 +303,26 @@
     "OCRStatusFinalizing": {
         "message": "Finalizing",
         "description": "OCR language download finalizing."
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "network",
+        "description": "OCR error type: network."
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "OCR error type: not found."
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "OCR error type: forbidden."
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "cancelled",
+        "description": "OCR error type: cancelled."
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "unknown",
+        "description": "OCR error type: unknown."
     },
     "LayoutSettings": {
         "message": "Layout Settings",

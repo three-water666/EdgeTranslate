@@ -1,13 +1,15 @@
 import { createWorker } from "tesseract.js";
 import Channel from "common/scripts/channel.js";
+import { OCR_LANGUAGE_CODES } from "common/scripts/ocr_languages.js";
 
 const OCR_CORE_PATH = chrome.runtime.getURL("ocr/core/tesseract-core-lstm.wasm.js");
 const OCR_WORKER_PATH = chrome.runtime.getURL("ocr/worker.min.js");
 const OCR_CACHE_DB_NAME = "keyval-store";
 const OCR_CACHE_STORE_NAME = "keyval";
 const OCR_CACHE_PATH = "edge_translate_ocr";
+const OCR_REMOTE_LANG_VERSION = "4.0.0_best_int";
 const DEFAULT_OCR_LANGUAGES = ["eng", "chi_sim"];
-const SUPPORTED_OCR_LANGUAGES = ["eng", "chi_sim", "jpn", "kor"];
+const SUPPORTED_OCR_LANGUAGES = OCR_LANGUAGE_CODES;
 const OCR_DATA_MISSING_PREFIX = "OCR_LANG_DATA_MISSING";
 const channel = new Channel();
 
@@ -29,6 +31,8 @@ export async function getOcrLanguageStatus(languages = SUPPORTED_OCR_LANGUAGES) 
                 progress: task?.progress ?? 0,
                 status: task?.status ?? "idle",
                 error: task?.error ?? "",
+                errorType: task?.errorType ?? "",
+                source: getOcrDownloadSource(language),
             };
         })
     );
@@ -41,6 +45,22 @@ export async function downloadOcrLanguages(languages) {
     if (normalizedLanguages.length === 0) return {};
 
     await Promise.all(normalizedLanguages.map((language) => ensureOcrLanguageDownloaded(language)));
+    return getOcrLanguageStatus(normalizedLanguages);
+}
+
+export async function cancelOcrLanguageDownloads(languages) {
+    const normalizedLanguages = normalizeLanguages(languages);
+    if (normalizedLanguages.length === 0) return {};
+
+    await Promise.all(
+        normalizedLanguages.map(async (language) => {
+            const task = ocrDownloadTasks.get(language);
+            if (!task?.controller) return;
+            task.controller.abort();
+            await task.promise.catch(() => {});
+        })
+    );
+
     return getOcrLanguageStatus(normalizedLanguages);
 }
 
@@ -60,6 +80,8 @@ export async function deleteOcrLanguages(languages) {
                 progress: 0,
                 status: "idle",
                 error: "",
+                errorType: "",
+                source: getOcrDownloadSource(language),
             });
         })
     );
@@ -133,8 +155,18 @@ export async function recognizeScreenshotArea({
 
 async function getOcrLanguages() {
     const settings = await channel.request("get_ocr_settings");
-    const languages = settings?.Languages;
-    return Array.isArray(languages) && languages.length > 0 ? languages : DEFAULT_OCR_LANGUAGES;
+    const configuredLanguages =
+        settings?.EnabledLanguages || settings?.Languages || DEFAULT_OCR_LANGUAGES;
+    const normalizedLanguages = normalizeLanguages(configuredLanguages);
+    const activeLanguages = [];
+
+    for (const language of normalizedLanguages) {
+        if (await hasCachedOcrLanguage(language)) {
+            activeLanguages.push(language);
+        }
+    }
+
+    return activeLanguages.length > 0 ? activeLanguages : normalizedLanguages;
 }
 
 async function ensureLanguagesDownloaded(languages) {
@@ -214,6 +246,8 @@ async function ensureOcrLanguageDownloaded(language) {
             progress: 100,
             status: "ready",
             error: "",
+            errorType: "",
+            source: getOcrDownloadSource(language),
         });
         return;
     }
@@ -226,6 +260,8 @@ async function ensureOcrLanguageDownloaded(language) {
         progress: 0,
         status: "queued",
         error: "",
+        errorType: "",
+        controller: null,
         promise: null,
     };
 
@@ -237,18 +273,14 @@ async function ensureOcrLanguageDownloaded(language) {
         progress: 0,
         status: "queued",
         error: "",
+        errorType: "",
+        source: getOcrDownloadSource(language),
     });
 
-    task.promise = createWorker(language, 1, {
-        workerPath: OCR_WORKER_PATH,
-        corePath: OCR_CORE_PATH,
-        cachePath: OCR_CACHE_PATH,
-        gzip: true,
-        workerBlobURL: false,
-        logger: (detail) => updateOcrDownloadProgress(language, detail),
-    })
-        .then(async (worker) => {
-            await worker.terminate();
+    task.controller = new AbortController();
+    task.promise = downloadAndCacheOcrLanguage(language, task.controller.signal)
+        .then(() => {
+            task.controller = null;
             emitOcrDownloadEvent({
                 language,
                 downloaded: true,
@@ -256,18 +288,24 @@ async function ensureOcrLanguageDownloaded(language) {
                 progress: 100,
                 status: "ready",
                 error: "",
+                errorType: "",
+                source: getOcrDownloadSource(language),
             });
         })
         .catch((error) => {
             const errorText = error?.message || String(error);
             task.error = errorText;
+            task.errorType = classifyOcrDownloadError(errorText);
+            const cancelled = task.errorType === "cancelled";
             emitOcrDownloadEvent({
                 language,
                 downloaded: false,
                 downloading: false,
-                progress: task.progress,
-                status: "error",
-                error: errorText,
+                progress: cancelled ? 0 : task.progress,
+                status: cancelled ? "idle" : "error",
+                error: cancelled ? "" : errorText,
+                errorType: task.errorType,
+                source: getOcrDownloadSource(language),
             });
             throw error;
         })
@@ -286,6 +324,7 @@ function updateOcrDownloadProgress(language, detail = {}) {
     task.progress = mappedProgress.progress;
     task.status = mappedProgress.status;
     task.error = "";
+    task.errorType = "";
 
     emitOcrDownloadEvent({
         language,
@@ -294,6 +333,8 @@ function updateOcrDownloadProgress(language, detail = {}) {
         progress: mappedProgress.progress,
         status: mappedProgress.status,
         error: "",
+        errorType: "",
+        source: getOcrDownloadSource(language),
     });
 }
 
@@ -319,6 +360,97 @@ function clampProgress(value) {
 
 function emitOcrDownloadEvent(detail) {
     channel.emit("ocr_download_state_changed", detail);
+}
+
+function getOcrDownloadSource(language) {
+    return `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${language}/${OCR_REMOTE_LANG_VERSION}/${language}.traineddata.gz`;
+}
+
+async function downloadAndCacheOcrLanguage(language, signal) {
+    const source = getOcrDownloadSource(language);
+    updateOcrDownloadProgress(language, {
+        status: "initializing tesseract",
+        progress: 0,
+    });
+
+    const response = await fetch(source, { signal });
+    if (!response.ok) {
+        throw new Error(
+            `Network error while fetching ${source}. Response code: ${response.status}`
+        );
+    }
+
+    const contentLength = Number(response.headers.get("content-length")) || 0;
+    const reader = response.body?.getReader();
+    if (!reader) {
+        const buffer = new Uint8Array(await response.arrayBuffer());
+        await writeCachedOcrLanguage(language, buffer);
+        return;
+    }
+
+    const chunks = [];
+    let receivedLength = 0;
+
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (signal.aborted) {
+            throw new DOMException("The operation was aborted.", "AbortError");
+        }
+
+        chunks.push(value);
+        receivedLength += value.length;
+
+        if (contentLength > 0) {
+            updateOcrDownloadProgress(language, {
+                status: "loading language traineddata",
+                progress: receivedLength / contentLength,
+            });
+        }
+    }
+
+    updateOcrDownloadProgress(language, {
+        status: "initializing api",
+        progress: 1,
+    });
+
+    const merged = new Uint8Array(receivedLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+        merged.set(chunk, offset);
+        offset += chunk.length;
+    }
+
+    await writeCachedOcrLanguage(language, merged);
+}
+
+function writeCachedOcrLanguage(language, data) {
+    return withOcrCacheStore("readwrite", (store) => {
+        store.put(data, getOcrCacheKey(language));
+        return createRequestPromise(store.transaction);
+    });
+}
+
+function classifyOcrDownloadError(errorText = "") {
+    const normalizedText = String(errorText).toLowerCase();
+    if (normalizedText.includes("aborterror") || normalizedText.includes("aborted")) {
+        return "cancelled";
+    }
+    if (
+        normalizedText.includes("network error") ||
+        normalizedText.includes("failed to fetch") ||
+        normalizedText.includes("networkerror") ||
+        normalizedText.includes("load failed")
+    ) {
+        return "network";
+    }
+    if (normalizedText.includes("response code: 404")) {
+        return "not_found";
+    }
+    if (normalizedText.includes("response code: 403")) {
+        return "forbidden";
+    }
+    return "unknown";
 }
 
 async function cropImage(screenshotUrl, rect, viewportWidth, viewportHeight) {

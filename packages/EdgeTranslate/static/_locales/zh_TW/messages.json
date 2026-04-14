@@ -188,20 +188,85 @@
         "description": "OCR 設定。"
     },
     "OCRSettingsHint": {
-        "message": "選擇截圖翻譯要啟用的 OCR 語言。啟用越多，辨識可能越慢。",
+        "message": "OCR 就是圖片文字辨識。使用截圖翻譯前，需要先下載並啟用對應語言包；下載並啟用哪種語言包，就能辨識哪種語言。啟用越多，辨識可能越慢。",
         "description": "OCR 語言設定提示"
     },
     "OCRDownloadHint": {
-        "message": "OCR 語言包不會隨擴充功能安裝。按需下載需要的語言，之後也可以刪除以釋放空間。",
+        "message": "語言包不會隨擴充功能安裝。你可以直接在這裡下載，也可以自行下載後再上傳；下載成功後即可啟用該語言用於截圖辨識。目前下載來源為 jsDelivr。",
         "description": "OCR 語言包下載提示"
+    },
+    "OCRSearchPlaceholder": {
+        "message": "搜尋語言名稱或代碼，例如 english / eng",
+        "description": "OCR 語言搜尋框提示"
+    },
+    "OCRFilterAll": {
+        "message": "全部",
+        "description": "OCR 語言篩選：全部"
+    },
+    "OCRFilterDownloaded": {
+        "message": "已下載",
+        "description": "OCR 語言篩選：已下載"
+    },
+    "OCRFilterEnabled": {
+        "message": "已啟用",
+        "description": "OCR 語言篩選：已啟用"
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "未下載",
+        "description": "OCR 語言篩選：未下載"
     },
     "OCRDownloadButton": {
         "message": "下載",
         "description": "下載 OCR 語言包"
     },
+    "OCRStopButton": {
+        "message": "停止",
+        "description": "停止下載 OCR 語言包"
+    },
+    "OCRUploadButton": {
+        "message": "上傳",
+        "description": "上傳本機 OCR 語言包"
+    },
+    "OCREnableButton": {
+        "message": "啟用",
+        "description": "啟用 OCR 語言"
+    },
+    "OCRDisableButton": {
+        "message": "停用",
+        "description": "停用 OCR 語言"
+    },
     "OCRDeleteButton": {
         "message": "刪除",
         "description": "刪除 OCR 語言包"
+    },
+    "OCRSourceLabel": {
+        "message": "來源",
+        "description": "OCR 下載來源標籤"
+    },
+    "OCROpenSourceLink": {
+        "message": "開啟下載地址",
+        "description": "開啟 OCR 語言包下載地址"
+    },
+    "OCRStateEnabled": {
+        "message": "已啟用",
+        "description": "OCR 語言已啟用"
+    },
+    "OCRStateDisabled": {
+        "message": "未啟用",
+        "description": "OCR 語言未啟用"
+    },
+    "OCRStateUnknown": {
+        "message": "未知",
+        "description": "未知 OCR 狀態"
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "檔名不符，$language$ 需要使用 $file1$ 或 $file2$",
+        "placeholders": {
+            "language": { "content": "$1" },
+            "file1": { "content": "$2" },
+            "file2": { "content": "$3" }
+        },
+        "description": "上傳 OCR 檔名不符"
     },
     "OCRActionFailed": {
         "message": "OCR 資源操作失敗",
@@ -238,6 +303,26 @@
     "OCRStatusFinalizing": {
         "message": "整理中",
         "description": "OCR 語言包整理中"
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "網路錯誤",
+        "description": "OCR 下載錯誤類型：網路"
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "OCR 下載錯誤類型：找不到資源"
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "OCR 下載錯誤類型：禁止存取"
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "已取消",
+        "description": "OCR 下載錯誤類型：已取消"
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "未知錯誤",
+        "description": "OCR 下載錯誤類型：未知"
     },
     "LayoutSettings": {
         "message": "佈局設定",
