@@ -191,6 +191,54 @@
         "message": "スクリーンショット翻訳で使う OCR 言語を選択します。言語を増やすほど認識は遅くなる場合があります。",
         "description": "OCR 言語設定のヒント。"
     },
+    "OCRDownloadHint": {
+        "message": "OCR 言語データは拡張機能に同梱されません。必要な言語だけをダウンロードし、不要になれば削除して容量を空けられます。",
+        "description": "OCR 言語データのダウンロード案内"
+    },
+    "OCRDownloadButton": {
+        "message": "ダウンロード",
+        "description": "OCR 言語データをダウンロードする"
+    },
+    "OCRDeleteButton": {
+        "message": "削除",
+        "description": "OCR 言語データを削除する"
+    },
+    "OCRActionFailed": {
+        "message": "OCR リソースの操作に失敗しました",
+        "description": "OCR リソース操作失敗"
+    },
+    "OCRStatusLoading": {
+        "message": "処理中",
+        "description": "一般的な OCR 読み込み状態"
+    },
+    "OCRStatusDownloaded": {
+        "message": "ダウンロード済み",
+        "description": "OCR 言語データはダウンロード済み"
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "未ダウンロード",
+        "description": "OCR 言語データは未ダウンロード"
+    },
+    "OCRStatusFailed": {
+        "message": "失敗",
+        "description": "OCR 言語データのダウンロード失敗"
+    },
+    "OCRStatusQueued": {
+        "message": "待機中",
+        "description": "OCR 言語データは待機中"
+    },
+    "OCRStatusInitializing": {
+        "message": "初期化中",
+        "description": "OCR 言語データを初期化中"
+    },
+    "OCRStatusDownloading": {
+        "message": "ダウンロード中",
+        "description": "OCR 言語データをダウンロード中"
+    },
+    "OCRStatusFinalizing": {
+        "message": "仕上げ中",
+        "description": "OCR 言語データを仕上げ中"
+    },
     "LayoutSettings": {
         "message": "レイアウト設定",
         "description": "翻訳結果の表示方法を選択します。"
@@ -262,6 +310,14 @@
     "ScreenshotTranslateUnsupported": {
         "message": "このページではスクリーンショット翻訳を利用できません。",
         "description": "現在のページではスクリーンショット翻訳を利用できない"
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "スクリーンショット内の文字を認識して翻訳しています...",
+        "description": "スクリーンショット OCR 実行中の読み込みメッセージ"
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "OCR 言語データがダウンロードされていません。先に設定ページでダウンロードしてください。",
+        "description": "スクリーンショット OCR の言語データ不足時のメッセージ"
     },
     "TranslatePage": {
         "message": "このページを翻訳する",

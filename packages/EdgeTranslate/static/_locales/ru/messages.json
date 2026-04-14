@@ -191,6 +191,54 @@
         "message": "Выберите языки OCR для перевода по снимку. Чем больше языков включено, тем медленнее может быть распознавание.",
         "description": "Подсказка для настроек языков OCR."
     },
+    "OCRDownloadHint": {
+        "message": "Языковые данные OCR не входят в пакет расширения. Загружайте только нужные языки и при необходимости удаляйте их, чтобы освободить место.",
+        "description": "Подсказка по загрузке языковых данных OCR."
+    },
+    "OCRDownloadButton": {
+        "message": "Скачать",
+        "description": "Скачать языковые данные OCR."
+    },
+    "OCRDeleteButton": {
+        "message": "Удалить",
+        "description": "Удалить языковые данные OCR."
+    },
+    "OCRActionFailed": {
+        "message": "Не удалось выполнить операцию с ресурсами OCR",
+        "description": "Ошибка операции с ресурсами OCR."
+    },
+    "OCRStatusLoading": {
+        "message": "Обработка",
+        "description": "Общий статус загрузки OCR."
+    },
+    "OCRStatusDownloaded": {
+        "message": "Загружено",
+        "description": "Языковые данные OCR загружены."
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "Не загружено",
+        "description": "Языковые данные OCR не загружены."
+    },
+    "OCRStatusFailed": {
+        "message": "Ошибка",
+        "description": "Ошибка загрузки языковых данных OCR."
+    },
+    "OCRStatusQueued": {
+        "message": "В очереди",
+        "description": "Загрузка языковых данных OCR поставлена в очередь."
+    },
+    "OCRStatusInitializing": {
+        "message": "Инициализация",
+        "description": "Инициализация языковых данных OCR."
+    },
+    "OCRStatusDownloading": {
+        "message": "Загрузка",
+        "description": "Загрузка языковых данных OCR."
+    },
+    "OCRStatusFinalizing": {
+        "message": "Завершение",
+        "description": "Завершение загрузки языковых данных OCR."
+    },
     "LayoutSettings": {
         "message": "Настройки макета",
         "description": "Выбор способа отображения результатов перевода."
@@ -262,6 +310,14 @@
     "ScreenshotTranslateUnsupported": {
         "message": "Перевод по снимку недоступен на этой странице.",
         "description": "Перевод по снимку недоступен на текущей странице."
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "Распознаём текст на снимке и переводим...",
+        "description": "Сообщение загрузки во время OCR по снимку."
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "Языковые данные OCR не загружены. Сначала откройте настройки и скачайте их.",
+        "description": "Сообщение при отсутствии языковых данных для OCR по снимку."
     },
     "TranslatePage": {
         "message": "Перевести эту страницу",

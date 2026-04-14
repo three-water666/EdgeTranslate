@@ -67,6 +67,77 @@ header {
     line-height: 1.6;
 }
 
+#ocr-download-manager {
+    margin: 0 5% 3%;
+}
+
+.ocr-download-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.ocr-download-title {
+    flex: 1 1 auto;
+}
+
+.ocr-download-status {
+    color: #666;
+    min-width: 60px;
+    text-align: right;
+}
+
+.ocr-download-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.ocr-download-progress {
+    margin: -4px 0 10px;
+    height: 6px;
+    background: #ececec;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.ocr-download-progress-bar {
+    height: 100%;
+    background: color-primary;
+    transition: width 0.2s linear;
+}
+
+.ocr-action-button {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background: color-primary;
+    color: white;
+    cursor: pointer;
+}
+
+.ocr-action-button.secondary {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.ocr-action-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.ocr-download-error {
+    margin-top: 8px;
+    color: #c0392b;
+    font-size: 13px;
+}
+
+.ocr-download-error.inline {
+    margin-top: -4px;
+    margin-bottom: 8px;
+}
+
 .space {
     display: inline-block;
     width: 5px;

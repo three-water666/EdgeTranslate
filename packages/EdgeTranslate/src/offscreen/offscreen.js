@@ -1,7 +1,13 @@
 import Channel from "common/scripts/channel.js";
 import { HybridTranslator } from "@edge_translate/translators";
 import { startHotReload } from "./hot_reload.js";
-import { recognizeScreenshotArea } from "./ocr.js";
+import {
+    deleteOcrLanguages,
+    downloadOcrLanguages,
+    getOcrLanguageStatus,
+    recognizeScreenshotArea,
+    resetOcrWorker,
+} from "./ocr.js";
 
 const channel = new Channel();
 
@@ -100,4 +106,20 @@ channel.provide("translator_stop_pronounce_by_default_translator", async (detail
 
 channel.provide("ocr_image", async (detail) => {
     return Promise.resolve(recognizeScreenshotArea(detail));
+});
+
+channel.provide("get_ocr_language_status", async (detail = {}) => {
+    return Promise.resolve(getOcrLanguageStatus(detail.languages));
+});
+
+channel.provide("download_ocr_languages", async (detail = {}) => {
+    return Promise.resolve(downloadOcrLanguages(detail.languages));
+});
+
+channel.provide("delete_ocr_languages", async (detail = {}) => {
+    return Promise.resolve(deleteOcrLanguages(detail.languages));
+});
+
+channel.provide("reset_ocr_worker", async () => {
+    return Promise.resolve(resetOcrWorker());
 });

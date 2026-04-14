@@ -191,6 +191,54 @@
         "message": "Choose the OCR languages to load for screenshot translation. More languages may slow recognition.",
         "description": "Hint for OCR language settings."
     },
+    "OCRDownloadHint": {
+        "message": "OCR language data is not bundled with the extension. Download only the languages you need and remove them later to free space.",
+        "description": "Hint for OCR language package downloads."
+    },
+    "OCRDownloadButton": {
+        "message": "Download",
+        "description": "Download OCR language data."
+    },
+    "OCRDeleteButton": {
+        "message": "Delete",
+        "description": "Delete OCR language data."
+    },
+    "OCRActionFailed": {
+        "message": "OCR resource action failed",
+        "description": "OCR resource action failed."
+    },
+    "OCRStatusLoading": {
+        "message": "Processing",
+        "description": "Generic OCR loading status."
+    },
+    "OCRStatusDownloaded": {
+        "message": "Downloaded",
+        "description": "OCR language downloaded."
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "Not downloaded",
+        "description": "OCR language not downloaded."
+    },
+    "OCRStatusFailed": {
+        "message": "Failed",
+        "description": "OCR language download failed."
+    },
+    "OCRStatusQueued": {
+        "message": "Queued",
+        "description": "OCR language download queued."
+    },
+    "OCRStatusInitializing": {
+        "message": "Initializing",
+        "description": "OCR language download initializing."
+    },
+    "OCRStatusDownloading": {
+        "message": "Downloading",
+        "description": "OCR language downloading."
+    },
+    "OCRStatusFinalizing": {
+        "message": "Finalizing",
+        "description": "OCR language download finalizing."
+    },
     "LayoutSettings": {
         "message": "Layout Settings",
         "description": "Choose how to display the translating results."
@@ -262,6 +310,14 @@
     "ScreenshotTranslateUnsupported": {
         "message": "Screenshot translation is not available on this page.",
         "description": "Screenshot translation is unavailable on current page."
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "Recognizing text from screenshot...",
+        "description": "Loading message shown while screenshot OCR is running."
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "OCR language data is not downloaded. Open settings and download it first.",
+        "description": "Shown when screenshot OCR language data is missing."
     },
     "TranslatePage": {
         "message": "Translate this page",

@@ -191,6 +191,54 @@
         "message": "选择截图翻译要启用的 OCR 语言。启用越多，识别可能越慢。",
         "description": "OCR 语言设置提示"
     },
+    "OCRDownloadHint": {
+        "message": "OCR 语言包不会随扩展安装。按需下载需要的语言，之后也可以删除以释放空间。",
+        "description": "OCR 语言包下载提示"
+    },
+    "OCRDownloadButton": {
+        "message": "下载",
+        "description": "下载 OCR 语言包"
+    },
+    "OCRDeleteButton": {
+        "message": "删除",
+        "description": "删除 OCR 语言包"
+    },
+    "OCRActionFailed": {
+        "message": "OCR 资源操作失败",
+        "description": "OCR 资源操作失败"
+    },
+    "OCRStatusLoading": {
+        "message": "处理中",
+        "description": "通用 OCR 加载状态"
+    },
+    "OCRStatusDownloaded": {
+        "message": "已下载",
+        "description": "OCR 语言包已下载"
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "未下载",
+        "description": "OCR 语言包未下载"
+    },
+    "OCRStatusFailed": {
+        "message": "失败",
+        "description": "OCR 语言包下载失败"
+    },
+    "OCRStatusQueued": {
+        "message": "排队中",
+        "description": "OCR 语言包排队中"
+    },
+    "OCRStatusInitializing": {
+        "message": "初始化",
+        "description": "OCR 语言包初始化中"
+    },
+    "OCRStatusDownloading": {
+        "message": "下载中",
+        "description": "OCR 语言包下载中"
+    },
+    "OCRStatusFinalizing": {
+        "message": "整理中",
+        "description": "OCR 语言包整理中"
+    },
     "LayoutSettings": {
         "message": "布局设置",
         "description": "调整翻译结果展示框的布局"
@@ -262,6 +310,14 @@
     "ScreenshotTranslateUnsupported": {
         "message": "当前页面暂不支持截图翻译。",
         "description": "当前页面不支持截图翻译"
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "正在识别截图中的文字并翻译...",
+        "description": "截图 OCR 运行中的加载提示"
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "OCR 语言包未下载，请先到设置页手动下载后再使用截图翻译。",
+        "description": "截图 OCR 缺少语言包时的提示"
     },
     "TranslatePage": {
         "message": "翻译此页",

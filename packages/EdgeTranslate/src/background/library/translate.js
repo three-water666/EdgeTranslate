@@ -97,6 +97,21 @@ class TranslatorManager {
             return Promise.resolve(configs.OCRSettings);
         });
 
+        this.channel.provide("get_ocr_download_status", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("get_ocr_language_status", detail));
+        });
+
+        this.channel.provide("download_ocr_languages", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("download_ocr_languages", detail));
+        });
+
+        this.channel.provide("delete_ocr_languages", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("delete_ocr_languages", detail));
+        });
+
         this.channel.provide("screenshot_translate", () => this.screenshotTranslate());
     }
 
@@ -254,6 +269,10 @@ class TranslatorManager {
     }
 
     async translateOnTab(tabId, text, position) {
+        return this.translateOnTabWithOptions(tabId, text, position, {});
+    }
+
+    async translateOnTabWithOptions(tabId, text, position, options = {}) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
         await this.createOffscreenDocument();
@@ -267,14 +286,17 @@ class TranslatorManager {
          * request will be assigned with the timestamp. About usage of the timestamp, please refer
          * to display.js.
          */
-        let timestamp = new Date().getTime();
+        let timestamp = options.timestamp || new Date().getTime();
 
         // Inform current tab translating started.
-        this.channel.emitToTabs(tabId, "start_translating", {
-            text,
-            position,
-            timestamp,
-        });
+        if (!options.skipStartEvent) {
+            this.channel.emitToTabs(tabId, "start_translating", {
+                text,
+                position,
+                timestamp,
+                loadingMessage: options.loadingMessage,
+            });
+        }
 
         let sl = this.LANGUAGE_SETTING.sl,
             tl = this.LANGUAGE_SETTING.tl;
@@ -338,6 +360,14 @@ class TranslatorManager {
 
         if (!selection || !selection.rect) return;
 
+        const timestamp = new Date().getTime();
+        this.channel.emitToTabs(currentTab.id, "start_translating", {
+            text: "",
+            position: selection.position,
+            timestamp,
+            loadingMessage: getScreenshotLoadingMessage(),
+        });
+
         const screenshotUrl = await captureVisibleTab(currentTab.windowId);
         let text;
         try {
@@ -348,17 +378,41 @@ class TranslatorManager {
                 viewportHeight: selection.viewportHeight,
             });
         } catch (error) {
-            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateFailed"));
+            if (String(error).includes("OCR_LANG_DATA_MISSING")) {
+                const message = getOcrDataMissingMessage();
+                notifyScreenshotTranslate(message);
+                this.emitTranslateError(currentTab.id, timestamp, message);
+            } else {
+                const message = chrome.i18n.getMessage("ScreenshotTranslateFailed");
+                notifyScreenshotTranslate(message);
+                this.emitTranslateError(currentTab.id, timestamp, message);
+            }
             throw error;
         }
 
         const cleanedText = typeof text === "string" ? text.trim() : "";
         if (!cleanedText) {
-            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateNoText"));
+            const message = chrome.i18n.getMessage("ScreenshotTranslateNoText");
+            notifyScreenshotTranslate(message);
+            this.emitTranslateError(currentTab.id, timestamp, message);
             return;
         }
 
-        return this.translateOnTab(currentTab.id, cleanedText, selection.position);
+        return this.translateOnTabWithOptions(currentTab.id, cleanedText, selection.position, {
+            timestamp,
+            skipStartEvent: true,
+        });
+    }
+
+    emitTranslateError(tabId, timestamp, errorMsg) {
+        this.channel.emitToTabs(tabId, "translating_error", {
+            timestamp,
+            error: {
+                errorType: "API_ERR",
+                errorCode: "OCR_ERR",
+                errorMsg,
+            },
+        });
     }
 
     /**
@@ -589,6 +643,28 @@ function notifyScreenshotTranslate(message) {
         title: chrome.i18n.getMessage("AppName"),
         message,
     });
+}
+
+function getOcrDataMissingMessage() {
+    const message = chrome.i18n.getMessage("ScreenshotTranslateOcrDataMissing");
+    if (message) return message;
+
+    const language = chrome.i18n.getUILanguage().toLowerCase();
+    if (language.startsWith("zh")) {
+        return "OCR 语言包未下载，请先到设置页手动下载后再使用截图翻译。";
+    }
+    return "OCR language data is not downloaded. Open settings and download it first.";
+}
+
+function getScreenshotLoadingMessage() {
+    const message = chrome.i18n.getMessage("ScreenshotTranslateLoading");
+    if (message) return message;
+
+    const language = chrome.i18n.getUILanguage().toLowerCase();
+    if (language.startsWith("zh")) {
+        return "正在识别截图中的文字并翻译...";
+    }
+    return "Recognizing text from screenshot...";
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };
