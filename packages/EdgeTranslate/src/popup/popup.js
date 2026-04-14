@@ -170,6 +170,7 @@ function addEventListener() {
     document.getElementById("google-page-translate").addEventListener("click", () => {
         channel.emit("translate_page_google", {});
     });
+    document.getElementById("open-options").addEventListener("click", openOptionsPage);
 }
 
 /**
@@ -267,6 +268,11 @@ function showSourceTarget() {
     } else {
         inputElement.placeholder = `${sourceLanguageString} <=> ${targetLanguageString}`;
     }
+}
+
+function openOptionsPage(event) {
+    event.preventDefault();
+    chrome.runtime.openOptionsPage();
 }
 
 /**
