@@ -183,6 +183,153 @@
         "message": "Default Page Translator",
         "description": "Default page translator."
     },
+    "OCRSettings": {
+        "message": "OCR Settings",
+        "description": "OCR settings."
+    },
+    "OCRSettingsHint": {
+        "message": "Before using screenshot translation, download and enable the language package you need; downloading and enabling a language package lets OCR recognize that language. Enabling more languages may slow recognition.",
+        "description": "Hint for OCR language settings."
+    },
+    "OCRSearchPlaceholder": {
+        "message": "Search language name or code, e.g. english / eng",
+        "description": "Placeholder for OCR language search input."
+    },
+    "OCRFilterAll": {
+        "message": "All",
+        "description": "OCR language filter: all."
+    },
+    "OCRFilterDownloaded": {
+        "message": "Downloaded",
+        "description": "OCR language filter: downloaded."
+    },
+    "OCRFilterEnabled": {
+        "message": "Enabled",
+        "description": "OCR language filter: enabled."
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "Not Downloaded",
+        "description": "OCR language filter: not downloaded."
+    },
+    "OCRDownloadButton": {
+        "message": "Download",
+        "description": "Download OCR language data."
+    },
+    "OCRStopButton": {
+        "message": "Stop",
+        "description": "Stop downloading OCR language data."
+    },
+    "OCRUploadButton": {
+        "message": "Upload",
+        "description": "Upload a local OCR language package."
+    },
+    "OCREnableButton": {
+        "message": "Enable",
+        "description": "Enable OCR language."
+    },
+    "OCRDisableButton": {
+        "message": "Disable",
+        "description": "Disable OCR language."
+    },
+    "OCRDeleteButton": {
+        "message": "Delete",
+        "description": "Delete OCR language data."
+    },
+    "OCRSourceLabel": {
+        "message": "Source",
+        "description": "OCR download source label."
+    },
+    "OCROpenSourceLink": {
+        "message": "Open download link",
+        "description": "Open the OCR language package download link."
+    },
+    "OCRStateEnabled": {
+        "message": "Enabled",
+        "description": "OCR language enabled."
+    },
+    "OCRStateDisabled": {
+        "message": "Disabled",
+        "description": "OCR language disabled."
+    },
+    "OCRStateUnknown": {
+        "message": "Unknown",
+        "description": "Unknown OCR state."
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "File name does not match. $language$ requires $file1$ or $file2$.",
+        "placeholders": {
+            "language": {
+                "content": "$1"
+            },
+            "file1": {
+                "content": "$2"
+            },
+            "file2": {
+                "content": "$3"
+            }
+        },
+        "description": "OCR upload file name mismatch."
+    },
+    "OCRActionFailed": {
+        "message": "OCR resource action failed",
+        "description": "OCR resource action failed."
+    },
+    "OCRStatusLoading": {
+        "message": "Processing",
+        "description": "Generic OCR loading status."
+    },
+    "OCRStatusDownloaded": {
+        "message": "Downloaded",
+        "description": "OCR language downloaded."
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "Not downloaded",
+        "description": "OCR language not downloaded."
+    },
+    "OCRStatusFailed": {
+        "message": "Failed",
+        "description": "OCR language download failed."
+    },
+    "OCRStatusQueued": {
+        "message": "Queued",
+        "description": "OCR language download queued."
+    },
+    "OCRStatusInitializing": {
+        "message": "Initializing",
+        "description": "OCR language download initializing."
+    },
+    "OCRStatusDownloading": {
+        "message": "Downloading",
+        "description": "OCR language downloading."
+    },
+    "OCRStatusFinalizing": {
+        "message": "Finalizing",
+        "description": "OCR language download finalizing."
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "network",
+        "description": "OCR error type: network."
+    },
+    "OCRErrorTypeValidation": {
+        "message": "validation failed",
+        "description": "OCR error type: validation failed."
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "OCR error type: not found."
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "OCR error type: forbidden."
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "cancelled",
+        "description": "OCR error type: cancelled."
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "unknown",
+        "description": "OCR error type: unknown."
+    },
     "LayoutSettings": {
         "message": "Layout Settings",
         "description": "Choose how to display the translating results."
@@ -234,6 +381,46 @@
     "GooglePageTranslate": {
         "message": "Google Page Trans.",
         "description": "Translate current page with Google translate api."
+    },
+    "ScreenshotTranslate": {
+        "message": "Screenshot Trans.",
+        "description": "Translate text from a screenshot selection."
+    },
+    "ScreenshotTranslateHint": {
+        "message": "Left-click and drag to select an area, press Esc or single left-click to cancel",
+        "description": "Hint shown when selecting screenshot OCR area."
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "No text was recognized in the selected area.",
+        "description": "No text recognized from screenshot."
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "Screenshot OCR failed to start. Please reload the extension and try again.",
+        "description": "Screenshot OCR failed."
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "Screenshot translation is not available on this page.",
+        "description": "Screenshot translation is unavailable on current page."
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "Recognizing text from screenshot...",
+        "description": "Loading message shown while screenshot OCR is running."
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "OCR language data is not downloaded. Open settings and download it first.",
+        "description": "Shown when screenshot OCR language data is missing."
+    },
+    "ScreenshotTranslateResultNoticeTitle": {
+        "message": "Recognition looks inaccurate?",
+        "description": "Hint title shown below screenshot translation results."
+    },
+    "ScreenshotTranslateResultNoticeText": {
+        "message": "The required OCR language data may not be downloaded yet. You can open OCR settings to download it. Complex scenes such as posters or heavily designed images may also be recognized inaccurately for now.",
+        "description": "Hint body shown below screenshot translation results."
+    },
+    "ScreenshotTranslateResultNoticeAction": {
+        "message": "Open OCR Settings",
+        "description": "Hint action shown below screenshot translation results."
     },
     "TranslatePage": {
         "message": "Translate this page",
@@ -1286,5 +1473,97 @@
     "Zulu": {
         "message": "Zulu",
         "description": "Zulu"
+    },
+    "AzerbaijaniCyrillic": {
+        "message": "Azerbaijani - Cyrillic",
+        "description": "Azerbaijani - Cyrillic"
+    },
+    "Tibetan": {
+        "message": "Tibetan",
+        "description": "Tibetan"
+    },
+    "CatalanValencian": {
+        "message": "Catalan; Valencian",
+        "description": "Catalan; Valencian"
+    },
+    "Dzongkha": {
+        "message": "Dzongkha",
+        "description": "Dzongkha"
+    },
+    "GreekModern1453": {
+        "message": "Greek, Modern (1453-)",
+        "description": "Greek, Modern (1453-)"
+    },
+    "EnglishMiddle11001500": {
+        "message": "English, Middle (1100-1500)",
+        "description": "English, Middle (1100-1500)"
+    },
+    "GermanFraktur": {
+        "message": "German Fraktur",
+        "description": "German Fraktur"
+    },
+    "FrenchMiddleCa14001600": {
+        "message": "French, Middle (ca. 1400-1600)",
+        "description": "French, Middle (ca. 1400-1600)"
+    },
+    "GreekAncient1453": {
+        "message": "Greek, Ancient (-1453)",
+        "description": "Greek, Ancient (-1453)"
+    },
+    "HaitianHaitianCreole": {
+        "message": "Haitian; Haitian Creole",
+        "description": "Haitian; Haitian Creole"
+    },
+    "ItalianOld": {
+        "message": "Italian - Old",
+        "description": "Italian - Old"
+    },
+    "GeorgianOld": {
+        "message": "Georgian - Old",
+        "description": "Georgian - Old"
+    },
+    "CentralKhmer": {
+        "message": "Central Khmer",
+        "description": "Central Khmer"
+    },
+    "KirghizKyrgyz": {
+        "message": "Kirghiz; Kyrgyz",
+        "description": "Kirghiz; Kyrgyz"
+    },
+    "DutchFlemish": {
+        "message": "Dutch; Flemish",
+        "description": "Dutch; Flemish"
+    },
+    "PanjabiPunjabi": {
+        "message": "Panjabi; Punjabi",
+        "description": "Panjabi; Punjabi"
+    },
+    "PushtoPashto": {
+        "message": "Pushto; Pashto",
+        "description": "Pushto; Pashto"
+    },
+    "RomanianMoldavianMoldovan": {
+        "message": "Romanian; Moldavian; Moldovan",
+        "description": "Romanian; Moldavian; Moldovan"
+    },
+    "SinhalaSinhalese": {
+        "message": "Sinhala; Sinhalese",
+        "description": "Sinhala; Sinhalese"
+    },
+    "SpanishCastilian": {
+        "message": "Spanish; Castilian",
+        "description": "Spanish; Castilian"
+    },
+    "SpanishCastilianOld": {
+        "message": "Spanish; Castilian - Old",
+        "description": "Spanish; Castilian - Old"
+    },
+    "UighurUyghur": {
+        "message": "Uighur; Uyghur",
+        "description": "Uighur; Uyghur"
+    },
+    "UzbekCyrillic": {
+        "message": "Uzbek - Cyrillic",
+        "description": "Uzbek - Cyrillic"
     }
 }

@@ -80,6 +80,7 @@ export default function Result(props) {
     // Indicate whether user can edit and copy the translation result
     const [copyResult, setCopyResult] = useReducer(copyContent, false);
     const translateResultElRef = useRef();
+    const isScreenshotTranslate = props.translateMode === "screenshot";
 
     // Indicate whether user is editing the original text
     const [editing, setEditing] = useReducer(_setEditing, false);
@@ -453,6 +454,20 @@ export default function Result(props) {
                 {contentDisplayOrder
                     .filter((content) => contentFilter[content])
                     .map((content) => CONTENTS[content])}
+                {isScreenshotTranslate && (
+                    <ScreenshotNotice>
+                        <ScreenshotNoticeText>
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeTitle")}{" "}
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeText")}{" "}
+                            <ScreenshotNoticeAction
+                                type="button"
+                                onClick={() => channel.emit("open_ocr_settings_page", {})}
+                            >
+                                {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeAction")}
+                            </ScreenshotNoticeAction>
+                        </ScreenshotNoticeText>
+                    </ScreenshotNotice>
+                )}
             </ThemeProvider>
         </Fragment>
     );
@@ -719,6 +734,29 @@ const ExampleSource = styled.div`
 const ExampleTarget = styled.div`
     padding-top: 5px;
     font-size: medium;
+`;
+
+const ScreenshotNotice = styled(Block)`
+    align-items: flex-start;
+    padding: 2px 10px 10px;
+    background: transparent;
+`;
+
+const ScreenshotNoticeText = styled.div`
+    font-size: 12px;
+    line-height: 1.5;
+    color: #7a7a7a;
+`;
+
+const ScreenshotNoticeAction = styled.button`
+    padding: 0;
+    border: none;
+    background: transparent;
+    vertical-align: baseline;
+    color: #7a7a7a;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
 `;
 
 /**

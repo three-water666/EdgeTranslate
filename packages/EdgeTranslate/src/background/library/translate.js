@@ -91,6 +91,33 @@ class TranslatorManager {
 
             return Promise.resolve(configs);
         });
+
+        this.channel.provide("get_ocr_settings", async () => {
+            const configs = await getOrSetDefaultSettings(["OCRSettings"], DEFAULT_SETTINGS);
+            return Promise.resolve(configs.OCRSettings);
+        });
+
+        this.channel.provide("get_ocr_download_status", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("get_ocr_language_status", detail));
+        });
+
+        this.channel.provide("download_ocr_languages", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("download_ocr_languages", detail));
+        });
+
+        this.channel.provide("delete_ocr_languages", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("delete_ocr_languages", detail));
+        });
+
+        this.channel.provide("cancel_ocr_language_downloads", async (detail = {}) => {
+            await this.createOffscreenDocument();
+            return Promise.resolve(this.channel.request("cancel_ocr_language_downloads", detail));
+        });
+
+        this.channel.provide("screenshot_translate", () => this.screenshotTranslate());
     }
 
     /**
@@ -243,6 +270,18 @@ class TranslatorManager {
         const currentTabId = await this.getCurrentTabId();
         if (currentTabId === -1) return;
 
+        return this.translateOnTab(currentTabId, text, position);
+    }
+
+    async translateOnTab(tabId, text, position) {
+        return this.translateOnTabWithOptions(tabId, text, position, {});
+    }
+
+    async translateOnTabWithOptions(tabId, text, position, options = {}) {
+        // Ensure that configurations have been initialized.
+        await this.config_loader;
+        await this.createOffscreenDocument();
+
         /**
          * Get current time as timestamp.
          *
@@ -252,14 +291,18 @@ class TranslatorManager {
          * request will be assigned with the timestamp. About usage of the timestamp, please refer
          * to display.js.
          */
-        let timestamp = new Date().getTime();
+        let timestamp = options.timestamp || new Date().getTime();
 
         // Inform current tab translating started.
-        this.channel.emitToTabs(currentTabId, "start_translating", {
-            text,
-            position,
-            timestamp,
-        });
+        if (!options.skipStartEvent) {
+            this.channel.emitToTabs(tabId, "start_translating", {
+                text,
+                position,
+                timestamp,
+                loadingMessage: options.loadingMessage,
+                translateMode: options.translateMode,
+            });
+        }
 
         let sl = this.LANGUAGE_SETTING.sl,
             tl = this.LANGUAGE_SETTING.tl;
@@ -293,17 +336,100 @@ class TranslatorManager {
             result.targetLanguage = tl;
 
             // Send translating result to current tab.
-            this.channel.emitToTabs(currentTabId, "translating_finished", {
+            this.channel.emitToTabs(tabId, "translating_finished", {
                 timestamp,
+                translateMode: options.translateMode,
                 ...result,
             });
         } catch (error) {
             // Inform current tab translating failed.
-            this.channel.emitToTabs(currentTabId, "translating_error", {
+            this.channel.emitToTabs(tabId, "translating_error", {
                 error,
                 timestamp,
+                translateMode: options.translateMode,
             });
         }
+    }
+
+    async screenshotTranslate() {
+        await this.config_loader;
+        await this.createOffscreenDocument();
+
+        const tabs = await promiseTabs.query({ active: true, currentWindow: true });
+        const currentTab = tabs[0];
+        if (!currentTab?.id) return;
+
+        this.channel.emitToTabs(currentTab.id, "command", {
+            command: "close_result_frame",
+        });
+        await delayPromise(80);
+
+        let selection;
+        try {
+            selection = await this.channel.requestToTab(currentTab.id, "select_capture_area");
+        } catch (error) {
+            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateUnsupported"));
+            throw error;
+        }
+
+        if (!selection || !selection.rect) return;
+
+        const timestamp = new Date().getTime();
+        this.channel.emitToTabs(currentTab.id, "start_translating", {
+            text: "",
+            position: selection.position,
+            timestamp,
+            loadingMessage: getScreenshotLoadingMessage(),
+            translateMode: "screenshot",
+        });
+
+        const screenshotUrl = await captureVisibleTab(currentTab.windowId);
+        let text;
+        try {
+            text = await this.channel.request("ocr_image", {
+                screenshotUrl,
+                rect: selection.rect,
+                viewportWidth: selection.viewportWidth,
+                viewportHeight: selection.viewportHeight,
+            });
+        } catch (error) {
+            if (String(error).includes("OCR_LANG_DATA_MISSING")) {
+                const message = getOcrDataMissingMessage();
+                notifyScreenshotTranslate(message);
+                this.emitTranslateError(currentTab.id, timestamp, message);
+            } else {
+                const message = chrome.i18n.getMessage("ScreenshotTranslateFailed");
+                notifyScreenshotTranslate(message);
+                this.emitTranslateError(currentTab.id, timestamp, message);
+            }
+            throw error;
+        }
+
+        const cleanedText = typeof text === "string" ? text.trim() : "";
+        if (!cleanedText) {
+            const message = chrome.i18n.getMessage("ScreenshotTranslateNoText");
+            notifyScreenshotTranslate(message);
+            this.emitTranslateError(currentTab.id, timestamp, message);
+            return;
+        }
+
+        return this.translateOnTabWithOptions(currentTab.id, cleanedText, selection.position, {
+            timestamp,
+            skipStartEvent: true,
+            translateMode: "screenshot",
+        });
+    }
+
+    emitTranslateError(tabId, timestamp, errorMsg) {
+        this.channel.emitToTabs(tabId, "translating_error", {
+            timestamp,
+            translateMode: "screenshot",
+            error: {
+                errorType: "API_ERR",
+                errorCode: "OCR_ERR",
+                errorMsg,
+            },
+        });
     }
 
     /**
@@ -511,6 +637,51 @@ async function executeGoogleScript(channel) {
             log(`Chrome runtime error: ${String(e)}`);
         }
     }
+}
+
+function captureVisibleTab(windowId) {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.captureVisibleTab(windowId, { format: "png" }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+            }
+            resolve(dataUrl);
+        });
+    });
+}
+
+function notifyScreenshotTranslate(message) {
+    if (!message) return;
+
+    chrome.notifications.create({
+        type: "basic",
+        iconUrl: chrome.runtime.getURL("icon/icon128.png"),
+        title: chrome.i18n.getMessage("AppName"),
+        message,
+    });
+}
+
+function getOcrDataMissingMessage() {
+    const message = chrome.i18n.getMessage("ScreenshotTranslateOcrDataMissing");
+    if (message) return message;
+
+    const language = chrome.i18n.getUILanguage().toLowerCase();
+    if (language.startsWith("zh")) {
+        return "OCR 语言包未下载，请先到设置页手动下载后再使用截图翻译。";
+    }
+    return "OCR language data is not downloaded. Open settings and download it first.";
+}
+
+function getScreenshotLoadingMessage() {
+    const message = chrome.i18n.getMessage("ScreenshotTranslateLoading");
+    if (message) return message;
+
+    const language = chrome.i18n.getUILanguage().toLowerCase();
+    if (language.startsWith("zh")) {
+        return "正在识别截图中的文字并翻译...";
+    }
+    return "Recognizing text from screenshot...";
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };

@@ -662,7 +662,7 @@ export default function ResultPanel() {
                                 </Head>
                                 <Body ref={bodyElRef}>
                                     <SimpleBar ref={simplebarRef}>
-                                        {contentType === "LOADING" && <Loading />}
+                                        {contentType === "LOADING" && <Loading {...content} />}
                                         {contentType === "RESULT" && <Result {...content} />}
                                         {contentType === "ERROR" && <Error {...content} />}
                                     </SimpleBar>

@@ -123,7 +123,7 @@
         }
     ],
     "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'"
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
     },
     "minimum_chrome_version": "88",
     "homepage_url": "https://github.com/three-water666/EdgeTranslate"

@@ -60,6 +60,156 @@ header {
     font-weight: bold;
 }
 
+.setting-anchor {
+    display: block;
+    scroll-margin-top: 20px;
+}
+
+.setting-note {
+    margin: 1% 5% 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    text-indent: 0;
+    padding-left: 0;
+    text-align: left;
+}
+
+#ocr-download-manager {
+    margin: 0 5% 3%;
+}
+
+.ocr-search-input {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.ocr-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 14px;
+}
+
+.ocr-filter-chip {
+    border: 1px solid #d8d8d8;
+    background: #fff;
+    color: #555;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ocr-filter-chip.active {
+    border-color: color-primary;
+    background: rgba(74, 140, 247, 0.1);
+    color: color-primary;
+}
+
+.ocr-download-list {
+    max-height: 620px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.ocr-download-card {
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.ocr-download-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+}
+
+.ocr-download-title {
+    flex: 1 1 auto;
+}
+
+.ocr-download-status {
+    color: #666;
+    min-width: 60px;
+    text-align: right;
+}
+
+.ocr-download-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.ocr-download-progress {
+    margin: 8px 0 2px;
+    height: 6px;
+    background: #ececec;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.ocr-download-progress-bar {
+    height: 100%;
+    background: color-primary;
+    transition: width 0.2s linear;
+}
+
+.ocr-action-button {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background: color-primary;
+    color: white;
+    cursor: pointer;
+}
+
+.ocr-action-button.secondary {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.ocr-action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ocr-download-error {
+    margin-top: 8px;
+    color: #c0392b;
+    font-size: 13px;
+}
+
+.ocr-download-error.inline {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.ocr-download-meta {
+    margin: 10px 0 0;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ocr-download-link {
+    color: color-primary;
+    text-decoration: none;
+}
+
+.ocr-download-link:hover {
+    text-decoration: underline;
+}
+
 .space {
     display: inline-block;
     width: 5px;

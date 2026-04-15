@@ -4,7 +4,7 @@ import { useEffect, useRef } from "preact/hooks";
 import styled from "styled-components";
 import { ContentWrapperCenterClassName } from "./Panel.jsx";
 
-export default function Loading() {
+export default function Loading(props) {
     const loadingElRef = useRef();
     /**
      * To align the loading animation align in the vertical center.
@@ -18,23 +18,26 @@ export default function Loading() {
     }, []);
     return (
         <LoadingEffect ref={loadingElRef}>
-            <div class="lds-ellipsis">
-                <div>
-                    <div />
+            <LoadingInner>
+                <div class="lds-ellipsis">
+                    <div>
+                        <div />
+                    </div>
+                    <div>
+                        <div />
+                    </div>
+                    <div>
+                        <div />
+                    </div>
+                    <div>
+                        <div />
+                    </div>
+                    <div>
+                        <div />
+                    </div>
                 </div>
-                <div>
-                    <div />
-                </div>
-                <div>
-                    <div />
-                </div>
-                <div>
-                    <div />
-                </div>
-                <div>
-                    <div />
-                </div>
-            </div>
+                <LoadingText>{props.loadingMessage || "Loading..."}</LoadingText>
+            </LoadingInner>
         </LoadingEffect>
     );
 }
@@ -246,4 +249,17 @@ const LoadingEffect = styled.div`
         -webkit-transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
         transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
     }
+`;
+
+const LoadingInner = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+`;
+
+const LoadingText = styled.div`
+    margin-top: 8px;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
 `;

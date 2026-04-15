@@ -183,6 +183,153 @@
         "message": "Переводчик страниц по умолчанию",
         "description": "Переводчик страниц по умолчанию."
     },
+    "OCRSettings": {
+        "message": "Настройки OCR",
+        "description": "Настройки OCR."
+    },
+    "OCRSettingsHint": {
+        "message": "Перед использованием перевода по скриншоту нужно скачать и включить нужный языковой пакет; какой пакет скачаете и включите, такой язык и сможете распознавать. Чем больше языков включено, тем медленнее может быть распознавание.",
+        "description": "Подсказка для настроек языков OCR."
+    },
+    "OCRSearchPlaceholder": {
+        "message": "Поиск по названию языка или коду, например english / eng",
+        "description": "Подсказка в поле поиска языков OCR."
+    },
+    "OCRFilterAll": {
+        "message": "Все",
+        "description": "Фильтр языков OCR: все."
+    },
+    "OCRFilterDownloaded": {
+        "message": "Скачано",
+        "description": "Фильтр языков OCR: скачано."
+    },
+    "OCRFilterEnabled": {
+        "message": "Включено",
+        "description": "Фильтр языков OCR: включено."
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "Не скачано",
+        "description": "Фильтр языков OCR: не скачано."
+    },
+    "OCRDownloadButton": {
+        "message": "Скачать",
+        "description": "Скачать языковые данные OCR."
+    },
+    "OCRStopButton": {
+        "message": "Остановить",
+        "description": "Остановить загрузку языковых данных OCR."
+    },
+    "OCRUploadButton": {
+        "message": "Загрузить",
+        "description": "Загрузить локальный языковой пакет OCR."
+    },
+    "OCREnableButton": {
+        "message": "Включить",
+        "description": "Включить язык OCR."
+    },
+    "OCRDisableButton": {
+        "message": "Выключить",
+        "description": "Выключить язык OCR."
+    },
+    "OCRDeleteButton": {
+        "message": "Удалить",
+        "description": "Удалить языковые данные OCR."
+    },
+    "OCRSourceLabel": {
+        "message": "Источник",
+        "description": "Метка источника загрузки OCR."
+    },
+    "OCROpenSourceLink": {
+        "message": "Открыть ссылку загрузки",
+        "description": "Открыть ссылку загрузки языкового пакета OCR."
+    },
+    "OCRStateEnabled": {
+        "message": "Включено",
+        "description": "Язык OCR включён."
+    },
+    "OCRStateDisabled": {
+        "message": "Выключено",
+        "description": "Язык OCR выключен."
+    },
+    "OCRStateUnknown": {
+        "message": "Неизвестно",
+        "description": "Неизвестное состояние OCR."
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "Имя файла не совпадает. Для $language$ нужен $file1$ или $file2$.",
+        "placeholders": {
+            "language": {
+                "content": "$1"
+            },
+            "file1": {
+                "content": "$2"
+            },
+            "file2": {
+                "content": "$3"
+            }
+        },
+        "description": "Несоответствие имени файла OCR при загрузке."
+    },
+    "OCRActionFailed": {
+        "message": "Не удалось выполнить операцию с ресурсами OCR",
+        "description": "Ошибка операции с ресурсами OCR."
+    },
+    "OCRStatusLoading": {
+        "message": "Обработка",
+        "description": "Общий статус загрузки OCR."
+    },
+    "OCRStatusDownloaded": {
+        "message": "Загружено",
+        "description": "Языковые данные OCR загружены."
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "Не загружено",
+        "description": "Языковые данные OCR не загружены."
+    },
+    "OCRStatusFailed": {
+        "message": "Ошибка",
+        "description": "Ошибка загрузки языковых данных OCR."
+    },
+    "OCRStatusQueued": {
+        "message": "В очереди",
+        "description": "Загрузка языковых данных OCR поставлена в очередь."
+    },
+    "OCRStatusInitializing": {
+        "message": "Инициализация",
+        "description": "Инициализация языковых данных OCR."
+    },
+    "OCRStatusDownloading": {
+        "message": "Загрузка",
+        "description": "Загрузка языковых данных OCR."
+    },
+    "OCRStatusFinalizing": {
+        "message": "Завершение",
+        "description": "Завершение загрузки языковых данных OCR."
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "сетевая ошибка",
+        "description": "Тип ошибки OCR: сеть."
+    },
+    "OCRErrorTypeValidation": {
+        "message": "ошибка проверки",
+        "description": "Тип ошибки OCR: ошибка проверки файла."
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "Тип ошибки OCR: не найдено."
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "Тип ошибки OCR: доступ запрещён."
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "отменено",
+        "description": "Тип ошибки OCR: отменено."
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "неизвестно",
+        "description": "Тип ошибки OCR: неизвестно."
+    },
     "LayoutSettings": {
         "message": "Настройки макета",
         "description": "Выбор способа отображения результатов перевода."
@@ -234,6 +381,46 @@
     "GooglePageTranslate": {
         "message": "Переводчик страниц Google",
         "description": "Перевод текущей страницы с помощью Google Translate API."
+    },
+    "ScreenshotTranslate": {
+        "message": "Перевод снимка",
+        "description": "Перевести текст из выделенного снимка."
+    },
+    "ScreenshotTranslateHint": {
+        "message": "Зажмите левую кнопку и выделите область, нажмите Esc или левую кнопку мыши для отмены",
+        "description": "Подсказка при выборе области для OCR."
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "В выбранной области не удалось распознать текст.",
+        "description": "Текст не распознан на снимке."
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "Не удалось запустить OCR по снимку. Перезагрузите расширение и попробуйте снова.",
+        "description": "Не удалось запустить OCR по снимку."
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "Перевод по снимку недоступен на этой странице.",
+        "description": "Перевод по снимку недоступен на текущей странице."
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "Распознаём текст на снимке и переводим...",
+        "description": "Сообщение загрузки во время OCR по снимку."
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "Языковые данные OCR не загружены. Сначала откройте настройки и скачайте их.",
+        "description": "Сообщение при отсутствии языковых данных для OCR по снимку."
+    },
+    "ScreenshotTranslateResultNoticeTitle": {
+        "message": "Распознавание неточное?",
+        "description": "Заголовок подсказки под результатом перевода по скриншоту."
+    },
+    "ScreenshotTranslateResultNoticeText": {
+        "message": "Возможно, нужные языковые данные OCR ещё не загружены. Откройте настройки OCR и скачайте их. В сложных сценах, например на постерах или изображениях со сложной вёрсткой, распознавание тоже может быть неточным.",
+        "description": "Текст подсказки под результатом перевода по скриншоту."
+    },
+    "ScreenshotTranslateResultNoticeAction": {
+        "message": "Открыть настройки OCR",
+        "description": "Кнопка подсказки под результатом перевода по скриншоту."
     },
     "TranslatePage": {
         "message": "Перевести эту страницу",
@@ -1286,5 +1473,97 @@
     "Zulu": {
         "message": "Zulu",
         "description": "Zulu"
+    },
+    "AzerbaijaniCyrillic": {
+        "message": "азербайджанский (кириллица)",
+        "description": "азербайджанский (кириллица)"
+    },
+    "Tibetan": {
+        "message": "тибетский",
+        "description": "тибетский"
+    },
+    "CatalanValencian": {
+        "message": "каталанский; валенсийский",
+        "description": "каталанский; валенсийский"
+    },
+    "Dzongkha": {
+        "message": "дзонг-кэ",
+        "description": "дзонг-кэ"
+    },
+    "GreekModern1453": {
+        "message": "греческий (современный)",
+        "description": "греческий (современный)"
+    },
+    "EnglishMiddle11001500": {
+        "message": "среднеанглийский",
+        "description": "среднеанглийский"
+    },
+    "GermanFraktur": {
+        "message": "немецкий Fraktur",
+        "description": "немецкий Fraktur"
+    },
+    "FrenchMiddleCa14001600": {
+        "message": "среднефранцузский",
+        "description": "среднефранцузский"
+    },
+    "GreekAncient1453": {
+        "message": "древнегреческий",
+        "description": "древнегреческий"
+    },
+    "HaitianHaitianCreole": {
+        "message": "гаитянский; гаитянский креольский",
+        "description": "гаитянский; гаитянский креольский"
+    },
+    "ItalianOld": {
+        "message": "староитальянский",
+        "description": "староитальянский"
+    },
+    "GeorgianOld": {
+        "message": "старогрузинский",
+        "description": "старогрузинский"
+    },
+    "CentralKhmer": {
+        "message": "центральнокхмерский",
+        "description": "центральнокхмерский"
+    },
+    "KirghizKyrgyz": {
+        "message": "киргизский",
+        "description": "киргизский"
+    },
+    "DutchFlemish": {
+        "message": "нидерландский; фламандский",
+        "description": "нидерландский; фламандский"
+    },
+    "PanjabiPunjabi": {
+        "message": "панджаби",
+        "description": "панджаби"
+    },
+    "PushtoPashto": {
+        "message": "пушту",
+        "description": "пушту"
+    },
+    "RomanianMoldavianMoldovan": {
+        "message": "румынский; молдавский",
+        "description": "румынский; молдавский"
+    },
+    "SinhalaSinhalese": {
+        "message": "сингальский",
+        "description": "сингальский"
+    },
+    "SpanishCastilian": {
+        "message": "испанский",
+        "description": "испанский"
+    },
+    "SpanishCastilianOld": {
+        "message": "староиспанский",
+        "description": "староиспанский"
+    },
+    "UighurUyghur": {
+        "message": "уйгурский",
+        "description": "уйгурский"
+    },
+    "UzbekCyrillic": {
+        "message": "узбекский (кириллица)",
+        "description": "узбекский (кириллица)"
     }
 }

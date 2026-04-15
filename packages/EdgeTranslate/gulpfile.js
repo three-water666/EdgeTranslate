@@ -297,7 +297,7 @@ function packStatic() {
 
     // non-js static files
     let staticOtherFiles = gulp
-        .src("./static/**/!(*.js)", { base: "static" })
+        .src(["./static/**/!(*.js)", "!./static/ocr/lang/**/*"], { base: "static" })
         .pipe(gulp.dest(output_dir));
 
     return mergeStream([staticJSFiles, vendoredJSFiles, staticOtherFiles]);

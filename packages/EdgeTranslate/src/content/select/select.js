@@ -16,6 +16,7 @@ function initSelectTranslate() {
 
     // to indicate whether the translation button has been shown
     let HasButtonShown = false;
+    let screenshotSelectionSession = null;
 
     /**
      * Initiate translation button.
@@ -419,6 +420,9 @@ function initSelectTranslate() {
 
     // provide user's selection result for the background module
     channel.provide("get_selection", () => Promise.resolve(getSelection()));
+    if (window.top === window) {
+        channel.provide("select_capture_area", () => Promise.resolve(startScreenshotSelection()));
+    }
 
     // handler for shortcut command
     channel.on("command", (detail) => {
@@ -436,4 +440,163 @@ function initSelectTranslate() {
                 break;
         }
     });
+
+    function startScreenshotSelection() {
+        if (screenshotSelectionSession) {
+            return screenshotSelectionSession.promise;
+        }
+
+        let overlay = document.createElement("div");
+        let mask = document.createElement("div");
+        let selectionBox = document.createElement("div");
+        let hint = document.createElement("div");
+        let startPoint = null;
+        let finished = false;
+        let currentRect = null;
+
+        overlay.id = "edge-translate-screenshot-overlay";
+        Object.assign(overlay.style, {
+            position: "fixed",
+            inset: 0,
+            zIndex: 2147483647,
+            cursor: "crosshair",
+            userSelect: "none",
+        });
+
+        Object.assign(mask.style, {
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.18)",
+        });
+
+        Object.assign(selectionBox.style, {
+            position: "absolute",
+            border: "2px solid #4a8cf7",
+            background: "rgba(74, 140, 247, 0.15)",
+            display: "none",
+            boxSizing: "border-box",
+        });
+
+        hint.textContent = chrome.i18n.getMessage("ScreenshotTranslateHint");
+        Object.assign(hint.style, {
+            position: "absolute",
+            top: "16px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            padding: "8px 12px",
+            borderRadius: "999px",
+            background: "rgba(17, 24, 39, 0.9)",
+            color: "#fff",
+            fontSize: "13px",
+            lineHeight: 1.2,
+            fontFamily: "system-ui, sans-serif",
+            whiteSpace: "nowrap",
+            boxShadow: "0 6px 18px rgba(0, 0, 0, 0.2)",
+        });
+
+        overlay.appendChild(mask);
+        overlay.appendChild(selectionBox);
+        overlay.appendChild(hint);
+        document.documentElement.appendChild(overlay);
+
+        const cleanup = () => {
+            window.removeEventListener("keydown", keydownHandler, true);
+            overlay.removeEventListener("mousedown", mousedownHandler, true);
+            overlay.removeEventListener("mousemove", mousemoveHandler, true);
+            overlay.removeEventListener("mouseup", mouseupHandler, true);
+            if (document.documentElement.contains(overlay)) {
+                document.documentElement.removeChild(overlay);
+            }
+            screenshotSelectionSession = null;
+        };
+
+        const resolveSelection = (value) => {
+            if (finished) return;
+            finished = true;
+            const { resolve } = screenshotSelectionSession;
+            cleanup();
+            resolve(value);
+        };
+
+        const keydownHandler = (event) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                resolveSelection(null);
+            }
+        };
+
+        const mousedownHandler = (event) => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            event.stopPropagation();
+            startPoint = { x: event.clientX, y: event.clientY };
+            currentRect = null;
+            selectionBox.style.display = "block";
+            updateSelectionBox(startPoint.x, startPoint.y, 0, 0);
+        };
+
+        const mousemoveHandler = (event) => {
+            if (!startPoint) return;
+            event.preventDefault();
+            event.stopPropagation();
+            currentRect = normalizeRect(startPoint.x, startPoint.y, event.clientX, event.clientY);
+            updateSelectionBox(
+                currentRect.left,
+                currentRect.top,
+                currentRect.width,
+                currentRect.height
+            );
+        };
+
+        const mouseupHandler = (event) => {
+            if (event.button !== 0 || !startPoint) return;
+            event.preventDefault();
+            event.stopPropagation();
+            currentRect = normalizeRect(startPoint.x, startPoint.y, event.clientX, event.clientY);
+            if (currentRect.width < 8 || currentRect.height < 8) {
+                resolveSelection(null);
+                return;
+            }
+
+            resolveSelection({
+                rect: currentRect,
+                position: [currentRect.left, currentRect.top],
+                viewportWidth: window.innerWidth,
+                viewportHeight: window.innerHeight,
+            });
+        };
+
+        overlay.addEventListener("mousedown", mousedownHandler, true);
+        overlay.addEventListener("mousemove", mousemoveHandler, true);
+        overlay.addEventListener("mouseup", mouseupHandler, true);
+        window.addEventListener("keydown", keydownHandler, true);
+
+        screenshotSelectionSession = {};
+        screenshotSelectionSession.promise = new Promise((resolve) => {
+            screenshotSelectionSession.resolve = resolve;
+        });
+
+        return screenshotSelectionSession.promise;
+
+        function normalizeRect(startX, startY, endX, endY) {
+            const left = Math.max(0, Math.min(startX, endX));
+            const top = Math.max(0, Math.min(startY, endY));
+            const right = Math.min(window.innerWidth, Math.max(startX, endX));
+            const bottom = Math.min(window.innerHeight, Math.max(startY, endY));
+            return {
+                left,
+                top,
+                width: Math.max(0, right - left),
+                height: Math.max(0, bottom - top),
+            };
+        }
+
+        function updateSelectionBox(left, top, width, height) {
+            selectionBox.style.left = `${left}px`;
+            selectionBox.style.top = `${top}px`;
+            selectionBox.style.width = `${width}px`;
+            selectionBox.style.height = `${height}px`;
+        }
+    }
 }

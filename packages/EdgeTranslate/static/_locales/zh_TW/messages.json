@@ -183,6 +183,153 @@
         "message": "默認網頁翻譯器",
         "description": "選擇默認網頁翻譯器。"
     },
+    "OCRSettings": {
+        "message": "OCR 設定",
+        "description": "OCR 設定。"
+    },
+    "OCRSettingsHint": {
+        "message": "使用截圖翻譯前，需要先下載並啟用對應語言包；下載並啟用哪種語言包，就能辨識哪種語言。啟用越多，辨識可能越慢。",
+        "description": "OCR 語言設定提示"
+    },
+    "OCRSearchPlaceholder": {
+        "message": "搜尋語言名稱或代碼，例如 english / eng",
+        "description": "OCR 語言搜尋框提示"
+    },
+    "OCRFilterAll": {
+        "message": "全部",
+        "description": "OCR 語言篩選：全部"
+    },
+    "OCRFilterDownloaded": {
+        "message": "已下載",
+        "description": "OCR 語言篩選：已下載"
+    },
+    "OCRFilterEnabled": {
+        "message": "已啟用",
+        "description": "OCR 語言篩選：已啟用"
+    },
+    "OCRFilterNotDownloaded": {
+        "message": "未下載",
+        "description": "OCR 語言篩選：未下載"
+    },
+    "OCRDownloadButton": {
+        "message": "下載",
+        "description": "下載 OCR 語言包"
+    },
+    "OCRStopButton": {
+        "message": "停止",
+        "description": "停止下載 OCR 語言包"
+    },
+    "OCRUploadButton": {
+        "message": "上傳",
+        "description": "上傳本機 OCR 語言包"
+    },
+    "OCREnableButton": {
+        "message": "啟用",
+        "description": "啟用 OCR 語言"
+    },
+    "OCRDisableButton": {
+        "message": "停用",
+        "description": "停用 OCR 語言"
+    },
+    "OCRDeleteButton": {
+        "message": "刪除",
+        "description": "刪除 OCR 語言包"
+    },
+    "OCRSourceLabel": {
+        "message": "來源",
+        "description": "OCR 下載來源標籤"
+    },
+    "OCROpenSourceLink": {
+        "message": "開啟下載地址",
+        "description": "開啟 OCR 語言包下載地址"
+    },
+    "OCRStateEnabled": {
+        "message": "已啟用",
+        "description": "OCR 語言已啟用"
+    },
+    "OCRStateDisabled": {
+        "message": "未啟用",
+        "description": "OCR 語言未啟用"
+    },
+    "OCRStateUnknown": {
+        "message": "未知",
+        "description": "未知 OCR 狀態"
+    },
+    "OCRUploadFileNameMismatch": {
+        "message": "檔名不符，$language$ 需要使用 $file1$ 或 $file2$",
+        "placeholders": {
+            "language": {
+                "content": "$1"
+            },
+            "file1": {
+                "content": "$2"
+            },
+            "file2": {
+                "content": "$3"
+            }
+        },
+        "description": "上傳 OCR 檔名不符"
+    },
+    "OCRActionFailed": {
+        "message": "OCR 資源操作失敗",
+        "description": "OCR 資源操作失敗"
+    },
+    "OCRStatusLoading": {
+        "message": "處理中",
+        "description": "通用 OCR 載入狀態"
+    },
+    "OCRStatusDownloaded": {
+        "message": "已下載",
+        "description": "OCR 語言包已下載"
+    },
+    "OCRStatusNotDownloaded": {
+        "message": "未下載",
+        "description": "OCR 語言包未下載"
+    },
+    "OCRStatusFailed": {
+        "message": "失敗",
+        "description": "OCR 語言包下載失敗"
+    },
+    "OCRStatusQueued": {
+        "message": "排隊中",
+        "description": "OCR 語言包排隊中"
+    },
+    "OCRStatusInitializing": {
+        "message": "初始化",
+        "description": "OCR 語言包初始化中"
+    },
+    "OCRStatusDownloading": {
+        "message": "下載中",
+        "description": "OCR 語言包下載中"
+    },
+    "OCRStatusFinalizing": {
+        "message": "整理中",
+        "description": "OCR 語言包整理中"
+    },
+    "OCRErrorTypeNetwork": {
+        "message": "網路錯誤",
+        "description": "OCR 下載錯誤類型：網路"
+    },
+    "OCRErrorTypeValidation": {
+        "message": "驗證失敗",
+        "description": "OCR 下載錯誤類型：檔案驗證失敗"
+    },
+    "OCRErrorTypeNotFound": {
+        "message": "404",
+        "description": "OCR 下載錯誤類型：找不到資源"
+    },
+    "OCRErrorTypeForbidden": {
+        "message": "403",
+        "description": "OCR 下載錯誤類型：禁止存取"
+    },
+    "OCRErrorTypeCancelled": {
+        "message": "已取消",
+        "description": "OCR 下載錯誤類型：已取消"
+    },
+    "OCRErrorTypeUnknown": {
+        "message": "未知錯誤",
+        "description": "OCR 下載錯誤類型：未知"
+    },
     "LayoutSettings": {
         "message": "佈局設定",
         "description": "調整翻譯結果展示框的佈局"
@@ -234,6 +381,46 @@
     "GooglePageTranslate": {
         "message": "谷歌網頁翻譯",
         "description": "使用谷歌翻譯的api翻譯當前頁面。"
+    },
+    "ScreenshotTranslate": {
+        "message": "截圖翻譯",
+        "description": "翻譯截圖區域中的文字"
+    },
+    "ScreenshotTranslateHint": {
+        "message": "按住左鍵拖曳選取區域，按 Esc 或單擊左鍵取消",
+        "description": "截圖 OCR 選區時顯示的提示"
+    },
+    "ScreenshotTranslateNoText": {
+        "message": "所選區域沒有辨識到文字。",
+        "description": "截圖未辨識到文字"
+    },
+    "ScreenshotTranslateFailed": {
+        "message": "截圖 OCR 啟動失敗，請重新載入擴充功能後再試。",
+        "description": "截圖 OCR 啟動失敗"
+    },
+    "ScreenshotTranslateUnsupported": {
+        "message": "目前頁面暫不支援截圖翻譯。",
+        "description": "目前頁面不支援截圖翻譯"
+    },
+    "ScreenshotTranslateLoading": {
+        "message": "正在辨識截圖中的文字並翻譯...",
+        "description": "截圖 OCR 執行中的載入提示"
+    },
+    "ScreenshotTranslateOcrDataMissing": {
+        "message": "OCR 語言包尚未下載，請先到設定頁手動下載後再使用截圖翻譯。",
+        "description": "截圖 OCR 缺少語言包時的提示"
+    },
+    "ScreenshotTranslateResultNoticeTitle": {
+        "message": "辨識不準確？",
+        "description": "截圖翻譯結果下方提示標題"
+    },
+    "ScreenshotTranslateResultNoticeText": {
+        "message": "可能是對應語言包尚未下載，請前往設定頁的 OCR 設定進行下載；複雜場景如海報、排版圖片等目前也可能無法準確辨識。",
+        "description": "截圖翻譯結果下方提示內容"
+    },
+    "ScreenshotTranslateResultNoticeAction": {
+        "message": "前往 OCR 設定",
+        "description": "截圖翻譯結果下方提示按鈕"
     },
     "TranslatePage": {
         "message": "翻譯此頁",
@@ -1286,5 +1473,97 @@
     "Zulu": {
         "message": "祖魯語",
         "description": "祖魯語"
+    },
+    "AzerbaijaniCyrillic": {
+        "message": "亞塞拜然語（西里爾）",
+        "description": "亞塞拜然語（西里爾）"
+    },
+    "Tibetan": {
+        "message": "藏語",
+        "description": "藏語"
+    },
+    "CatalanValencian": {
+        "message": "加泰隆尼亞語、瓦倫西亞語",
+        "description": "加泰隆尼亞語、瓦倫西亞語"
+    },
+    "Dzongkha": {
+        "message": "宗卡語",
+        "description": "宗卡語"
+    },
+    "GreekModern1453": {
+        "message": "現代希臘語",
+        "description": "現代希臘語"
+    },
+    "EnglishMiddle11001500": {
+        "message": "中古英語",
+        "description": "中古英語"
+    },
+    "GermanFraktur": {
+        "message": "德語 Fraktur",
+        "description": "德語 Fraktur"
+    },
+    "FrenchMiddleCa14001600": {
+        "message": "中古法語",
+        "description": "中古法語"
+    },
+    "GreekAncient1453": {
+        "message": "古希臘語",
+        "description": "古希臘語"
+    },
+    "HaitianHaitianCreole": {
+        "message": "海地語、海地克里奧爾語",
+        "description": "海地語、海地克里奧爾語"
+    },
+    "ItalianOld": {
+        "message": "古義大利語",
+        "description": "古義大利語"
+    },
+    "GeorgianOld": {
+        "message": "古喬治亞語",
+        "description": "古喬治亞語"
+    },
+    "CentralKhmer": {
+        "message": "高棉語、柬埔寨語",
+        "description": "高棉語、柬埔寨語"
+    },
+    "KirghizKyrgyz": {
+        "message": "吉爾吉斯語",
+        "description": "吉爾吉斯語"
+    },
+    "DutchFlemish": {
+        "message": "荷蘭語、佛蘭芒語",
+        "description": "荷蘭語、佛蘭芒語"
+    },
+    "PanjabiPunjabi": {
+        "message": "旁遮普語",
+        "description": "旁遮普語"
+    },
+    "PushtoPashto": {
+        "message": "普什圖語",
+        "description": "普什圖語"
+    },
+    "RomanianMoldavianMoldovan": {
+        "message": "羅馬尼亞語、摩爾多瓦語",
+        "description": "羅馬尼亞語、摩爾多瓦語"
+    },
+    "SinhalaSinhalese": {
+        "message": "僧伽羅語",
+        "description": "僧伽羅語"
+    },
+    "SpanishCastilian": {
+        "message": "西班牙語",
+        "description": "西班牙語"
+    },
+    "SpanishCastilianOld": {
+        "message": "古西班牙語",
+        "description": "古西班牙語"
+    },
+    "UighurUyghur": {
+        "message": "維吾爾語",
+        "description": "維吾爾語"
+    },
+    "UzbekCyrillic": {
+        "message": "烏茲別克語（西里爾）",
+        "description": "烏茲別克語（西里爾）"
     }
 }

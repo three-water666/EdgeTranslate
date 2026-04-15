@@ -11,7 +11,11 @@ import { promiseTabs } from "common/scripts/promise.js";
 import Channel from "common/scripts/channel.js";
 // map language abbreviation from browser languages to translation languages
 import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
-import { DEFAULT_SETTINGS, setDefaultSettings } from "common/scripts/settings.js";
+import {
+    DEFAULT_SETTINGS,
+    getOrSetDefaultSettings,
+    setDefaultSettings,
+} from "common/scripts/settings.js";
 import { resolveContextMenuSelection } from "./library/context_menu.js";
 
 if (typeof BUILD_ENV !== "undefined" && BUILD_ENV === "development") {
@@ -57,6 +61,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         id: "translate_page",
         title: chrome.i18n.getMessage("TranslatePage"),
         contexts: ["page"],
+    });
+
+    chrome.contextMenus.create({
+        id: "screenshot_translate",
+        title: chrome.i18n.getMessage("ScreenshotTranslate"),
+        contexts: ["page", "selection"],
     });
 
     chrome.contextMenus.create({
@@ -200,6 +210,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     return Promise.resolve(error);
                 });
             break;
+        case "screenshot_translate":
+            handleScreenshotTranslateMenuClick();
+            break;
         case "translate_page":
             translatePage(channel);
             break;
@@ -227,6 +240,37 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             break;
     }
 });
+
+async function handleScreenshotTranslateMenuClick() {
+    const activeLanguages = await getActiveOcrLanguages().catch(() => []);
+    if (activeLanguages.length === 0) {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL("options/options.html#ocr-settings"),
+        });
+        return;
+    }
+
+    TRANSLATOR_MANAGER.screenshotTranslate().catch(() => {});
+}
+
+async function getActiveOcrLanguages() {
+    const { OCRSettings: ocrSettings } = await getOrSetDefaultSettings(
+        ["OCRSettings"],
+        DEFAULT_SETTINGS
+    );
+    const selectedLanguages =
+        Array.isArray(ocrSettings?.EnabledLanguages) && ocrSettings.EnabledLanguages.length > 0
+            ? ocrSettings.EnabledLanguages
+            : Array.isArray(ocrSettings?.Languages) && ocrSettings.Languages.length > 0
+            ? ocrSettings.Languages
+            : ["eng", "chi_sim"];
+    await TRANSLATOR_MANAGER.createOffscreenDocument();
+    const statusMap = await channel.request("get_ocr_language_status", {
+        languages: selectedLanguages,
+    });
+
+    return selectedLanguages.filter((language) => statusMap?.[language]?.downloaded);
+}
 
 /**
  * 添加tab切换事件监听，用于更新黑名单信息
@@ -257,6 +301,12 @@ channel.on("redirect", (detail, sender) => chrome.tabs.update(sender.tab.id, { u
  * Open options page when open_options_page button clicked.
  */
 channel.on("open_options_page", () => chrome.runtime.openOptionsPage());
+
+channel.on("open_ocr_settings_page", () => {
+    chrome.tabs.create({
+        url: chrome.runtime.getURL("options/options.html#ocr-settings"),
+    });
+});
 
 /**
  * Forward page translate event back to pages.
