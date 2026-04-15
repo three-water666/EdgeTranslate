@@ -310,6 +310,10 @@
         "message": "网络错误",
         "description": "OCR 下载错误类型：网络"
     },
+    "OCRErrorTypeValidation": {
+        "message": "校验失败",
+        "description": "OCR 下载错误类型：文件校验失败"
+    },
     "OCRErrorTypeNotFound": {
         "message": "404",
         "description": "OCR 下载错误类型：资源不存在"

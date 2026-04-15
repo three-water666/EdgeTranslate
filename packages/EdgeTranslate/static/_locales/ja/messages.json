@@ -310,6 +310,10 @@
         "message": "ネットワークエラー",
         "description": "OCR エラー種別: ネットワーク"
     },
+    "OCRErrorTypeValidation": {
+        "message": "検証失敗",
+        "description": "OCR エラー種別: ファイル検証失敗"
+    },
     "OCRErrorTypeNotFound": {
         "message": "404",
         "description": "OCR エラー種別: 見つからない"

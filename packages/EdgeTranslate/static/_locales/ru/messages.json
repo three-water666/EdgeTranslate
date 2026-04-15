@@ -310,6 +310,10 @@
         "message": "сетевая ошибка",
         "description": "Тип ошибки OCR: сеть."
     },
+    "OCRErrorTypeValidation": {
+        "message": "ошибка проверки",
+        "description": "Тип ошибки OCR: ошибка проверки файла."
+    },
     "OCRErrorTypeNotFound": {
         "message": "404",
         "description": "Тип ошибки OCR: не найдено."

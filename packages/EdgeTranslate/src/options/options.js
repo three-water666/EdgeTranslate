@@ -401,20 +401,20 @@ async function importOcrLanguageFile(language, file) {
     const state = ocrLanguageStates[language];
     if (!state) return;
 
-    validateOcrLanguageFile(language, file);
-
-    ocrLanguageStates.__globalError = "";
-    ocrLanguageStates[language] = {
-        ...state,
-        downloading: true,
-        progress: 100,
-        status: "finalizing",
-        error: "",
-        errorType: "",
-    };
-    renderOcrDownloadManager();
-
     try {
+        validateOcrLanguageFile(language, file);
+
+        ocrLanguageStates.__globalError = "";
+        ocrLanguageStates[language] = {
+            ...state,
+            downloading: true,
+            progress: 100,
+            status: "finalizing",
+            error: "",
+            errorType: "",
+        };
+        renderOcrDownloadManager();
+
         const buffer = new Uint8Array(await file.arrayBuffer());
         await writeCachedOcrLanguage(language, buffer);
         const status = await channel.request("get_ocr_download_status", { languages: [language] });
@@ -433,7 +433,7 @@ async function importOcrLanguageFile(language, file) {
             downloading: false,
             status: "error",
             error: getErrorText(error),
-            errorType: "unknown",
+            errorType: error?.type || "unknown",
         };
         renderOcrDownloadManager();
     }
@@ -451,13 +451,15 @@ function validateOcrLanguageFile(language, file) {
     const allowedNames = new Set([`${language}.traineddata`, `${language}.traineddata.gz`]);
 
     if (!allowedNames.has(fileName)) {
-        throw new Error(
+        const error = new Error(
             getMessageWithFallback(
                 "OCRUploadFileNameMismatch",
                 [language, `${language}.traineddata`, `${language}.traineddata.gz`],
                 `File name does not match. ${language} requires ${language}.traineddata or ${language}.traineddata.gz`
             )
         );
+        error.type = "validation";
+        throw error;
     }
 }
 
@@ -551,6 +553,7 @@ function getErrorText(error) {
 function formatOcrError(state) {
     const prefix = getMessageOrFallback("OCRStatusFailed", "失败");
     const typeTextMap = {
+        validation: getMessageOrFallback("OCRErrorTypeValidation", "validation"),
         network: getMessageOrFallback("OCRErrorTypeNetwork", "network"),
         not_found: getMessageOrFallback("OCRErrorTypeNotFound", "404"),
         forbidden: getMessageOrFallback("OCRErrorTypeForbidden", "403"),

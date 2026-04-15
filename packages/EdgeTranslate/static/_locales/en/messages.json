@@ -310,6 +310,10 @@
         "message": "network",
         "description": "OCR error type: network."
     },
+    "OCRErrorTypeValidation": {
+        "message": "validation failed",
+        "description": "OCR error type: validation failed."
+    },
     "OCRErrorTypeNotFound": {
         "message": "404",
         "description": "OCR error type: not found."
