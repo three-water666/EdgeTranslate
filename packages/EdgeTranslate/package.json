@@ -46,10 +46,6 @@
     },
     "dependencies": {
         "@edge_translate/translators": "workspace:^",
-        "@tesseract.js-data/chi_sim": "^1.0.0",
-        "@tesseract.js-data/eng": "^1.0.0",
-        "@tesseract.js-data/jpn": "^1.0.0",
-        "@tesseract.js-data/kor": "^1.0.0",
         "dompurify": "^2.3.6",
         "preact": "^10.6.6",
         "preact-render-to-string": "^5.1.20",

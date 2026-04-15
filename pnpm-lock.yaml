@@ -55,18 +55,6 @@ importers:
             "@edge_translate/translators":
                 specifier: workspace:^
                 version: link:../translators
-            "@tesseract.js-data/chi_sim":
-                specifier: ^1.0.0
-                version: 1.0.0
-            "@tesseract.js-data/eng":
-                specifier: ^1.0.0
-                version: 1.0.0
-            "@tesseract.js-data/jpn":
-                specifier: ^1.0.0
-                version: 1.0.0
-            "@tesseract.js-data/kor":
-                specifier: ^1.0.0
-                version: 1.0.0
             dompurify:
                 specifier: ^2.3.6
                 version: 2.5.9
@@ -1882,30 +1870,6 @@ packages:
                 integrity: sha512-DOBOK255wfQxguUta2INKkzPj6AIS6iafZYiYmHn6W3pHlycSRRlvWKCfLDG10fXfLWqE3DJHgRUOyJYmARa7g==,
             }
         engines: { node: ">=10" }
-
-    "@tesseract.js-data/chi_sim@1.0.0":
-        resolution:
-            {
-                integrity: sha512-iuErURkPbECDUazgsLn/r3c+tU2y5o5S/w14d0A/YiagfsjYyZKgTo75RUpsGJ311qtu0dIX4hqnXAAjmqf2CA==,
-            }
-
-    "@tesseract.js-data/eng@1.0.0":
-        resolution:
-            {
-                integrity: sha512-mbTumm6KQPUHyzTPQaF3ObXYnx0SqqfV2nabqFVQBwD6Kl7PhGSLSzOlfFTWy0P3BjghaSKA2W9GB19Jk+ZcTg==,
-            }
-
-    "@tesseract.js-data/jpn@1.0.0":
-        resolution:
-            {
-                integrity: sha512-nUq2xHUjiWE6FRqkvLIIbByLZ39B8qNaBSOnVP4XIKGPKtZ1e0hiRnK7WhPfl8A+Fe7aNE1u/QoXXUym3TbSCA==,
-            }
-
-    "@tesseract.js-data/kor@1.0.0":
-        resolution:
-            {
-                integrity: sha512-tepYhsYiRJ8E44R27MHxVteEDDLfYQxuvM6u4JlEHcCYqwpefvI5TGzoMgB67kunOvtyEJYtT5zfJ/6R6FVU9w==,
-            }
 
     "@testim/chrome-version@1.1.4":
         resolution:
@@ -13762,14 +13726,6 @@ snapshots:
             loader-utils: 2.0.4
         transitivePeerDependencies:
             - supports-color
-
-    "@tesseract.js-data/chi_sim@1.0.0": {}
-
-    "@tesseract.js-data/eng@1.0.0": {}
-
-    "@tesseract.js-data/jpn@1.0.0": {}
-
-    "@tesseract.js-data/kor@1.0.0": {}
 
     "@testim/chrome-version@1.1.4": {}
 
