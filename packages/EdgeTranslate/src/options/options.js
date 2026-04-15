@@ -14,6 +14,7 @@ let ocrDownloadManagerContainer = null;
 let ocrLanguageStates = {};
 let ocrLanguageSearchQuery = "";
 let ocrLanguageQuickFilter = "all";
+let ocrLanguageSearchComposing = false;
 const OCR_COMMON_LANGUAGE_CODES = [
     "eng",
     "chi_sim",
@@ -197,9 +198,25 @@ function renderOcrDownloadManager() {
     searchInput.className = "ocr-search-input";
     searchInput.placeholder = getMessageOrFallback("OCRSearchPlaceholder", "搜索语言或代码");
     searchInput.value = ocrLanguageSearchQuery;
+    searchInput.oncompositionstart = () => {
+        ocrLanguageSearchComposing = true;
+    };
+    searchInput.oncompositionend = (event) => {
+        ocrLanguageSearchComposing = false;
+        window.setTimeout(() => {
+            applyOcrLanguageSearchQuery(event.target.value || "");
+        }, 0);
+    };
     searchInput.oninput = (event) => {
-        ocrLanguageSearchQuery = event.target.value || "";
-        renderOcrDownloadManager();
+        const nextQuery = event.target.value || "";
+        ocrLanguageSearchQuery = nextQuery;
+        if (ocrLanguageSearchComposing || event.isComposing) return;
+        applyOcrLanguageSearchQuery(nextQuery);
+    };
+    searchInput.onkeydown = (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        applyOcrLanguageSearchQuery(event.target.value || "");
     };
     container.appendChild(searchInput);
 
@@ -335,6 +352,11 @@ function renderOcrDownloadManager() {
             }
         }
     }
+}
+
+function applyOcrLanguageSearchQuery(query) {
+    ocrLanguageSearchQuery = query;
+    renderOcrDownloadManager();
 }
 
 function getOrderedOcrLanguages() {
