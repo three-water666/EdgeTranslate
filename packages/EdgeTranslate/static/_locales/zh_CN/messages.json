@@ -188,12 +188,8 @@
         "description": "OCR 设置。"
     },
     "OCRSettingsHint": {
-        "message": "OCR 就是图片文字识别。截图翻译前，需要先下载并启用对应的语言包；下载并启用哪种语言包，就能识别哪种语言。启用越多，识别可能越慢。",
+        "message": "截图翻译前，需要先下载并启用对应的语言包；下载并启用哪种语言包，就能识别哪种语言。启用越多，识别可能越慢。",
         "description": "OCR 语言设置提示"
-    },
-    "OCRDownloadHint": {
-        "message": "语言包不会随扩展安装。你可以直接下载，也可以自己下载后再上传；下载成功后即可启用该语言用于截图识别。当前下载源为 jsDelivr。",
-        "description": "OCR 语言包下载提示"
     },
     "OCRSearchPlaceholder": {
         "message": "搜索语言名称或代码，例如 english / eng",
@@ -262,9 +258,15 @@
     "OCRUploadFileNameMismatch": {
         "message": "文件名不匹配，$language$ 需要使用 $file1$ 或 $file2$",
         "placeholders": {
-            "language": { "content": "$1" },
-            "file1": { "content": "$2" },
-            "file2": { "content": "$3" }
+            "language": {
+                "content": "$1"
+            },
+            "file1": {
+                "content": "$2"
+            },
+            "file2": {
+                "content": "$3"
+            }
         },
         "description": "上传 OCR 文件名不匹配"
     },

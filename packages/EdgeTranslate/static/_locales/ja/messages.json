@@ -188,12 +188,8 @@
         "description": "OCR 設定。"
     },
     "OCRSettingsHint": {
-        "message": "OCR は画像内の文字を認識する機能です。スクリーンショット翻訳を使う前に、必要な言語データをダウンロードして有効にしてください。ダウンロードして有効にした言語を認識できます。言語を増やすほど認識は遅くなる場合があります。",
+        "message": "スクリーンショット翻訳を使う前に、必要な言語データをダウンロードして有効にしてください。ダウンロードして有効にした言語を認識できます。言語を増やすほど認識は遅くなる場合があります。",
         "description": "OCR 言語設定のヒント。"
-    },
-    "OCRDownloadHint": {
-        "message": "言語データは拡張機能に同梱されません。ここで直接ダウンロードすることも、自分でダウンロードして後からアップロードすることもできます。ダウンロード後、その言語をスクリーンショット OCR に有効化できます。現在のダウンロード元は jsDelivr です。",
-        "description": "OCR 言語データのダウンロード案内"
     },
     "OCRSearchPlaceholder": {
         "message": "言語名またはコードで検索（例: english / eng）",
@@ -262,9 +258,15 @@
     "OCRUploadFileNameMismatch": {
         "message": "ファイル名が一致しません。$language$ では $file1$ または $file2$ が必要です。",
         "placeholders": {
-            "language": { "content": "$1" },
-            "file1": { "content": "$2" },
-            "file2": { "content": "$3" }
+            "language": {
+                "content": "$1"
+            },
+            "file1": {
+                "content": "$2"
+            },
+            "file2": {
+                "content": "$3"
+            }
         },
         "description": "OCR アップロード時のファイル名不一致"
     },

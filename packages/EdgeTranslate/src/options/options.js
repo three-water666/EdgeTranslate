@@ -174,11 +174,6 @@ function renderOcrDownloadManager() {
     const selectionEnd = shouldRestoreSearchFocus ? activeElement.selectionEnd : null;
     container.innerHTML = "";
 
-    const note = document.createElement("div");
-    note.className = "setting-note";
-    note.textContent = getMessageOrFallback("OCRDownloadHint", "");
-    container.appendChild(note);
-
     const searchInput = document.createElement("input");
     searchInput.type = "text";
     searchInput.className = "ocr-search-input";

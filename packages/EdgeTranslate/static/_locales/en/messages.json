@@ -188,12 +188,8 @@
         "description": "OCR settings."
     },
     "OCRSettingsHint": {
-        "message": "OCR means recognizing text inside images. Before using screenshot translation, download and enable the language package you need; downloading and enabling a language package lets OCR recognize that language. Enabling more languages may slow recognition.",
+        "message": "Before using screenshot translation, download and enable the language package you need; downloading and enabling a language package lets OCR recognize that language. Enabling more languages may slow recognition.",
         "description": "Hint for OCR language settings."
-    },
-    "OCRDownloadHint": {
-        "message": "OCR language data is not bundled with the extension. You can download it directly here, or download it yourself and upload it later. Once downloaded, that language can be enabled for screenshot OCR. Current source: jsDelivr.",
-        "description": "Hint for OCR language package downloads."
     },
     "OCRSearchPlaceholder": {
         "message": "Search language name or code, e.g. english / eng",
@@ -262,9 +258,15 @@
     "OCRUploadFileNameMismatch": {
         "message": "File name does not match. $language$ requires $file1$ or $file2$.",
         "placeholders": {
-            "language": { "content": "$1" },
-            "file1": { "content": "$2" },
-            "file2": { "content": "$3" }
+            "language": {
+                "content": "$1"
+            },
+            "file1": {
+                "content": "$2"
+            },
+            "file2": {
+                "content": "$3"
+            }
         },
         "description": "OCR upload file name mismatch."
     },
