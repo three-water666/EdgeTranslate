@@ -357,6 +357,12 @@ class TranslatorManager {
 
         const tabs = await promiseTabs.query({ active: true, currentWindow: true });
         const currentTab = tabs[0];
+        if (!currentTab?.id) return;
+
+        this.channel.emitToTabs(currentTab.id, "command", {
+            command: "close_result_frame",
+        });
+        await delayPromise(80);
 
         let selection;
         try {
