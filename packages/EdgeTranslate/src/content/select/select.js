@@ -504,6 +504,7 @@ function initSelectTranslate() {
             overlay.removeEventListener("mousedown", mousedownHandler, true);
             overlay.removeEventListener("mousemove", mousemoveHandler, true);
             overlay.removeEventListener("mouseup", mouseupHandler, true);
+            overlay.removeEventListener("contextmenu", contextmenuHandler, true);
             if (document.documentElement.contains(overlay)) {
                 document.documentElement.removeChild(overlay);
             }
@@ -527,6 +528,12 @@ function initSelectTranslate() {
         };
 
         const mousedownHandler = (event) => {
+            if (event.button === 2) {
+                event.preventDefault();
+                event.stopPropagation();
+                resolveSelection(null);
+                return;
+            }
             if (event.button !== 0) return;
             event.preventDefault();
             event.stopPropagation();
@@ -567,9 +574,15 @@ function initSelectTranslate() {
             });
         };
 
+        const contextmenuHandler = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
+
         overlay.addEventListener("mousedown", mousedownHandler, true);
         overlay.addEventListener("mousemove", mousemoveHandler, true);
         overlay.addEventListener("mouseup", mouseupHandler, true);
+        overlay.addEventListener("contextmenu", contextmenuHandler, true);
         window.addEventListener("keydown", keydownHandler, true);
 
         screenshotSelectionSession = {};

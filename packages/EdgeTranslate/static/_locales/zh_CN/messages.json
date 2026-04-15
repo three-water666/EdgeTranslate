@@ -387,7 +387,7 @@
         "description": "翻译截图区域中的文字"
     },
     "ScreenshotTranslateHint": {
-        "message": "拖动鼠标选择区域，按 Esc 取消",
+        "message": "按住左键拖动选择区域，按 Esc 或右击取消",
         "description": "截图 OCR 选区时显示的提示"
     },
     "ScreenshotTranslateNoText": {
