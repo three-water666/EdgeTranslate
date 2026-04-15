@@ -8,6 +8,17 @@ if (!isNativePDFViewer()) {
 }
 
 function initSelectTranslate() {
+    const LONG_PRESS_DURATION = 450;
+    const LONG_PRESS_PREVIEW_DELAY = 140;
+    const LONG_PRESS_MOVE_THRESHOLD = 8;
+    const LONG_PRESS_HIGHLIGHT_ID = "edge-translate-long-press-highlight";
+    const SENTENCE_BOUNDARY_REGEXP = /[.!?。！？；;\n]/;
+    const SENTENCE_TRAILING_REGEXP = /[\s"'\])）】〕〉》」』]+/;
+    const CHUNK_TARGET_LENGTH = 90;
+    const CHUNK_MAX_LENGTH = 160;
+    const CHUNK_MIN_LENGTH = 24;
+    const BLOCK_TEXT_MAX_LENGTH = 1200;
+    const BLOCK_TEXT_MIN_LENGTH = 8;
     const ImageData =
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAEgWuABIFrgFpirNTAAAMIUlEQVRo3s1Ze5RV1Xn//b597mMuw/CYEREwRhCVCisian1Q3joQQREhljSKrctXKIlpiHHFB9qoXTYrmiwa2rAqqUgaRFEBQSAIUtKFKChFCM+gCwGFgjAMM3PvOWfvr3/s+2KcQYxD9bvr3Hvufp3v9732/r4DnDL1Yfm/B3+7/lt3NOrXTn3+V4im/NuSpzer0z4vR92+bF4+N417eOGTr2RVb1+l+75sXk6ViqYz4f5Vc362T/Wa51Rr/0O393zwcOrLZi44Beb14lterLz62ze9JhkMfPUVaApgpxoYG7fTryIAAigwpoMfXHlm7+FDVxytQ989f1SkJNZUxrCySpzZvPALPl4J8AsJ4aQauOGXf7j0rMuvXvzhRnSJGiPNSKwWInGWqO4iqIrmSsszF+fNTgCMKmNwGQEDYES+7aMW5r5OYAuAegAPfCY4ttZx3+IPaw8neiza/0eXEImdVaWzSqdw6WRSzh/gtj91VeLCL6iCL0wlAFUdiWNHFQC+O++TW7/ev9OzixcAmURoARh1gMJBFS5IJKVdFffpwdW3c/9603vAGLQ/9wLNNmQZNRyFCQQE6ZyDDesJCpwCxqQYhQ1IVnbEwd3bUHfgPXY9/xJ1cYqII4RN9UhlKtFU18Tqc/pH7c7umE2mgA5GNWVs5t2tjVunT+iw+6QaqJ00fdrgqZMfWbqCSCK2RpyhAlAtU6eBYcCv/wVQmQJydQBNyXFYtjoJqPq+wgUHmCQgBrChH0MAFN9HAaIIUAcwBFIGqG6vePdPR2bMvbN68ujp+/nqlG4KNPOBm2ZvntG3z0X3rFoLaDa2psIZOEChJVcjQDpajbB9E2ER5BmPQYrnJs8oy+Bo2XdzuTV3YxIALQgHdUSkBj2qiT0fH2sEgLCprjjWAzjjEv7q4Ibfd6rD8KeegaYjp5kKNaoC4gTxk0o4eKmSzgUISxL2dlbiW0tQCOTXag6A5XdKev79A6kU0FinmaSR48caLADQ5YqrCzCeaPgA6369/OUDIZAWMEgJLcWvCPhod8Kt7xLmP+J/WTAGBeFYGOUnaeFePJtg/gMICCFghCKEvycohAiUhFII2NjmAEBdXK6BFxWNwOy7a3/18Z5fbr5gyPcW7Xsf7ZuOGSeBkogLMiygJgGlkEQAEpC85Qi9uRUsrYC6XO4Keu2VaUoVcK4gIUcfLIqap3X5yU5DnKDJZj6w/Invr+69PXvZoB/ct6xxL87Z+wE1mTBqxFJVy0BQTRCw5mzYVBo2QNH8aUBVgiyzGfWaY8E9VCEADAEVBzqFWgu6CHHDcQkOfwyNnFVQBXnQ3qycF0qZzzTfyLhz/o+3O1ReXPvD766sqUH/d98RFUdNBwUQQLqdkWQQ7944+9GRYf3eUG23hOoFqkF3QZDOP8/CxxEIoA5xJLCNIA454FBA1gVkHUVDVcT0ylOb6TW241mXjV3ELKrDMNZyd1GnrtyMWwKgAMyf5k8++u/rPrhy9KS7Fl4ztte1K9ZQG3Oi6VRMOCKZIlKJbLhx/mM70cZkdmc4dvhYZ0SYy8GBEJRCgwKALYPV0lHAApBw789yLz1+Xu3m362ZPX4kGFSI1DcFzlJos4qgQ6V0nfhass04F89L35seOqu6AhJmHcBShFUtid6Vyb2VswwccKEAwAtPDZr01rzNT948BKioEGkIjaMhXD1Ueo5sO9E7OADIdD2LQT0UqnCqeZ/zMGzkrf/Ms3sUvUBaX3GbAxIEgN8+0u/+pS99NPX6sUAqgEQWSBoEmfBw2wHIE2HV0gdaeIenZ1QRW4+kqqamdQ30HDnFlP5FRaQLHu32841LV44feR2Qi4CmCDkyaPN8oEONSVpFJ6WBiBR2SBpxsM55TZQ99VMA7rp3anLxrrrfdJ2yp/cJggEw+57h8/9n8Zxhg64DenTG+R07pm1bA3j/v98+mk3iUCoDiDFOqV4NqrCxtQBgy7j+FIAfjzyn6YpeVbeM6FfzBjDiU4e9eVNvWbV32dJrxtVi38XnJdu8KrFt5uVHNy1fMLKiG44l0mJoAgchnAJx5Me4svEt+sCUeXjj8hEV3YY//PLr+abS2QzAjLtHrZj20Jt9Nh/AkULbRQ+EreYWn5c2zRy7aeuSuYO790MuGRiRhHE0QGQlUWDmpAAYwaz8L2DgpMqhg3+wckUBBFkC8dpjVzatnSLFY+GWx5Nt6Q9c9/TEjbuWzBvS8zLYdNKIoUKdMQDgFCePQh0rYGxO8foSF/3lHUOHX/vDDUsAQPVETbQVDbtDywJH8RzLFT+9+c0tC+Zcc96lQJMN8EnW+1z5TtwigMBBq9IKzVmueA06aPIlo2p/tGkR0Cvwi/dpUxCjv4XO09/UZ3re9nZ3lMxVAWDV47es2rH0d9d+s5YYfGX3LgDQPv0ZAFSREKfIpJSJOIslr0KH3ttv9DfGTPxXP2Jrm4bP93blPmmo01uvmnjphg5/M78jTjRzrJj27d8f275x2t+N6RADwMyhPLkJUSEKAla1Mg1G9Tnu2AX06Desb1syXqDf3JO2uw/qH85owJkD/3rchv737Ti3+Zjbruj/j0/s1580b28ZAP1BWFUJB22fgdYfBj7cw7bfevNUn6VpCIHgI9ezX23vt0c8uqR/OUsAsP2bEp0SACklsj51UmoQAGDU5g5coFjJ400OYTa0B7e56j6jRq27dd6GofnuVk22ZQBShK35lIpIACY4ftoAJGsgsc8U6eJQ31vjEr2vumTljTPX33yyeS0f5ghR5zMwnwIV6h6HTlst1CXgHATqoAJQNXLLn3e4csiAudc9+tK9pZHBCUJsGYAArsSqUtXndmHDafOBI/vC40wiXxCAVgQQF0Vu8TLgukk3Pj3ue794zI+MVcr2otZqowQAEqpKEQPWfQTtPmDCIFu/Z0Z8vAG5hrQmqrqpMULSQGDgnF/cGAOoVdI6dbGN4iaqRoxtEwwBCmGjHAiDoF0Fwvjs2NbF/cIgUJCEAk5V21dQ6upDN3tRUr4z9fsPBJKumfeLu+92ZT7Rok3/w0J9Z/8B1/9oQ2ytwggIGxvNnCGs6gJoPhaQXqH5AkpZ3cJfIi2omIAt48ACCEPg6F6HOIzUSLGSRweqCFDXJGrTgUwYDbw1+93FL07/5zE4MldbBTBlqa4/+KEOqGuInFUI1dcjrALOiioUzmcaWgBSWKhYVIGyLJ6V7LEI1/9QfTlGaCl0oI8bDn478vIwYF0WqokE+30DOHAEGw68v//Ot6d2f6dFHwgTXkrO+nqN07zUVEHGFFomxDEQlUBUAqqYEy4nhkojjoaOBv4SOAa0NIz9LywFMYgYUAdVqFMqitVGzWtMtUOGzDVpvGMrMHkcBvS9tNuNrfoAFQwtkYsCFzuFeNMo5KZFYZcyv2LiWpR3oZqqILXYTxYrS8wXfQQqBI1YMSyd9AuPJAAR4ZF6xF/rhmDMQOC5f9nyyPM/n/ZTAGwRwJAuOG+LAz5pkMBab8tBXt1hCBgBTMIbiSuU3srrNwTo4CvNZYFXNV9hzE/RAMgFQM4CR/YGCBtjDQLHokDytbswhK3KmOD6EcSchxfetXrWDTP9ipXSIoD/XLT/n/YfqutxcOf7UcJEcaJdRkwiUwENTEV1Z6dKZA8fg/NFf1AIdf6kq+qIOFYGApAK56AkTEKUJOLI7+bJdEoDUc3u3Yo4JHqNvmlsu07J7rl6X07M1yapEGutMeMmMlo1d/WE1bNuWOC5/CsBDulp21k/L139wOEFvS7rfP3Hu0MHqiippDgJAnPRFWg8tPbVwc/+/Zj1fvTtBJ759PuBcrrrJaUm/OlHDVToX2K4OB8uU8CssmPtbSu1zP6BZ4dRb1vm26SZeaUzwNYPYrwx+y1g2dUKADXnd+pkGwClU6jAKTVTFZiuF+LgjiWvDFn00I1b81CLzAOnIbv6c+k7L+ua3GE38Eh9FFtF0LlLColqbNu1aFbt+hm378GJb0+L9FnviVul8S8oX5zQ8ivS8S+UtNHamOaUOwKTjQkVmHN7ppAzWLv8iftH/O+aJxvzQ770d9InpTEzde3fzlOdukZ1wnO6uGbgEwUhfGWs5KT0o1d056+3qF5157rZZc3mz17w/5PunaUyZ4vuHPaTLc9/Xub/D61PrC9fCdQYAAAAAElFTkSuQmCC";
 
@@ -17,6 +28,9 @@ function initSelectTranslate() {
     // to indicate whether the translation button has been shown
     let HasButtonShown = false;
     let screenshotSelectionSession = null;
+    let longPressSession = null;
+    let LongPressEnabled = false;
+    let longPressHighlightContainer = null;
 
     /**
      * Initiate translation button.
@@ -99,10 +113,19 @@ function initSelectTranslate() {
     getOrSetDefaultSettings("LayoutSettings", DEFAULT_SETTINGS).then((result) => {
         ButtonPositionSetting = result.LayoutSettings.SelectTranslatePosition;
     });
+    getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
+        LongPressEnabled = Boolean(result.OtherSettings?.TranslateAfterLongPress);
+    });
     // Update the button position setting when the setting is changed.
     chrome.storage.onChanged.addListener((changes, area) => {
-        if (area !== "sync" || !changes.LayoutSettings) return;
-        ButtonPositionSetting = changes.LayoutSettings.newValue.SelectTranslatePosition;
+        if (area !== "sync") return;
+        if (changes.LayoutSettings) {
+            ButtonPositionSetting = changes.LayoutSettings.newValue.SelectTranslatePosition;
+        }
+        if (changes.OtherSettings) {
+            LongPressEnabled = Boolean(changes.OtherSettings.newValue?.TranslateAfterLongPress);
+            if (!LongPressEnabled) cancelLongPressSession();
+        }
     });
 
     // this listener activated when document content is loaded
@@ -125,6 +148,11 @@ function initSelectTranslate() {
                 selectTranslate(event);
             });
         });
+        document.addEventListener("mousedown", longPressStartHandler, true);
+        document.addEventListener("mousemove", longPressMoveHandler, true);
+        document.addEventListener("mouseup", longPressEndHandler, true);
+        document.addEventListener("dragstart", cancelLongPressSession, true);
+        window.addEventListener("blur", cancelLongPressSession);
 
         document.addEventListener("dblclick", (event) => {
             selectTranslate(event, true);
@@ -285,6 +313,95 @@ function initSelectTranslate() {
         }
     }
 
+    function longPressStartHandler(event) {
+        if (!LongPressEnabled) return;
+        if (
+            event.button !== 0 ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.altKey ||
+            event.shiftKey
+        ) {
+            cancelLongPressSession();
+            return;
+        }
+
+        if (shouldIgnoreLongPressTarget(event.target)) {
+            cancelLongPressSession();
+            return;
+        }
+
+        longPressSession = {
+            startX: event.clientX,
+            startY: event.clientY,
+            startedAt: Date.now(),
+            moved: false,
+            triggered: false,
+            previewRange: null,
+            previewTimer: window.setTimeout(() => {
+                if (!longPressSession || longPressSession.moved) return;
+                longPressSession.previewRange = getLongPressRangeFromPoint(
+                    longPressSession.startX,
+                    longPressSession.startY
+                );
+                renderLongPressHighlight(longPressSession.previewRange);
+            }, LONG_PRESS_PREVIEW_DELAY),
+            translateTimer: window.setTimeout(async () => {
+                if (!longPressSession || longPressSession.moved || longPressSession.triggered)
+                    return;
+                await triggerLongPressTranslate(longPressSession);
+            }, LONG_PRESS_DURATION),
+        };
+    }
+
+    function longPressMoveHandler(event) {
+        if (!longPressSession) return;
+
+        if (
+            Math.abs(event.clientX - longPressSession.startX) > LONG_PRESS_MOVE_THRESHOLD ||
+            Math.abs(event.clientY - longPressSession.startY) > LONG_PRESS_MOVE_THRESHOLD
+        ) {
+            longPressSession.moved = true;
+            clearLongPressHighlight();
+        }
+    }
+
+    async function longPressEndHandler(event) {
+        const session = longPressSession;
+        cancelLongPressSession();
+
+        if (!session || event.button !== 0) return;
+    }
+
+    function cancelLongPressSession() {
+        if (longPressSession?.previewTimer) {
+            window.clearTimeout(longPressSession.previewTimer);
+        }
+        if (longPressSession?.translateTimer) {
+            window.clearTimeout(longPressSession.translateTimer);
+        }
+        clearLongPressHighlight();
+        longPressSession = null;
+    }
+
+    async function triggerLongPressTranslate(session) {
+        if (!LongPressEnabled || window.getSelection().toString().trim()) return;
+
+        const inBlacklist = await isInBlacklist();
+        if (inBlacklist) return;
+
+        if (
+            !selectTextAtPoint(session.startX, session.startY, session.previewRange) ||
+            !shouldTranslate()
+        ) {
+            return;
+        }
+
+        session.triggered = true;
+        clearLongPressHighlight();
+        translateSubmit();
+    }
+
     /**
      * Check if we should start translating.
      *
@@ -311,6 +428,507 @@ function initSelectTranslate() {
             // Do not re-translate translated text.
             !(window.isDisplayingResult && window.translateResult.originalText === selectionText)
         );
+    }
+
+    function selectTextAtPoint(x, y, existingRange) {
+        const range = existingRange?.cloneRange() || getLongPressRangeFromPoint(x, y);
+        if (!range || range.collapsed) return false;
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return selection.toString().trim().length > 0;
+    }
+
+    function getLongPressRangeFromPoint(x, y) {
+        const blockRange = getBlockRangeFromPoint(x, y);
+        if (blockRange) {
+            return blockRange;
+        }
+
+        const nativeRange = getNativeParagraphRangeFromPoint(x, y);
+        if (nativeRange && isReasonableLongPressRange(nativeRange, x, y)) {
+            return nativeRange;
+        }
+
+        return getChunkRangeFromPoint(x, y);
+    }
+
+    function getBlockRangeFromPoint(x, y) {
+        const caretRange = getCaretRangeFromPoint(x, y);
+        if (!caretRange) return null;
+
+        const textNode =
+            caretRange.startContainer.nodeType === Node.TEXT_NODE
+                ? caretRange.startContainer
+                : getNearestTextNode(caretRange.startContainer, x, y, caretRange.startOffset);
+        if (!textNode || !textNode.textContent?.trim()) return null;
+
+        const container = getPreferredBlockContainer(textNode, x, y);
+        const textNodes = collectTextNodes(container);
+        if (!textNodes.length) return null;
+
+        const range = document.createRange();
+        range.setStart(textNodes[0], 0);
+        range.setEnd(
+            textNodes[textNodes.length - 1],
+            textNodes[textNodes.length - 1].textContent.length
+        );
+
+        return range.toString().trim() ? range : null;
+    }
+
+    function getPreferredBlockContainer(textNode, x, y) {
+        const fallbackContainer = getSentenceContainer(textNode);
+        let currentElement = textNode.parentElement;
+        let bestContainer = fallbackContainer;
+        let bestScore = getBlockContainerScore(fallbackContainer, x, y);
+
+        while (
+            currentElement &&
+            currentElement !== document.body &&
+            currentElement !== document.documentElement
+        ) {
+            if (!isBlockContainerCandidate(currentElement)) {
+                currentElement = currentElement.parentElement;
+                continue;
+            }
+
+            const score = getBlockContainerScore(currentElement, x, y);
+            if (score > bestScore) {
+                bestContainer = currentElement;
+                bestScore = score;
+            }
+
+            currentElement = currentElement.parentElement;
+        }
+
+        return bestContainer;
+    }
+
+    function isBlockContainerCandidate(element) {
+        const display = window.getComputedStyle(element).display;
+        return (
+            /^(P|DIV|LI|TD|TH|BLOCKQUOTE|ARTICLE|SECTION|MAIN|ASIDE|PRE|H[1-6])$/.test(
+                element.tagName
+            ) || ["block", "list-item", "table-cell"].includes(display)
+        );
+    }
+
+    function getBlockContainerScore(element, x, y) {
+        if (!element || shouldIgnoreLongPressTarget(element)) return -1;
+
+        const rect = element.getBoundingClientRect();
+        if (!rect.width || !rect.height) return -1;
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return -1;
+
+        const textLength = getBlockTextLength(element);
+        if (!isReasonableBlockContainer(element)) return -1;
+
+        let score = textLength;
+        if (/^(P|LI|BLOCKQUOTE|ARTICLE|SECTION|MAIN|ASIDE|PRE)$/.test(element.tagName)) {
+            score += 120;
+        }
+        if (element.childElementCount > 0) {
+            score += Math.min(element.childElementCount, 6) * 10;
+        }
+
+        return score;
+    }
+
+    function isReasonableBlockContainer(element) {
+        const textLength = getBlockTextLength(element);
+        return textLength >= BLOCK_TEXT_MIN_LENGTH && textLength <= BLOCK_TEXT_MAX_LENGTH;
+    }
+
+    function getBlockTextLength(element) {
+        const textNodes = collectTextNodes(element);
+        if (!textNodes.length) return 0;
+        return textNodes.reduce((total, node) => total + (node.textContent || "").trim().length, 0);
+    }
+
+    function getChunkRangeFromPoint(x, y) {
+        const caretRange = getCaretRangeFromPoint(x, y);
+        if (!caretRange) return null;
+
+        const textNode =
+            caretRange.startContainer.nodeType === Node.TEXT_NODE
+                ? caretRange.startContainer
+                : getNearestTextNode(caretRange.startContainer, x, y, caretRange.startOffset);
+        if (!textNode || !textNode.textContent?.trim()) return null;
+
+        const chunkContext = getChunkContext(textNode, caretRange.startOffset);
+        if (!chunkContext) return null;
+
+        const range = document.createRange();
+        range.setStart(chunkContext.start.node, chunkContext.start.offset);
+        range.setEnd(chunkContext.end.node, chunkContext.end.offset);
+        return range;
+    }
+
+    function getNativeParagraphRangeFromPoint(x, y) {
+        const caretRange = getCaretRangeFromPoint(x, y);
+        if (
+            !caretRange ||
+            !window.getSelection ||
+            typeof window.getSelection().modify !== "function"
+        ) {
+            return null;
+        }
+
+        const selection = window.getSelection();
+        const previousRanges = [];
+        for (let i = 0; i < selection.rangeCount; i++) {
+            previousRanges.push(selection.getRangeAt(i).cloneRange());
+        }
+
+        try {
+            selection.removeAllRanges();
+            const collapsedRange = caretRange.cloneRange();
+            collapsedRange.collapse(true);
+            selection.addRange(collapsedRange);
+
+            selection.modify("move", "backward", "paragraphboundary");
+            selection.modify("extend", "forward", "paragraphboundary");
+
+            if (!selection.rangeCount) return null;
+            const result = selection.getRangeAt(0).cloneRange();
+            return result.collapsed ? null : result;
+        } catch (error) {
+            return null;
+        } finally {
+            selection.removeAllRanges();
+            previousRanges.forEach((range) => selection.addRange(range));
+        }
+    }
+
+    function isReasonableLongPressRange(range, x, y) {
+        const text = range.toString().trim();
+        if (!text.length) return false;
+
+        const rects = Array.from(range.getClientRects()).filter(
+            (rect) => rect.width > 0 && rect.height > 0
+        );
+        if (!rects.length) return false;
+
+        const containsPoint = rects.some(
+            (rect) => x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+        );
+        if (!containsPoint) return false;
+
+        return text.length >= Math.min(CHUNK_MIN_LENGTH, 2);
+    }
+
+    function getCaretRangeFromPoint(x, y) {
+        if (document.caretRangeFromPoint) {
+            return document.caretRangeFromPoint(x, y);
+        }
+
+        if (document.caretPositionFromPoint) {
+            const caretPosition = document.caretPositionFromPoint(x, y);
+            if (!caretPosition) return null;
+            const range = document.createRange();
+            range.setStart(caretPosition.offsetNode, caretPosition.offset);
+            range.collapse(true);
+            return range;
+        }
+
+        return null;
+    }
+
+    function getNearestTextNode(node, x, y, offset = 0) {
+        if (!node) return null;
+        if (node.nodeType === Node.TEXT_NODE) return node;
+
+        const childNodes = Array.from(node.childNodes || []);
+        const candidateNode = childNodes[Math.max(0, Math.min(offset, childNodes.length - 1))];
+        const directTextNode = findTextNode(candidateNode);
+        if (directTextNode) return directTextNode;
+
+        const target = document.elementFromPoint(x, y);
+        if (target?.closest?.("#edge-translate-root, #edge-translate-button")) return null;
+
+        return findTextNode(target) || findTextNode(node);
+    }
+
+    function findTextNode(rootNode) {
+        if (!rootNode) return null;
+        if (rootNode.nodeType === Node.TEXT_NODE) return rootNode;
+
+        const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT, {
+            acceptNode(textNode) {
+                return textNode.textContent?.trim()
+                    ? NodeFilter.FILTER_ACCEPT
+                    : NodeFilter.FILTER_REJECT;
+            },
+        });
+
+        return walker.nextNode();
+    }
+
+    function shouldIgnoreLongPressTarget(target) {
+        if (!(target instanceof Element)) return true;
+
+        return Boolean(
+            target.closest(
+                "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, a, [contenteditable=''], [contenteditable='true']"
+            )
+        );
+    }
+
+    function getChunkContext(textNode, rawOffset) {
+        const container = getSentenceContainer(textNode);
+        const textNodes = collectTextNodes(container);
+        if (!textNodes.length) return null;
+
+        const entries = [];
+        let fullText = "";
+        textNodes.forEach((node) => {
+            const start = fullText.length;
+            const text = node.textContent || "";
+            fullText += text;
+            entries.push({
+                node,
+                start,
+                end: start + text.length,
+            });
+        });
+
+        const entry = entries.find((item) => item.node === textNode);
+        if (!entry) return null;
+
+        const globalOffset = resolveSentenceOffset(fullText, entry.start + rawOffset);
+        if (globalOffset === null) return null;
+
+        const bounds = getChunkBounds(fullText, globalOffset);
+        if (!bounds || bounds.start >= bounds.end) return null;
+
+        return {
+            start: locateTextPosition(entries, bounds.start),
+            end: locateTextPosition(entries, bounds.end),
+        };
+    }
+
+    function getSentenceContainer(textNode) {
+        let element = textNode.parentElement;
+        while (element && element !== document.body && element !== document.documentElement) {
+            const display = window.getComputedStyle(element).display;
+            if (
+                /^(P|DIV|LI|TD|TH|BLOCKQUOTE|ARTICLE|SECTION|MAIN|ASIDE|PRE|H[1-6])$/.test(
+                    element.tagName
+                ) ||
+                ["block", "list-item", "table-cell"].includes(display)
+            ) {
+                return element;
+            }
+            element = element.parentElement;
+        }
+
+        return textNode.parentElement || document.body;
+    }
+
+    function collectTextNodes(rootNode) {
+        if (!rootNode) return [];
+        const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT, {
+            acceptNode(textNode) {
+                if (!textNode.textContent?.trim()) return NodeFilter.FILTER_REJECT;
+                if (shouldIgnoreLongPressTarget(textNode.parentElement)) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            },
+        });
+
+        const textNodes = [];
+        let currentNode = walker.nextNode();
+        while (currentNode) {
+            textNodes.push(currentNode);
+            currentNode = walker.nextNode();
+        }
+        return textNodes;
+    }
+
+    function resolveSentenceOffset(text, rawOffset) {
+        if (!text || !text.length) return null;
+        let offset = Math.max(0, Math.min(rawOffset, text.length));
+        if (offset === text.length) offset -= 1;
+
+        if (text[offset] && !/\s/.test(text[offset])) return offset;
+        if (offset > 0 && text[offset - 1] && !/\s/.test(text[offset - 1])) return offset - 1;
+
+        let left = offset - 1;
+        let right = offset + 1;
+        while (left >= 0 || right < text.length) {
+            if (left >= 0 && text[left] && !/\s/.test(text[left])) return left;
+            if (right < text.length && text[right] && !/\s/.test(text[right])) return right;
+            left -= 1;
+            right += 1;
+        }
+
+        return null;
+    }
+
+    function getChunkBounds(text, offset) {
+        const segments = splitIntoSentenceSegments(text);
+        if (!segments.length) return null;
+
+        const currentIndex = segments.findIndex(
+            (segment) => offset >= segment.start && offset < segment.end
+        );
+        if (currentIndex === -1) return null;
+
+        let startIndex = currentIndex;
+        let endIndex = currentIndex;
+        let currentLength = segments[currentIndex].trimmedLength;
+
+        while (currentLength < CHUNK_TARGET_LENGTH) {
+            const previousSegment = segments[startIndex - 1];
+            const nextSegment = segments[endIndex + 1];
+            const previousLength = previousSegment?.trimmedLength || 0;
+            const nextLength = nextSegment?.trimmedLength || 0;
+
+            if (!previousSegment && !nextSegment) break;
+
+            const shouldTakePrevious = previousLength >= nextLength;
+            const candidateSegment = shouldTakePrevious ? previousSegment : nextSegment;
+            if (!candidateSegment) {
+                if (shouldTakePrevious) {
+                    endIndex += 1;
+                    currentLength += nextLength;
+                } else {
+                    startIndex -= 1;
+                    currentLength += previousLength;
+                }
+                continue;
+            }
+
+            if (currentLength + candidateSegment.trimmedLength > CHUNK_MAX_LENGTH) break;
+
+            if (shouldTakePrevious) {
+                startIndex -= 1;
+                currentLength += previousLength;
+            } else {
+                endIndex += 1;
+                currentLength += nextLength;
+            }
+        }
+
+        let start = segments[startIndex].trimmedStart;
+        let end = segments[endIndex].trimmedEnd;
+
+        if (currentLength > CHUNK_MAX_LENGTH) {
+            end = Math.min(end, start + CHUNK_MAX_LENGTH);
+        }
+
+        if (end - start < CHUNK_MIN_LENGTH) {
+            const currentSegment = segments[currentIndex];
+            start = currentSegment.trimmedStart;
+            end = currentSegment.trimmedEnd;
+        }
+
+        while (start < end && /\s/.test(text[start])) start += 1;
+        while (end > start && /\s/.test(text[end - 1])) end -= 1;
+
+        return start < end ? { start, end } : null;
+    }
+
+    function splitIntoSentenceSegments(text) {
+        const segments = [];
+        let segmentStart = 0;
+
+        for (let i = 0; i < text.length; i++) {
+            const character = text[i];
+            if (!SENTENCE_BOUNDARY_REGEXP.test(character)) continue;
+
+            let segmentEnd = i + 1;
+            while (segmentEnd < text.length && SENTENCE_TRAILING_REGEXP.test(text[segmentEnd])) {
+                segmentEnd += 1;
+            }
+            pushSegment(segmentStart, segmentEnd);
+            segmentStart = segmentEnd;
+        }
+
+        pushSegment(segmentStart, text.length);
+        return segments;
+
+        function pushSegment(start, end) {
+            let trimmedStart = start;
+            let trimmedEnd = end;
+            while (trimmedStart < trimmedEnd && /\s/.test(text[trimmedStart])) trimmedStart += 1;
+            while (trimmedEnd > trimmedStart && /\s/.test(text[trimmedEnd - 1])) trimmedEnd -= 1;
+            if (trimmedStart >= trimmedEnd) return;
+
+            segments.push({
+                start,
+                end,
+                trimmedStart,
+                trimmedEnd,
+                trimmedLength: trimmedEnd - trimmedStart,
+            });
+        }
+    }
+
+    function locateTextPosition(entries, index) {
+        if (!entries.length) return null;
+
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            if (index <= entry.end) {
+                return {
+                    node: entry.node,
+                    offset: Math.max(
+                        0,
+                        Math.min(entry.node.textContent.length, index - entry.start)
+                    ),
+                };
+            }
+        }
+
+        const lastEntry = entries[entries.length - 1];
+        return {
+            node: lastEntry.node,
+            offset: lastEntry.node.textContent.length,
+        };
+    }
+
+    function renderLongPressHighlight(range) {
+        clearLongPressHighlight();
+        if (!range) return;
+
+        const rects = Array.from(range.getClientRects()).filter(
+            (rect) => rect.width > 0 && rect.height > 0
+        );
+        if (!rects.length) return;
+
+        if (!longPressHighlightContainer) {
+            longPressHighlightContainer = document.createElement("div");
+            longPressHighlightContainer.id = LONG_PRESS_HIGHLIGHT_ID;
+            document.documentElement.appendChild(longPressHighlightContainer);
+        }
+
+        rects.forEach((rect) => {
+            const block = document.createElement("div");
+            Object.assign(block.style, {
+                position: "fixed",
+                left: `${rect.left}px`,
+                top: `${rect.top}px`,
+                width: `${rect.width}px`,
+                height: `${rect.height}px`,
+                borderRadius: "4px",
+                background: "rgba(74, 140, 247, 0.16)",
+                boxShadow: "inset 0 0 0 1px rgba(74, 140, 247, 0.2)",
+            });
+            longPressHighlightContainer.appendChild(block);
+        });
+    }
+
+    function clearLongPressHighlight() {
+        if (!longPressHighlightContainer) return;
+        longPressHighlightContainer.replaceChildren();
+        if (longPressHighlightContainer.parentNode) {
+            longPressHighlightContainer.parentNode.removeChild(longPressHighlightContainer);
+        }
+        longPressHighlightContainer = null;
     }
 
     /**

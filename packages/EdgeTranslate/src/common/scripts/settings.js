@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS = {
         SelectTranslate: true,
         TranslateAfterDblClick: false,
         TranslateAfterSelect: false,
+        TranslateAfterLongPress: true,
         CancelTextSelection: false,
         UsePDFjs: true,
     },

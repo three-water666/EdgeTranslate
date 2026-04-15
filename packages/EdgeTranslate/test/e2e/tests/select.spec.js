@@ -104,4 +104,22 @@ describe("selection translation functions", () => {
         await driver.navigate(driver.PAGES.OPTIONS);
         await driver.clickElement("#translate-after-dbl-click");
     });
+
+    test("Long press text to translate directly.", async () => {
+        await driver.navigate(driver.PAGES.OPTIONS);
+        await driver.clickElement("#translate-after-long-press");
+
+        await driver.get(`file://${path.resolve(__dirname, "../pages", PageName)}`);
+
+        const textEl = await driver.findElement("#edge");
+        const actions = driver.actions({ async: true });
+        await actions.move({ origin: textEl }).press().pause(550).release().perform();
+
+        await driver.delay(WaitTranslationResultTime);
+        expect(await driver.executeScript("return window.getSelection().toString();")).toBe("edge");
+        expect(await (await driver.getPanel()).takeScreenshot(true)).toMatchImageSnapshot();
+
+        await driver.navigate(driver.PAGES.OPTIONS);
+        await driver.clickElement("#translate-after-long-press");
+    });
 });
