@@ -1473,5 +1473,97 @@
     "Zulu": {
         "message": "祖魯語",
         "description": "祖魯語"
+    },
+    "AzerbaijaniCyrillic": {
+        "message": "亞塞拜然語（西里爾）",
+        "description": "亞塞拜然語（西里爾）"
+    },
+    "Tibetan": {
+        "message": "藏語",
+        "description": "藏語"
+    },
+    "CatalanValencian": {
+        "message": "加泰隆尼亞語、瓦倫西亞語",
+        "description": "加泰隆尼亞語、瓦倫西亞語"
+    },
+    "Dzongkha": {
+        "message": "宗卡語",
+        "description": "宗卡語"
+    },
+    "GreekModern1453": {
+        "message": "現代希臘語",
+        "description": "現代希臘語"
+    },
+    "EnglishMiddle11001500": {
+        "message": "中古英語",
+        "description": "中古英語"
+    },
+    "GermanFraktur": {
+        "message": "德語 Fraktur",
+        "description": "德語 Fraktur"
+    },
+    "FrenchMiddleCa14001600": {
+        "message": "中古法語",
+        "description": "中古法語"
+    },
+    "GreekAncient1453": {
+        "message": "古希臘語",
+        "description": "古希臘語"
+    },
+    "HaitianHaitianCreole": {
+        "message": "海地語、海地克里奧爾語",
+        "description": "海地語、海地克里奧爾語"
+    },
+    "ItalianOld": {
+        "message": "古義大利語",
+        "description": "古義大利語"
+    },
+    "GeorgianOld": {
+        "message": "古喬治亞語",
+        "description": "古喬治亞語"
+    },
+    "CentralKhmer": {
+        "message": "高棉語、柬埔寨語",
+        "description": "高棉語、柬埔寨語"
+    },
+    "KirghizKyrgyz": {
+        "message": "吉爾吉斯語",
+        "description": "吉爾吉斯語"
+    },
+    "DutchFlemish": {
+        "message": "荷蘭語、佛蘭芒語",
+        "description": "荷蘭語、佛蘭芒語"
+    },
+    "PanjabiPunjabi": {
+        "message": "旁遮普語",
+        "description": "旁遮普語"
+    },
+    "PushtoPashto": {
+        "message": "普什圖語",
+        "description": "普什圖語"
+    },
+    "RomanianMoldavianMoldovan": {
+        "message": "羅馬尼亞語、摩爾多瓦語",
+        "description": "羅馬尼亞語、摩爾多瓦語"
+    },
+    "SinhalaSinhalese": {
+        "message": "僧伽羅語",
+        "description": "僧伽羅語"
+    },
+    "SpanishCastilian": {
+        "message": "西班牙語",
+        "description": "西班牙語"
+    },
+    "SpanishCastilianOld": {
+        "message": "古西班牙語",
+        "description": "古西班牙語"
+    },
+    "UighurUyghur": {
+        "message": "維吾爾語",
+        "description": "維吾爾語"
+    },
+    "UzbekCyrillic": {
+        "message": "烏茲別克語（西里爾）",
+        "description": "烏茲別克語（西里爾）"
     }
 }

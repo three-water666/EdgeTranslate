@@ -14,6 +14,23 @@ let ocrDownloadManagerContainer = null;
 let ocrLanguageStates = {};
 let ocrLanguageSearchQuery = "";
 let ocrLanguageQuickFilter = "all";
+const OCR_COMMON_LANGUAGE_CODES = [
+    "eng",
+    "chi_sim",
+    "chi_tra",
+    "jpn",
+    "kor",
+    "fra",
+    "deu",
+    "spa",
+    "rus",
+    "ita",
+    "por",
+    "ara",
+    "hin",
+    "tha",
+    "vie",
+];
 
 /**
  * 初始化设置列表
@@ -218,7 +235,7 @@ function renderOcrDownloadManager() {
     const list = document.createElement("div");
     list.className = "ocr-download-list";
 
-    OCR_LANGUAGES.filter(filterOcrLanguageEntry).forEach((language) => {
+    getOrderedOcrLanguages().forEach((language) => {
         const state = ocrLanguageStates[language.code] || createDefaultOcrLanguageState();
         const card = document.createElement("div");
         card.className = "ocr-download-card";
@@ -318,6 +335,25 @@ function renderOcrDownloadManager() {
             }
         }
     }
+}
+
+function getOrderedOcrLanguages() {
+    const commonLanguagePriority = new Map(
+        OCR_COMMON_LANGUAGE_CODES.map((code, index) => [code, index])
+    );
+
+    return OCR_LANGUAGES.filter(filterOcrLanguageEntry).sort((a, b) => {
+        const aPriority = commonLanguagePriority.get(a.code);
+        const bPriority = commonLanguagePriority.get(b.code);
+
+        if (aPriority !== undefined || bPriority !== undefined) {
+            if (aPriority === undefined) return 1;
+            if (bPriority === undefined) return -1;
+            return aPriority - bPriority;
+        }
+
+        return 0;
+    });
 }
 
 async function handleOcrLanguageAction(language, action) {
@@ -653,11 +689,13 @@ function filterOcrLanguageByQuery(language) {
     const query = ocrLanguageSearchQuery.trim().toLowerCase();
     if (!query) return true;
     const displayName = getOcrLanguageDisplayName(language).toLowerCase();
+    const englishLabel = language.label.toLowerCase();
     const aliases = Array.isArray(language.aliases)
         ? language.aliases.map((item) => item.toLowerCase())
         : [];
     return (
         displayName.includes(query) ||
+        englishLabel.includes(query) ||
         language.code.toLowerCase().includes(query) ||
         aliases.some((alias) => alias.includes(query))
     );

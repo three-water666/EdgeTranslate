@@ -1473,5 +1473,97 @@
     "Zulu": {
         "message": "Zulu",
         "description": "Zulu"
+    },
+    "AzerbaijaniCyrillic": {
+        "message": "азербайджанский (кириллица)",
+        "description": "азербайджанский (кириллица)"
+    },
+    "Tibetan": {
+        "message": "тибетский",
+        "description": "тибетский"
+    },
+    "CatalanValencian": {
+        "message": "каталанский; валенсийский",
+        "description": "каталанский; валенсийский"
+    },
+    "Dzongkha": {
+        "message": "дзонг-кэ",
+        "description": "дзонг-кэ"
+    },
+    "GreekModern1453": {
+        "message": "греческий (современный)",
+        "description": "греческий (современный)"
+    },
+    "EnglishMiddle11001500": {
+        "message": "среднеанглийский",
+        "description": "среднеанглийский"
+    },
+    "GermanFraktur": {
+        "message": "немецкий Fraktur",
+        "description": "немецкий Fraktur"
+    },
+    "FrenchMiddleCa14001600": {
+        "message": "среднефранцузский",
+        "description": "среднефранцузский"
+    },
+    "GreekAncient1453": {
+        "message": "древнегреческий",
+        "description": "древнегреческий"
+    },
+    "HaitianHaitianCreole": {
+        "message": "гаитянский; гаитянский креольский",
+        "description": "гаитянский; гаитянский креольский"
+    },
+    "ItalianOld": {
+        "message": "староитальянский",
+        "description": "староитальянский"
+    },
+    "GeorgianOld": {
+        "message": "старогрузинский",
+        "description": "старогрузинский"
+    },
+    "CentralKhmer": {
+        "message": "центральнокхмерский",
+        "description": "центральнокхмерский"
+    },
+    "KirghizKyrgyz": {
+        "message": "киргизский",
+        "description": "киргизский"
+    },
+    "DutchFlemish": {
+        "message": "нидерландский; фламандский",
+        "description": "нидерландский; фламандский"
+    },
+    "PanjabiPunjabi": {
+        "message": "панджаби",
+        "description": "панджаби"
+    },
+    "PushtoPashto": {
+        "message": "пушту",
+        "description": "пушту"
+    },
+    "RomanianMoldavianMoldovan": {
+        "message": "румынский; молдавский",
+        "description": "румынский; молдавский"
+    },
+    "SinhalaSinhalese": {
+        "message": "сингальский",
+        "description": "сингальский"
+    },
+    "SpanishCastilian": {
+        "message": "испанский",
+        "description": "испанский"
+    },
+    "SpanishCastilianOld": {
+        "message": "староиспанский",
+        "description": "староиспанский"
+    },
+    "UighurUyghur": {
+        "message": "уйгурский",
+        "description": "уйгурский"
+    },
+    "UzbekCyrillic": {
+        "message": "узбекский (кириллица)",
+        "description": "узбекский (кириллица)"
     }
 }

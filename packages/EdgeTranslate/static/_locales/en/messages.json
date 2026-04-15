@@ -1473,5 +1473,97 @@
     "Zulu": {
         "message": "Zulu",
         "description": "Zulu"
+    },
+    "AzerbaijaniCyrillic": {
+        "message": "Azerbaijani - Cyrillic",
+        "description": "Azerbaijani - Cyrillic"
+    },
+    "Tibetan": {
+        "message": "Tibetan",
+        "description": "Tibetan"
+    },
+    "CatalanValencian": {
+        "message": "Catalan; Valencian",
+        "description": "Catalan; Valencian"
+    },
+    "Dzongkha": {
+        "message": "Dzongkha",
+        "description": "Dzongkha"
+    },
+    "GreekModern1453": {
+        "message": "Greek, Modern (1453-)",
+        "description": "Greek, Modern (1453-)"
+    },
+    "EnglishMiddle11001500": {
+        "message": "English, Middle (1100-1500)",
+        "description": "English, Middle (1100-1500)"
+    },
+    "GermanFraktur": {
+        "message": "German Fraktur",
+        "description": "German Fraktur"
+    },
+    "FrenchMiddleCa14001600": {
+        "message": "French, Middle (ca. 1400-1600)",
+        "description": "French, Middle (ca. 1400-1600)"
+    },
+    "GreekAncient1453": {
+        "message": "Greek, Ancient (-1453)",
+        "description": "Greek, Ancient (-1453)"
+    },
+    "HaitianHaitianCreole": {
+        "message": "Haitian; Haitian Creole",
+        "description": "Haitian; Haitian Creole"
+    },
+    "ItalianOld": {
+        "message": "Italian - Old",
+        "description": "Italian - Old"
+    },
+    "GeorgianOld": {
+        "message": "Georgian - Old",
+        "description": "Georgian - Old"
+    },
+    "CentralKhmer": {
+        "message": "Central Khmer",
+        "description": "Central Khmer"
+    },
+    "KirghizKyrgyz": {
+        "message": "Kirghiz; Kyrgyz",
+        "description": "Kirghiz; Kyrgyz"
+    },
+    "DutchFlemish": {
+        "message": "Dutch; Flemish",
+        "description": "Dutch; Flemish"
+    },
+    "PanjabiPunjabi": {
+        "message": "Panjabi; Punjabi",
+        "description": "Panjabi; Punjabi"
+    },
+    "PushtoPashto": {
+        "message": "Pushto; Pashto",
+        "description": "Pushto; Pashto"
+    },
+    "RomanianMoldavianMoldovan": {
+        "message": "Romanian; Moldavian; Moldovan",
+        "description": "Romanian; Moldavian; Moldovan"
+    },
+    "SinhalaSinhalese": {
+        "message": "Sinhala; Sinhalese",
+        "description": "Sinhala; Sinhalese"
+    },
+    "SpanishCastilian": {
+        "message": "Spanish; Castilian",
+        "description": "Spanish; Castilian"
+    },
+    "SpanishCastilianOld": {
+        "message": "Spanish; Castilian - Old",
+        "description": "Spanish; Castilian - Old"
+    },
+    "UighurUyghur": {
+        "message": "Uighur; Uyghur",
+        "description": "Uighur; Uyghur"
+    },
+    "UzbekCyrillic": {
+        "message": "Uzbek - Cyrillic",
+        "description": "Uzbek - Cyrillic"
     }
 }
