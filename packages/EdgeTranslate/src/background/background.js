@@ -250,7 +250,7 @@ async function handleScreenshotTranslateMenuClick() {
         return;
     }
 
-    channel.request("screenshot_translate", {}).catch(() => {});
+    TRANSLATOR_MANAGER.screenshotTranslate().catch(() => {});
 }
 
 async function getActiveOcrLanguages() {
@@ -264,7 +264,8 @@ async function getActiveOcrLanguages() {
             : Array.isArray(ocrSettings?.Languages) && ocrSettings.Languages.length > 0
             ? ocrSettings.Languages
             : ["eng", "chi_sim"];
-    const statusMap = await channel.request("get_ocr_download_status", {
+    await TRANSLATOR_MANAGER.createOffscreenDocument();
+    const statusMap = await channel.request("get_ocr_language_status", {
         languages: selectedLanguages,
     });
 

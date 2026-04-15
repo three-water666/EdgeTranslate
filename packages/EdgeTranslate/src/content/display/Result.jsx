@@ -456,18 +456,16 @@ export default function Result(props) {
                     .map((content) => CONTENTS[content])}
                 {isScreenshotTranslate && (
                     <ScreenshotNotice>
-                        <ScreenshotNoticeTitle>
-                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeTitle")}
-                        </ScreenshotNoticeTitle>
                         <ScreenshotNoticeText>
-                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeText")}
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeTitle")}{" "}
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeText")}{" "}
+                            <ScreenshotNoticeAction
+                                type="button"
+                                onClick={() => channel.emit("open_ocr_settings_page", {})}
+                            >
+                                {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeAction")}
+                            </ScreenshotNoticeAction>
                         </ScreenshotNoticeText>
-                        <ScreenshotNoticeAction
-                            type="button"
-                            onClick={() => channel.emit("open_ocr_settings_page", {})}
-                        >
-                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeAction")}
-                        </ScreenshotNoticeAction>
                     </ScreenshotNotice>
                 )}
             </ThemeProvider>
@@ -740,32 +738,25 @@ const ExampleTarget = styled.div`
 
 const ScreenshotNotice = styled(Block)`
     align-items: flex-start;
-    background: rgba(74, 140, 247, 0.08);
-    border: 1px solid rgba(74, 140, 247, 0.18);
-`;
-
-const ScreenshotNoticeTitle = styled.div`
-    font-size: 13px;
-    font-weight: bold;
-    color: #345d9d;
+    padding: 2px 10px 10px;
+    background: transparent;
 `;
 
 const ScreenshotNoticeText = styled.div`
-    margin-top: 6px;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.5;
-    color: #4d5f7a;
+    color: #7a7a7a;
 `;
 
 const ScreenshotNoticeAction = styled.button`
-    margin-top: 10px;
-    padding: 6px 12px;
+    padding: 0;
     border: none;
-    border-radius: 999px;
-    background: #4a8cf7;
-    color: white;
+    background: transparent;
+    vertical-align: baseline;
+    color: #7a7a7a;
     font-size: 12px;
     cursor: pointer;
+    text-decoration: underline;
 `;
 
 /**
