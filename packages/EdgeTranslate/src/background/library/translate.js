@@ -300,6 +300,7 @@ class TranslatorManager {
                 position,
                 timestamp,
                 loadingMessage: options.loadingMessage,
+                translateMode: options.translateMode,
             });
         }
 
@@ -337,6 +338,7 @@ class TranslatorManager {
             // Send translating result to current tab.
             this.channel.emitToTabs(tabId, "translating_finished", {
                 timestamp,
+                translateMode: options.translateMode,
                 ...result,
             });
         } catch (error) {
@@ -344,6 +346,7 @@ class TranslatorManager {
             this.channel.emitToTabs(tabId, "translating_error", {
                 error,
                 timestamp,
+                translateMode: options.translateMode,
             });
         }
     }
@@ -371,6 +374,7 @@ class TranslatorManager {
             position: selection.position,
             timestamp,
             loadingMessage: getScreenshotLoadingMessage(),
+            translateMode: "screenshot",
         });
 
         const screenshotUrl = await captureVisibleTab(currentTab.windowId);
@@ -406,12 +410,14 @@ class TranslatorManager {
         return this.translateOnTabWithOptions(currentTab.id, cleanedText, selection.position, {
             timestamp,
             skipStartEvent: true,
+            translateMode: "screenshot",
         });
     }
 
     emitTranslateError(tabId, timestamp, errorMsg) {
         this.channel.emitToTabs(tabId, "translating_error", {
             timestamp,
+            translateMode: "screenshot",
             error: {
                 errorType: "API_ERR",
                 errorCode: "OCR_ERR",

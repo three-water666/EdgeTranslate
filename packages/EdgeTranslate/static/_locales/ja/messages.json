@@ -410,6 +410,18 @@
         "message": "OCR 言語データがダウンロードされていません。先に設定ページでダウンロードしてください。",
         "description": "スクリーンショット OCR の言語データ不足時のメッセージ"
     },
+    "ScreenshotTranslateResultNoticeTitle": {
+        "message": "認識結果が不正確ですか？",
+        "description": "スクリーンショット翻訳結果の下に表示する案内タイトル"
+    },
+    "ScreenshotTranslateResultNoticeText": {
+        "message": "必要な OCR 言語データが未ダウンロードの可能性があります。設定ページの OCR 設定からダウンロードしてください。ポスターや凝ったレイアウト画像などの複雑な場面では、現状うまく認識できないこともあります。",
+        "description": "スクリーンショット翻訳結果の下に表示する案内文"
+    },
+    "ScreenshotTranslateResultNoticeAction": {
+        "message": "OCR 設定を開く",
+        "description": "スクリーンショット翻訳結果の下に表示する案内ボタン"
+    },
     "TranslatePage": {
         "message": "このページを翻訳する",
         "description": "このページをデフォルトのページ翻訳で翻訳します。"

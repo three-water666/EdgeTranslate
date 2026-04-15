@@ -80,6 +80,7 @@ export default function Result(props) {
     // Indicate whether user can edit and copy the translation result
     const [copyResult, setCopyResult] = useReducer(copyContent, false);
     const translateResultElRef = useRef();
+    const isScreenshotTranslate = props.translateMode === "screenshot";
 
     // Indicate whether user is editing the original text
     const [editing, setEditing] = useReducer(_setEditing, false);
@@ -453,6 +454,22 @@ export default function Result(props) {
                 {contentDisplayOrder
                     .filter((content) => contentFilter[content])
                     .map((content) => CONTENTS[content])}
+                {isScreenshotTranslate && (
+                    <ScreenshotNotice>
+                        <ScreenshotNoticeTitle>
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeTitle")}
+                        </ScreenshotNoticeTitle>
+                        <ScreenshotNoticeText>
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeText")}
+                        </ScreenshotNoticeText>
+                        <ScreenshotNoticeAction
+                            type="button"
+                            onClick={() => channel.emit("open_ocr_settings_page", {})}
+                        >
+                            {chrome.i18n.getMessage("ScreenshotTranslateResultNoticeAction")}
+                        </ScreenshotNoticeAction>
+                    </ScreenshotNotice>
+                )}
             </ThemeProvider>
         </Fragment>
     );
@@ -719,6 +736,36 @@ const ExampleSource = styled.div`
 const ExampleTarget = styled.div`
     padding-top: 5px;
     font-size: medium;
+`;
+
+const ScreenshotNotice = styled(Block)`
+    align-items: flex-start;
+    background: rgba(74, 140, 247, 0.08);
+    border: 1px solid rgba(74, 140, 247, 0.18);
+`;
+
+const ScreenshotNoticeTitle = styled.div`
+    font-size: 13px;
+    font-weight: bold;
+    color: #345d9d;
+`;
+
+const ScreenshotNoticeText = styled.div`
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #4d5f7a;
+`;
+
+const ScreenshotNoticeAction = styled.button`
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 999px;
+    background: #4a8cf7;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
 `;
 
 /**

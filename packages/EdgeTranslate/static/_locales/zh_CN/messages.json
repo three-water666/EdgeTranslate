@@ -410,6 +410,18 @@
         "message": "OCR 语言包未下载，请先到设置页手动下载后再使用截图翻译。",
         "description": "截图 OCR 缺少语言包时的提示"
     },
+    "ScreenshotTranslateResultNoticeTitle": {
+        "message": "识别不准确？",
+        "description": "截图翻译结果下方提示标题"
+    },
+    "ScreenshotTranslateResultNoticeText": {
+        "message": "可能是对应语言包未下载，请前往设置页的 OCR 设置进行下载；复杂场景如海报、排版图片等目前也可能无法准确识别。",
+        "description": "截图翻译结果下方提示内容"
+    },
+    "ScreenshotTranslateResultNoticeAction": {
+        "message": "前往 OCR 设置",
+        "description": "截图翻译结果下方提示按钮"
+    },
     "TranslatePage": {
         "message": "翻译此页",
         "description": "使用默认网页翻译引擎翻译此页。"

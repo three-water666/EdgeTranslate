@@ -410,6 +410,18 @@
         "message": "OCR language data is not downloaded. Open settings and download it first.",
         "description": "Shown when screenshot OCR language data is missing."
     },
+    "ScreenshotTranslateResultNoticeTitle": {
+        "message": "Recognition looks inaccurate?",
+        "description": "Hint title shown below screenshot translation results."
+    },
+    "ScreenshotTranslateResultNoticeText": {
+        "message": "The required OCR language data may not be downloaded yet. You can open OCR settings to download it. Complex scenes such as posters or heavily designed images may also be recognized inaccurately for now.",
+        "description": "Hint body shown below screenshot translation results."
+    },
+    "ScreenshotTranslateResultNoticeAction": {
+        "message": "Open OCR Settings",
+        "description": "Hint action shown below screenshot translation results."
+    },
     "TranslatePage": {
         "message": "Translate this page",
         "description": "Translate this page with default page translator."
