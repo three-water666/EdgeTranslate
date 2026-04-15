@@ -55,9 +55,8 @@ window.onload = () => {
      * attribute "setting-path": indicate the nested setting path. used to locate the path of one setting item in chrome storage
      */
     getOrSetDefaultSettings(undefined, DEFAULT_SETTINGS).then((result) => {
-        let inputElements = document.getElementsByTagName("input");
-        const selectTranslatePositionElement = document.getElementById("select-translate-position");
-        for (let element of [...inputElements, selectTranslatePositionElement]) {
+        const settingElements = document.querySelectorAll("[setting-path]");
+        for (let element of settingElements) {
             let settingItemPath = element.getAttribute("setting-path").split(/\s/g);
             let settingItemValue = getSetting(result, settingItemPath);
 
@@ -168,6 +167,8 @@ async function setUpOcrDownloadManager() {
 function renderOcrDownloadManager() {
     const container = ocrDownloadManagerContainer;
     if (!container) return;
+    const previousList = container.querySelector(".ocr-download-list");
+    const previousListScrollTop = previousList ? previousList.scrollTop : 0;
     const activeElement = document.activeElement;
     const shouldRestoreSearchFocus = activeElement?.classList?.contains("ocr-search-input");
     const selectionStart = shouldRestoreSearchFocus ? activeElement.selectionStart : null;
@@ -302,6 +303,7 @@ function renderOcrDownloadManager() {
     });
 
     container.appendChild(list);
+    list.scrollTop = previousListScrollTop;
 
     if (shouldRestoreSearchFocus) {
         const nextSearchInput = container.querySelector(".ocr-search-input");
