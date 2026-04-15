@@ -387,7 +387,7 @@
         "description": "Translate text from a screenshot selection."
     },
     "ScreenshotTranslateHint": {
-        "message": "Left-click and drag to select an area, press Esc or right-click to cancel",
+        "message": "Left-click and drag to select an area, press Esc or single left-click to cancel",
         "description": "Hint shown when selecting screenshot OCR area."
     },
     "ScreenshotTranslateNoText": {

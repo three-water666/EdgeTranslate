@@ -387,7 +387,7 @@
         "description": "選択した画像領域の文字を翻訳します"
     },
     "ScreenshotTranslateHint": {
-        "message": "左クリックでドラッグして範囲を選択し、Esc または右クリックでキャンセル",
+        "message": "左クリックでドラッグして範囲を選択し、Esc または左クリックでキャンセル",
         "description": "OCR範囲選択時のヒント"
     },
     "ScreenshotTranslateNoText": {
