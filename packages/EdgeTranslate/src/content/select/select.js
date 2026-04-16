@@ -335,6 +335,16 @@ function initSelectTranslate() {
             return;
         }
 
+        // 1. Detect Scrollbar click
+        // If click is on the scrollbar area (outside client width/height), ignore it.
+        if (
+            event.clientX > document.documentElement.clientWidth ||
+            event.clientY > document.documentElement.clientHeight
+        ) {
+            cancelLongPressSession();
+            return;
+        }
+
         if (shouldIgnoreLongPressTarget(event.target)) {
             cancelLongPressSession();
             return;
@@ -773,11 +783,22 @@ function initSelectTranslate() {
     function shouldIgnoreLongPressTarget(target) {
         if (!(target instanceof Element)) return true;
 
-        return Boolean(
+        // Ignore interactive elements and typical complex UI components
+        if (
             target.closest(
-                "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true']"
+                "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true'], [role='slider'], [role='progressbar'], [role='scrollbar'], [role='tab']"
             )
-        );
+        ) {
+            return true;
+        }
+
+        // Ignore elements with specific interactive cursors (move, resize, etc.)
+        const cursor = window.getComputedStyle(target).cursor;
+        if (/^(move|([nsweo]|[nwse]w|col|row)-resize|grab|grabbing)$/.test(cursor)) {
+            return true;
+        }
+
+        return false;
     }
 
     function getChunkContext(textNode, rawOffset) {
