@@ -9,6 +9,8 @@
     "scripts": {
         "dev": "vite build --watch",
         "build": "vite build && tsc --emitDeclarationOnly",
+        "lint": "eslint .eslintrc.js \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.config.js\" \"*.config.ts\" \"*.setup.js\"",
+        "lint:fix": "pnpm lint --fix",
         "test": "jest"
     },
     "files": [

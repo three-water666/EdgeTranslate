@@ -4,7 +4,9 @@
     "private": true,
     "scripts": {
         "test": "jest",
-        "format": "eslint 'src/**/*.js' 'config/**/*.js' --fix",
+        "lint": "eslint .eslintrc.js gulpfile.js \"src/**/*.{js,jsx}\" \"config/**/*.js\" \"utils/**/*.js\" \"test/**/*.{js,jsx}\"",
+        "lint:fix": "pnpm lint --fix",
+        "format": "eslint \"src/**/*.js\" \"config/**/*.js\" --fix",
         "dev": "gulp dev --browser chrome",
         "build": "gulp build --browser chrome",
         "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
