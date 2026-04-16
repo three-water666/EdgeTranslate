@@ -7,3 +7,4 @@ onlyBuiltDependencies:
     - es5-ext
     - esbuild
     - husky
+    - tesseract.js
