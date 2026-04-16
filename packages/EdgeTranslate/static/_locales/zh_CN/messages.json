@@ -374,6 +374,10 @@
         "message": "双击单词立即翻译",
         "description": "双击单词后立即显示翻译结果"
     },
+    "TranslateAfterLongPress": {
+        "message": "长按左键直接翻译",
+        "description": "按住鼠标左键后，直接翻译光标附近的单词或文本"
+    },
     "CancelTextSelection": {
         "message": "翻译后取消文本选择",
         "description": "翻译后自动取消文本选择"

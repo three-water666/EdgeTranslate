@@ -374,6 +374,10 @@
         "message": "Translate After Dbl Click",
         "description": "Instantly show translating result after double-clicked texts."
     },
+    "TranslateAfterLongPress": {
+        "message": "Translate After Long Press",
+        "description": "Translate the word or text near the cursor after holding the left mouse button."
+    },
     "CancelTextSelection": {
         "message": "Cancel text selection after translation",
         "description": "Cancel text selection automatically after translation"

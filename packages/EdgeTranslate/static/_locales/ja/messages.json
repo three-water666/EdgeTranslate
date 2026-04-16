@@ -374,6 +374,10 @@
         "message": "ダブルクリックした後に翻訳する",
         "description": "テキストをダブルクリックした後、翻訳結果を即座に表示します。"
     },
+    "TranslateAfterLongPress": {
+        "message": "長押しで翻訳する",
+        "description": "左クリックを長押しすると、カーソル付近の単語やテキストを翻訳します。"
+    },
     "CancelTextSelection": {
         "message": "翻訳後のテキスト選択をキャンセル",
         "description": "翻訳後、テキスト選択を自動的にキャンセルします。"
