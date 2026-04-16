@@ -302,13 +302,17 @@ function initSelectTranslate() {
     /**
      * 处理点击翻译按钮后的事件
      */
-    function translateSubmit() {
+    function translateSubmit(options = {}) {
+        const clearSelectionAfterTranslate = Boolean(options.clearSelectionAfterTranslate);
         let selection = getSelection();
         if (selection.text && selection.text.length > 0) {
             channel.request("translate", selection).then(() => {
                 getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
                     // to check whether user need to cancel text selection after translation finished
-                    if (result.OtherSettings && result.OtherSettings["CancelTextSelection"]) {
+                    if (
+                        clearSelectionAfterTranslate ||
+                        (result.OtherSettings && result.OtherSettings["CancelTextSelection"])
+                    ) {
                         cancelTextSelection();
                     }
                 });
@@ -335,13 +339,17 @@ function initSelectTranslate() {
             return;
         }
 
+        if (window.getSelection().toString().trim()) {
+            cancelTextSelection();
+        }
+
         longPressSession = {
             startX: event.clientX,
             startY: event.clientY,
             startedAt: Date.now(),
             moved: false,
             triggered: false,
-            target: event.target,
+            target: getLongPressActionTarget(event.target),
             previewRange: null,
             previewTimer: window.setTimeout(() => {
                 if (!longPressSession || longPressSession.moved) return;
@@ -379,6 +387,7 @@ function initSelectTranslate() {
         if (session.triggered) {
             event.preventDefault();
             event.stopPropagation();
+            event.stopImmediatePropagation?.();
         }
     }
 
@@ -407,7 +416,9 @@ function initSelectTranslate() {
         }
 
         session.triggered = true;
-        longPressPreventClickTarget = session.target instanceof Element ? session.target : null;
+        longPressPreventClickTarget =
+            session.target ||
+            getLongPressActionTarget(document.elementFromPoint(session.startX, session.startY));
         longPressPreventClickUntil = Date.now() + 1000;
         clearLongPressHighlight();
         translateSubmit();
@@ -424,13 +435,22 @@ function initSelectTranslate() {
             event.target instanceof Element &&
             (event.target === longPressPreventClickTarget ||
                 longPressPreventClickTarget.contains(event.target) ||
-                event.target.contains(longPressPreventClickTarget))
+                event.target.contains(longPressPreventClickTarget) ||
+                event.composedPath?.().includes(longPressPreventClickTarget))
         ) {
             event.preventDefault();
             event.stopPropagation();
+            event.stopImmediatePropagation?.();
             longPressPreventClickTarget = null;
             longPressPreventClickUntil = 0;
         }
+    }
+
+    function getLongPressActionTarget(target) {
+        const element = target instanceof Element ? target : target?.parentElement;
+        if (!element) return null;
+
+        return element.closest("a, button, [role='button']") || element;
     }
 
     /**
