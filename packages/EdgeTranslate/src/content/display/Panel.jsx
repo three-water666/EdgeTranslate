@@ -2,7 +2,7 @@
 import { h, Fragment } from "preact";
 import { useEffect, useState, useRef, useCallback } from "preact/hooks";
 import { useLatest, useEvent, useClickAway } from "react-use";
-import styled, { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle, StyleSheetManager } from "styled-components";
 import root from "react-shadow/styled-components";
 import SimpleBar from "simplebar-react";
 import SimpleBarStyle from "simplebar-react/dist/simplebar.min.css";
@@ -589,96 +589,118 @@ export default function ResultPanel() {
                         : {}
                 }
             >
-                <GlobalStyle />
-                <Panel ref={onDisplayStatusChange} displayType={displayType} data-testid="Panel">
-                    {
-                        // Only show the panel's content when the panel is movable.
-                        moveableReady && (
-                            <Fragment>
-                                <Head ref={headElRef} data-testid="Head">
-                                    <SourceOption
-                                        role="button"
-                                        title={chrome.i18n.getMessage(`${currentTranslator}Short`)}
-                                        activeKey={currentTranslator}
-                                        onSelect={(eventKey) => {
-                                            setCurrentTranslator(eventKey);
-                                            channel
-                                                .request("update_default_translator", {
-                                                    translator: eventKey,
-                                                })
-                                                .then(() => {
-                                                    if (window.translateResult.originalText)
-                                                        channel.request("translate", {
-                                                            text: window.translateResult
-                                                                .originalText,
-                                                        });
-                                                });
-                                        }}
-                                        data-testid="SourceOption"
-                                    >
-                                        {availableTranslators?.map((translator) => (
-                                            <Dropdown.Item
+                <StyleSheetManager disableCSSOMInjection>
+                    <Fragment>
+                        <GlobalStyle />
+                        <Panel
+                            ref={onDisplayStatusChange}
+                            displayType={displayType}
+                            data-testid="Panel"
+                        >
+                            {
+                                // Only show the panel's content when the panel is movable.
+                                moveableReady && (
+                                    <Fragment>
+                                        <Head ref={headElRef} data-testid="Head">
+                                            <SourceOption
                                                 role="button"
-                                                key={translator}
-                                                eventKey={translator}
+                                                title={chrome.i18n.getMessage(
+                                                    `${currentTranslator}Short`
+                                                )}
+                                                activeKey={currentTranslator}
+                                                onSelect={(eventKey) => {
+                                                    setCurrentTranslator(eventKey);
+                                                    channel
+                                                        .request("update_default_translator", {
+                                                            translator: eventKey,
+                                                        })
+                                                        .then(() => {
+                                                            if (window.translateResult.originalText)
+                                                                channel.request("translate", {
+                                                                    text: window.translateResult
+                                                                        .originalText,
+                                                                });
+                                                        });
+                                                }}
+                                                data-testid="SourceOption"
                                             >
-                                                {chrome.i18n.getMessage(translator)}
-                                            </Dropdown.Item>
-                                        ))}
-                                    </SourceOption>
-                                    <HeadIcons>
-                                        <HeadIcon
-                                            role="button"
-                                            title={chrome.i18n.getMessage("Settings")}
-                                            onClick={() => channel.emit("open_options_page")}
-                                            data-testid="SettingIcon"
-                                        >
-                                            <SettingIcon />
-                                        </HeadIcon>
-                                        <HeadIcon
-                                            role="button"
-                                            title={chrome.i18n.getMessage(
-                                                panelFix ? "UnfixResultFrame" : "FixResultFrame"
-                                            )}
-                                            onClick={() => {
-                                                setPanelFix(!panelFix);
-                                                chrome.storage.sync.set({
-                                                    fixSetting: !panelFix,
-                                                });
-                                            }}
-                                            data-testid="PinIcon"
-                                        >
-                                            <StyledPinIcon fix={panelFix} />
-                                        </HeadIcon>
-                                        <HeadIcon
-                                            role="button"
-                                            title={chrome.i18n.getMessage("CloseResultFrame")}
-                                            onClick={() => setOpen(false)}
-                                            data-testid="CloseIcon"
-                                        >
-                                            <CloseIcon />
-                                        </HeadIcon>
-                                    </HeadIcons>
-                                </Head>
-                                <Body ref={bodyElRef}>
-                                    <SimpleBar ref={simplebarRef}>
-                                        {contentType === "LOADING" && <Loading {...content} />}
-                                        {contentType === "RESULT" && <Result {...content} />}
-                                        {contentType === "ERROR" && <Error {...content} />}
-                                    </SimpleBar>
-                                </Body>
-                            </Fragment>
-                        )
-                    }
-                </Panel>
-                {highlight.show && (
-                    <Highlight
-                        style={{
-                            width: displaySettingRef.current.fixedData.width * window.innerWidth,
-                            [highlight.position]: 0,
-                        }}
-                    />
-                )}
+                                                {availableTranslators?.map((translator) => (
+                                                    <Dropdown.Item
+                                                        role="button"
+                                                        key={translator}
+                                                        eventKey={translator}
+                                                    >
+                                                        {chrome.i18n.getMessage(translator)}
+                                                    </Dropdown.Item>
+                                                ))}
+                                            </SourceOption>
+                                            <HeadIcons>
+                                                <HeadIcon
+                                                    role="button"
+                                                    title={chrome.i18n.getMessage("Settings")}
+                                                    onClick={() =>
+                                                        channel.emit("open_options_page")
+                                                    }
+                                                    data-testid="SettingIcon"
+                                                >
+                                                    <SettingIcon />
+                                                </HeadIcon>
+                                                <HeadIcon
+                                                    role="button"
+                                                    title={chrome.i18n.getMessage(
+                                                        panelFix
+                                                            ? "UnfixResultFrame"
+                                                            : "FixResultFrame"
+                                                    )}
+                                                    onClick={() => {
+                                                        setPanelFix(!panelFix);
+                                                        chrome.storage.sync.set({
+                                                            fixSetting: !panelFix,
+                                                        });
+                                                    }}
+                                                    data-testid="PinIcon"
+                                                >
+                                                    <StyledPinIcon fix={panelFix} />
+                                                </HeadIcon>
+                                                <HeadIcon
+                                                    role="button"
+                                                    title={chrome.i18n.getMessage(
+                                                        "CloseResultFrame"
+                                                    )}
+                                                    onClick={() => setOpen(false)}
+                                                    data-testid="CloseIcon"
+                                                >
+                                                    <CloseIcon />
+                                                </HeadIcon>
+                                            </HeadIcons>
+                                        </Head>
+                                        <Body ref={bodyElRef}>
+                                            <SimpleBar ref={simplebarRef}>
+                                                {contentType === "LOADING" && (
+                                                    <Loading {...content} />
+                                                )}
+                                                {contentType === "RESULT" && (
+                                                    <Result {...content} />
+                                                )}
+                                                {contentType === "ERROR" && <Error {...content} />}
+                                            </SimpleBar>
+                                        </Body>
+                                    </Fragment>
+                                )
+                            }
+                        </Panel>
+                        {highlight.show && (
+                            <Highlight
+                                style={{
+                                    width:
+                                        displaySettingRef.current.fixedData.width *
+                                        window.innerWidth,
+                                    [highlight.position]: 0,
+                                }}
+                            />
+                        )}
+                    </Fragment>
+                </StyleSheetManager>
             </root.div>
         )
     );
