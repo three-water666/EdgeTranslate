@@ -71,6 +71,14 @@ function createStableDisplayStatusChangeHandler({
     };
 }
 
+function getDisplayStatusChangeHandler(args) {
+    const { onDisplayStatusChangeRef } = args;
+    if (!onDisplayStatusChangeRef.current) {
+        onDisplayStatusChangeRef.current = createStableDisplayStatusChangeHandler(args);
+    }
+    return onDisplayStatusChangeRef.current;
+}
+
 function usePanelState() {
     return {
         ...usePanelStatusState(),
@@ -219,6 +227,7 @@ function usePanelLifecycle(args) {
     const showFloatingPanelRef = useLatest(showFloatingPanel);
     const removeFixedPanelRef = useLatest(removeFixedPanel);
     const updateDisplaySettingRef = useLatest(updateDisplaySetting);
+    const onDisplayStatusChangeRef = useRef();
 
     const showPanel = useCallback(async () => {
         await getDisplaySetting();
@@ -254,25 +263,15 @@ function usePanelLifecycle(args) {
         updateBounds,
     ]);
 
-    const onDisplayStatusChange = useCallback(
-        createStableDisplayStatusChangeHandler({
-            modelRef,
-            removeFixedPanelRef,
-            showFixedPanelRef,
-            showFloatingPanelRef,
-            updateDisplaySettingRef,
-            showPanelRef,
-        }),
-        [
-            modelRef,
-            removeFixedPanelRef,
-            showFixedPanelRef,
-            showFloatingPanelRef,
-            showPanelRef,
-            updateDisplaySettingRef,
-        ]
-    );
-    model.onDisplayStatusChange = onDisplayStatusChange;
+    model.onDisplayStatusChange = getDisplayStatusChangeHandler({
+        modelRef,
+        removeFixedPanelRef,
+        showFixedPanelRef,
+        showFloatingPanelRef,
+        updateDisplaySettingRef,
+        showPanelRef,
+        onDisplayStatusChangeRef,
+    });
 
     useEffect(() => {
         if (model.displaySettingRef.current.type === "floating") {
