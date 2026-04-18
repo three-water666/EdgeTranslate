@@ -1,3 +1,5 @@
+const sharedRules = require("../../eslint/shared-rules.js");
+
 module.exports = {
     root: true,
     parser: "@babel/eslint-parser",
@@ -26,16 +28,18 @@ module.exports = {
     },
     plugins: ["html", "import", "prettier"],
     rules: {
-        complexity: ["error", 10],
-        "import/no-cycle": "error",
-        "max-depth": ["error", 4],
-        "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
-        "max-lines-per-function": ["error", { max: 80, skipBlankLines: true, skipComments: true }],
-        "max-nested-callbacks": ["error", 3],
-        "max-params": ["error", 4],
-        "max-statements": ["error", 15],
-        quotes: ["error", "double"],
+        ...sharedRules,
         "no-multiple-empty-lines": [0, { max: 100 }],
-        "prettier/prettier": ["error", { endOfLine: "lf" }],
     },
+    overrides: [
+        {
+            files: ["test/**/*.{js,jsx}"],
+            rules: {
+                complexity: "off",
+                "max-lines": "off",
+                "max-lines-per-function": "off",
+                "max-statements": "off",
+            },
+        },
+    ],
 };

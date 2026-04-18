@@ -2,7 +2,7 @@
 import { h } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import styled from "styled-components";
-import { ContentWrapperCenterClassName } from "./Panel.jsx";
+import { ContentWrapperCenterClassName } from "./Panel.styles.js";
 
 export default function Loading(props) {
     const loadingElRef = useRef();

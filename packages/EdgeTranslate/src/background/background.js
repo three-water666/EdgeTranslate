@@ -41,72 +41,76 @@ const RULE_GOOGLE_TTS = {
     },
 };
 
-/**
- * 插件安装和更新时的初始化。
- */
-chrome.runtime.onInstalled.addListener(async (details) => {
-    chrome.contextMenus.create({
+const CONTEXT_MENU_CONFIGS = [
+    {
         id: "translate",
         title: `${chrome.i18n.getMessage("Translate")} '%s'`,
         contexts: ["selection"],
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "shortcut",
         title: chrome.i18n.getMessage("ShortcutSetting"),
         contexts: ["action"],
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "translate_page",
         title: chrome.i18n.getMessage("TranslatePage"),
         contexts: ["page"],
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "screenshot_translate",
         title: chrome.i18n.getMessage("ScreenshotTranslate"),
         contexts: ["page", "selection"],
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "translate_page_google",
         title: chrome.i18n.getMessage("TranslatePageGoogle"),
         contexts: ["action"],
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "add_url_blacklist",
         title: chrome.i18n.getMessage("AddUrlBlacklist"),
         contexts: ["action"],
         enabled: false,
         visible: false,
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "add_domain_blacklist",
         title: chrome.i18n.getMessage("AddDomainBlacklist"),
         contexts: ["action"],
         enabled: false,
         visible: false,
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "remove_url_blacklist",
         title: chrome.i18n.getMessage("RemoveUrlBlacklist"),
         contexts: ["action"],
         enabled: false,
         visible: false,
-    });
-
-    chrome.contextMenus.create({
+    },
+    {
         id: "remove_domain_blacklist",
         title: chrome.i18n.getMessage("RemoveDomainBlacklist"),
         contexts: ["action"],
         enabled: false,
         visible: false,
-    });
+    },
+];
 
+/**
+ * 插件安装和更新时的初始化。
+ */
+chrome.runtime.onInstalled.addListener(async (details) => {
+    createContextMenus();
+    await resetDynamicRules();
+    await handleProductionInstallOrUpdate(details);
+});
+
+function createContextMenus() {
+    CONTEXT_MENU_CONFIGS.forEach((menu) => chrome.contextMenus.create(menu));
+}
+
+async function resetDynamicRules() {
     const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
     const oldRuleIds = existingRules.map((rule) => rule.id);
 
@@ -114,48 +118,68 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         removeRuleIds: oldRuleIds,
         addRules: [RULE_GOOGLE_TTS],
     });
+}
 
-    if (process.env.NODE_ENV === "production") {
-        if (details.reason === "install") {
-            chrome.tabs.create({
-                url: "https://github.com/three-water666/EdgeTranslate",
-            });
-        } else if (details.reason === "update") {
-            await new Promise((resolve) => {
-                chrome.storage.sync.get((result) => {
-                    let buffer = result;
-                    setDefaultSettings(buffer, DEFAULT_SETTINGS);
-                    chrome.storage.sync.set(buffer, resolve);
-                });
-            });
-
-            // Fix language setting compatibility between 2.x and 1.x.x.
-            chrome.storage.sync.get("languageSetting", (result) => {
-                if (!result.languageSetting) return;
-
-                if (result.languageSetting.sl === "zh-cn") {
-                    result.languageSetting.sl = "zh-CN";
-                } else if (result.languageSetting.sl === "zh-tw") {
-                    result.languageSetting.sl = "zh-TW";
-                }
-
-                if (result.languageSetting.tl === "zh-cn") {
-                    result.languageSetting.tl = "zh-CN";
-                } else if (result.languageSetting.tl === "zh-tw") {
-                    result.languageSetting.tl = "zh-TW";
-                }
-                chrome.storage.sync.set(result);
-            });
-
-            chrome.notifications.create("update_notification", {
-                type: "basic",
-                iconUrl: chrome.runtime.getURL("icon/icon128.png"),
-                title: chrome.i18n.getMessage("AppName"),
-                message: chrome.i18n.getMessage("ExtensionUpdated"),
-            });
-        }
+async function handleProductionInstallOrUpdate(details) {
+    if (process.env.NODE_ENV !== "production") {
+        return;
     }
-});
+
+    if (details.reason === "install") {
+        openProjectPage();
+        return;
+    }
+
+    if (details.reason === "update") {
+        await syncDefaultSettings();
+        fixLegacyLanguageSettings();
+        showUpdateNotification();
+    }
+}
+
+function openProjectPage() {
+    chrome.tabs.create({
+        url: "https://github.com/three-water666/EdgeTranslate",
+    });
+}
+
+function syncDefaultSettings() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get((result) => {
+            let buffer = result;
+            setDefaultSettings(buffer, DEFAULT_SETTINGS);
+            chrome.storage.sync.set(buffer, resolve);
+        });
+    });
+}
+
+function fixLegacyLanguageSettings() {
+    // Fix language setting compatibility between 2.x and 1.x.x.
+    chrome.storage.sync.get("languageSetting", (result) => {
+        if (!result.languageSetting) return;
+
+        normalizeLanguageSetting(result.languageSetting, "sl");
+        normalizeLanguageSetting(result.languageSetting, "tl");
+        chrome.storage.sync.set(result);
+    });
+}
+
+function normalizeLanguageSetting(languageSetting, key) {
+    if (languageSetting[key] === "zh-cn") {
+        languageSetting[key] = "zh-CN";
+    } else if (languageSetting[key] === "zh-tw") {
+        languageSetting[key] = "zh-TW";
+    }
+}
+
+function showUpdateNotification() {
+    chrome.notifications.create("update_notification", {
+        type: "basic",
+        iconUrl: chrome.runtime.getURL("icon/icon128.png"),
+        title: chrome.i18n.getMessage("AppName"),
+        message: chrome.i18n.getMessage("ExtensionUpdated"),
+    });
+}
 
 /**
  * Create communication channel.

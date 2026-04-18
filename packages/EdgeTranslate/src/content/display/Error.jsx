@@ -2,7 +2,7 @@
 import { h } from "preact";
 import styled from "styled-components";
 import { useEffect, useRef } from "preact/hooks";
-import { ContentWrapperCenterClassName } from "./Panel.jsx";
+import { ContentWrapperCenterClassName } from "./Panel.styles.js";
 import ErrorIcon from "./icons/error.svg";
 
 /**

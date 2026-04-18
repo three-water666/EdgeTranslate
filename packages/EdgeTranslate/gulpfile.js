@@ -7,10 +7,9 @@ const webpack = require("webpack");
 const webpack_stream = require("webpack-stream");
 const zip = require("gulp-zip");
 const terser = require("gulp-terser");
-const eslint = require("gulp-eslint");
 const mergeStream = require("merge-stream");
 const minimist = require("minimist");
-const spawn = require("child_process").spawn;
+const { spawn, spawnSync } = require("child_process");
 const { version } = require("./package.json");
 
 let args = minimist(process.argv.slice(2));
@@ -132,15 +131,30 @@ function watcher(done) {
 /**
  * A private task to run eslint check for JS code
  */
-function eslintJS() {
-    return gulp
-        .src("./src/**/*.{js,jsx}", { base: "src" })
-        .pipe(
-            eslint({
-                configFile: "./.eslintrc.js",
-            })
-        )
-        .pipe(eslint.format());
+function eslintJS(done) {
+    const result = spawnSync(
+        "node",
+        [
+            "../../scripts/run-eslint.js",
+            "packages/EdgeTranslate",
+            ".eslintrc.js",
+            "gulpfile.js",
+            "src/**/*.{js,jsx}",
+            "config/**/*.js",
+            "utils/**/*.js",
+            "test/**/*.{js,jsx}",
+        ],
+        {
+            stdio: "inherit",
+            shell: true,
+        }
+    );
+
+    if (result.status !== 0) {
+        log(`eslint exited with code ${result.status}`);
+    }
+
+    done();
 }
 
 /**

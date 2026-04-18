@@ -8,9 +8,7 @@ import {
 import BingTranslator from "./bing";
 import GoogleTranslator from "./google";
 
-export type HybridSupportedTranslators =
-    | "BingTranslate"
-    | "GoogleTranslate"
+export type HybridSupportedTranslators = "BingTranslate" | "GoogleTranslate";
 
 export type HybridConfig = {
     selections: Selections;
@@ -108,8 +106,8 @@ class HybridTranslator {
 
         let item: keyof Selections;
         for (item in this.CONFIG.selections) {
-            let newTranslator,
-                oldTranslator = this.CONFIG.selections[item];
+            const oldTranslator = this.CONFIG.selections[item];
+            let newTranslator;
 
             if (availableTranslatorSet.has(oldTranslator)) {
                 newConfig.selections[item] = oldTranslator;
@@ -151,8 +149,8 @@ class HybridTranslator {
      */
     async translate(text: string, from: string, to: string) {
         // Initiate translation requests.
-        let requests = [];
-        for (let translator of this.CONFIG.translators) {
+        const requests = [];
+        for (const translator of this.CONFIG.translators) {
             // Translate with a translator.
             requests.push(
                 this.REAL_TRANSLATORS[translator]

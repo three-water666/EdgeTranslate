@@ -231,7 +231,7 @@ class GoogleTranslator {
     async updateTKK() {
         const response = await axios.get(this.HOME_PAGE);
 
-        let body = response.data as any;
+        const body = response.data as any;
         let tkk = (body.match(/TKK=(.*?)\(\)\)'\);/i) || [""])[0]
             .replace(/\\x([0-9A-Fa-f]{2})/g, "") // remove hex chars
             .match(/[+-]?\d+/g);
@@ -352,8 +352,8 @@ class GoogleTranslator {
 
         if (response.dict) {
             result.detailedMeanings = [];
-            for (let item of response.dict) {
-                for (let entry of item.entry) {
+            for (const item of response.dict) {
+                for (const entry of item.entry) {
                     result.detailedMeanings.push({
                         pos: item.pos,
                         meaning: entry.word,
@@ -365,8 +365,8 @@ class GoogleTranslator {
 
         if (response.definitions) {
             result.definitions = [];
-            for (let item of response.definitions) {
-                for (let entry of item.entry) {
+            for (const item of response.definitions) {
+                for (const entry of item.entry) {
                     result.definitions.push({
                         pos: item.pos,
                         meaning: entry.gloss,
@@ -379,7 +379,7 @@ class GoogleTranslator {
 
         if (response.examples) {
             result.examples = [];
-            for (let example of response.examples.example) {
+            for (const example of response.examples.example) {
                 result.examples.push({
                     source: example.text,
                     target: null,
@@ -414,9 +414,9 @@ class GoogleTranslator {
                 switch (i) {
                     // 单词的基本意思和音标
                     case 0: {
-                        let mainMeanings = [];
-                        let originalTexts = [];
-                        let lastIndex = items.length - 1;
+                        const mainMeanings = [];
+                        const originalTexts = [];
+                        const lastIndex = items.length - 1;
 
                         for (let j = 0; j <= lastIndex; j++) {
                             mainMeanings.push(items[j][0]);
@@ -441,7 +441,7 @@ class GoogleTranslator {
                     }
                     // 单词的所有词性及对应的意思
                     case 1:
-                        result.detailedMeanings = new Array();
+                        result.detailedMeanings = [];
                         items.forEach((item: any) =>
                             result.detailedMeanings!.push({
                                 pos: item[0],
@@ -452,7 +452,7 @@ class GoogleTranslator {
                         break;
                     // 单词的定义及对应例子
                     case 12:
-                        result.definitions = new Array();
+                        result.definitions = [];
                         items.forEach((item: any) => {
                             item[1].forEach((element: any) => {
                                 result.definitions!.push({
@@ -466,7 +466,7 @@ class GoogleTranslator {
                         break;
                     // 单词的例句
                     case 13:
-                        result.examples = new Array();
+                        result.examples = [];
                         items.forEach((item: any) =>
                             item.forEach((element: any) =>
                                 result.examples!.push({ source: null, target: element[0] })
@@ -569,7 +569,7 @@ class GoogleTranslator {
             });
 
             if (response.status === 200) {
-                let result = this.parseTranslateResult(response.data);
+                const result = this.parseTranslateResult(response.data);
                 return result;
             }
 
@@ -609,7 +609,7 @@ class GoogleTranslator {
      */
     async pronounce(text: string, language: string, speed: PronunciationSpeed) {
         this.stopPronounce();
-        let speedValue = speed === "fast" ? "0.8" : "0.2";
+        const speedValue = speed === "fast" ? "0.8" : "0.2";
 
         this.AUDIO.src = `${
             this.fallBacking ? this.FALLBACK_TTS_URL : this.TTS_URL
