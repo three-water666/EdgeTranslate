@@ -3,7 +3,10 @@ function loadResultDisplaySettings(getOrSetDefaultSettings, defaultSettings, set
         ["LayoutSettings", "TranslateResultFilter", "ContentDisplayOrder"],
         defaultSettings
     ).then((result) => {
-        applyResultDisplaySettings(result, setters);
+        applyResultDisplaySettings(
+            normalizeResultDisplaySettings(result, defaultSettings),
+            setters
+        );
     });
 }
 
@@ -26,6 +29,49 @@ function applyResultDisplaySettings(result, setters) {
     setters.setContentDisplayOrder(result.ContentDisplayOrder);
     applyTranslateResultFilter(result.TranslateResultFilter, setters);
     applyLayoutSettings(result.LayoutSettings, setters);
+}
+
+function normalizeResultDisplaySettings(result, defaultSettings) {
+    return {
+        LayoutSettings: normalizeLayoutSettings(result.LayoutSettings, defaultSettings),
+        TranslateResultFilter: normalizeTranslateResultFilter(
+            result.TranslateResultFilter,
+            defaultSettings
+        ),
+        ContentDisplayOrder: normalizeContentDisplayOrder(
+            result.ContentDisplayOrder,
+            defaultSettings
+        ),
+    };
+}
+
+function normalizeLayoutSettings(layoutSettings, defaultSettings) {
+    return {
+        ...defaultSettings.LayoutSettings,
+        ...(layoutSettings || {}),
+    };
+}
+
+function normalizeTranslateResultFilter(filter, defaultSettings) {
+    return {
+        ...defaultSettings.TranslateResultFilter,
+        ...(filter || {}),
+    };
+}
+
+function normalizeContentDisplayOrder(contentDisplayOrder, defaultSettings) {
+    if (!Array.isArray(contentDisplayOrder) || contentDisplayOrder.length === 0) {
+        return defaultSettings.ContentDisplayOrder;
+    }
+
+    const allowedContents = new Set(defaultSettings.ContentDisplayOrder);
+    const normalizedContentDisplayOrder = contentDisplayOrder.filter((content) =>
+        allowedContents.has(content)
+    );
+
+    return normalizedContentDisplayOrder.length > 0
+        ? normalizedContentDisplayOrder
+        : defaultSettings.ContentDisplayOrder;
 }
 
 function applyTranslateResultFilter(filter, setters) {

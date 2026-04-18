@@ -53,6 +53,7 @@ export function attachDragHandlers({
                 stop();
                 return;
             }
+            startTranslate = getCurrentTranslate(moveablePanel.targetElement);
             set(startTranslate);
             if (isChromePDFViewer()) setUsePDFMaskLayer(true);
         })
@@ -102,6 +103,7 @@ export function attachResizeHandlers({
 
     moveablePanel
         .on("resizeStart", ({ set }) => {
+            startTranslate = getCurrentTranslate(moveablePanel.targetElement);
             set(startTranslate);
             if (isChromePDFViewer()) setUsePDFMaskLayer(true);
         })
@@ -160,8 +162,10 @@ export function resizeFloatingPanel({
     if (!moveablePanel) return;
     let panelHeight = displaySettingRef.current.floatingData.height * window.innerHeight;
     if (contentType === "RESULT" || contentType === "ERROR") {
-        let actualHeight = headEl.clientHeight + (simplebar?.getContentElement().clientHeight || 0);
-        if (actualHeight !== headEl.clientHeight && panelHeight > actualHeight) {
+        const headHeight = headEl?.clientHeight || 0;
+        const contentHeight = simplebar?.getContentElement?.()?.clientHeight || 0;
+        const actualHeight = headHeight + contentHeight;
+        if (headHeight > 0 && actualHeight !== headHeight && panelHeight > actualHeight) {
             panelHeight = actualHeight;
         }
     }
@@ -179,6 +183,7 @@ export async function applyFixedPanelLayout({
     bodyStyleState,
     scrollbarWidth,
 }) {
+    if (!panelElRef.current) return;
     let width = displaySettingRef.current.fixedData.width * window.innerWidth;
     let offsetLeft = getFixedOffsetLeft(
         displaySettingRef.current.fixedData.position,
@@ -188,18 +193,16 @@ export async function applyFixedPanelLayout({
     let result = await getOrSetDefaultSettings("LayoutSettings", DEFAULT_SETTINGS);
     resizePageFlag.current = result.LayoutSettings.Resize;
 
-    if (!resizePageFlag.current) {
-        move(width, window.innerHeight, offsetLeft, 0);
-        return;
-    }
+    if (!resizePageFlag.current) return move(width, window.innerHeight, offsetLeft, 0);
 
-    await prepareResizableBody({ bodyStyleState, panelElRef, move, offsetLeft });
-    applyFixedBodySide(displaySettingRef.current.fixedData.position);
-    document.body.style.width = `${(1 - displaySettingRef.current.fixedData.width) * 100}%`;
-    move(width, window.innerHeight, offsetLeft, 0);
-    await delayPromise(transitionDuration);
-    panelElRef.current.style.transition = "";
-    document.body.style.transition = "";
+    await prepareFixedPanelLayout({
+        bodyStyleState,
+        displaySettingRef,
+        panelElRef,
+        move,
+        offsetLeft,
+        width,
+    });
 }
 
 export async function removeFixedPanelLayout(resizePageFlag, bodyStyleState) {
@@ -252,8 +255,30 @@ function getFixedOffsetLeft(position, width, scrollbarWidth) {
     return window.innerWidth - width - (hasScrollbar() ? scrollbarWidth : 0);
 }
 
+function getCurrentTranslate(targetElement) {
+    if (!targetElement) return [0, 0];
+    const transform =
+        targetElement.style.transform || window.getComputedStyle(targetElement).transform;
+    if (!transform || transform === "none") return [0, 0];
+
+    return parseMatrixTranslate(transform) || parseTranslateValues(transform) || [0, 0];
+}
+
+function parseMatrixTranslate(transform) {
+    const matrixMatch = transform.match(/matrix\(([^)]+)\)/);
+    if (!matrixMatch) return null;
+    const values = matrixMatch[1].split(",").map((value) => Number.parseFloat(value.trim()));
+    return [values[4] || 0, values[5] || 0];
+}
+
+function parseTranslateValues(transform) {
+    const translateMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+    if (!translateMatch) return null;
+    return [Number.parseFloat(translateMatch[1]) || 0, Number.parseFloat(translateMatch[2]) || 0];
+}
+
 async function prepareResizableBody({ bodyStyleState, panelElRef, move, offsetLeft }) {
-    if (bodyStyleState.cssText !== "") return;
+    if (bodyStyleState.cssText !== "" || !panelElRef.current) return;
     bodyStyleState.cssText = document.body.style.cssText;
     document.body.style.position = "absolute";
     document.body.style.transition = `width ${transitionDuration}ms`;
@@ -261,6 +286,25 @@ async function prepareResizableBody({ bodyStyleState, panelElRef, move, offsetLe
     document.body.style.width = "100%";
     move(0, window.innerHeight, offsetLeft, 0);
     await delayPromise(50);
+}
+
+async function prepareFixedPanelLayout({
+    bodyStyleState,
+    displaySettingRef,
+    panelElRef,
+    move,
+    offsetLeft,
+    width,
+}) {
+    await prepareResizableBody({ bodyStyleState, panelElRef, move, offsetLeft });
+    if (!panelElRef.current) return;
+    applyFixedBodySide(displaySettingRef.current.fixedData.position);
+    document.body.style.width = `${(1 - displaySettingRef.current.fixedData.width) * 100}%`;
+    move(width, window.innerHeight, offsetLeft, 0);
+    await delayPromise(transitionDuration);
+    if (!panelElRef.current) return;
+    panelElRef.current.style.transition = "";
+    document.body.style.transition = "";
 }
 
 function applyFixedBodySide(position) {

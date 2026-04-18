@@ -11,6 +11,57 @@ export function createDefaultDisplaySetting() {
     };
 }
 
+export function normalizeDisplaySetting(displaySetting) {
+    const defaultDisplaySetting = createDefaultDisplaySetting();
+    const normalizedDisplaySetting = {
+        ...defaultDisplaySetting,
+        ...(displaySetting || {}),
+        fixedData: {
+            ...defaultDisplaySetting.fixedData,
+            ...(displaySetting?.fixedData || {}),
+        },
+        floatingData: {
+            ...defaultDisplaySetting.floatingData,
+            ...(displaySetting?.floatingData || {}),
+        },
+    };
+
+    normalizedDisplaySetting.type = normalizeDisplayType(
+        normalizedDisplaySetting.type,
+        defaultDisplaySetting.type
+    );
+    normalizedDisplaySetting.fixedData.position = normalizeFixedPosition(
+        normalizedDisplaySetting.fixedData.position,
+        defaultDisplaySetting.fixedData.position
+    );
+    normalizedDisplaySetting.fixedData.width = normalizeRatio(
+        normalizedDisplaySetting.fixedData.width,
+        defaultDisplaySetting.fixedData.width
+    );
+    normalizedDisplaySetting.floatingData.width = normalizeRatio(
+        normalizedDisplaySetting.floatingData.width,
+        defaultDisplaySetting.floatingData.width
+    );
+    normalizedDisplaySetting.floatingData.height = normalizeRatio(
+        normalizedDisplaySetting.floatingData.height,
+        defaultDisplaySetting.floatingData.height
+    );
+
+    return normalizedDisplaySetting;
+}
+
+function normalizeDisplayType(type, fallback) {
+    return type === "fixed" || type === "floating" ? type : fallback;
+}
+
+function normalizeFixedPosition(position, fallback) {
+    return position === "left" || position === "right" ? position : fallback;
+}
+
+function normalizeRatio(value, fallback) {
+    return typeof value === "number" && value > 0 && value < 1 ? value : fallback;
+}
+
 export function initializePanelSettings(model) {
     getOrSetDefaultSettings(["languageSetting", "DefaultTranslator"], DEFAULT_SETTINGS).then(
         async (result) => {
@@ -148,9 +199,11 @@ export function handlePanelOpened(args) {
 
 export function getContainerStyle(usePDFMaskLayer) {
     if (!usePDFMaskLayer) return {};
+    const pdfRoot = document.body.children[0];
+    if (!pdfRoot) return {};
     return {
-        width: document.body.children[0].clientWidth,
-        height: document.body.children[0].clientHeight,
+        width: pdfRoot.clientWidth,
+        height: pdfRoot.clientHeight,
         position: "fixed",
         zIndex: 2147483647,
     };

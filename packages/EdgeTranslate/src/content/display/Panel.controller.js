@@ -12,6 +12,7 @@ import {
 import { panelChannel } from "./Panel.shared.js";
 import {
     createDefaultDisplaySetting,
+    normalizeDisplaySetting,
     initializePanelSettings,
     handleTranslating,
     handleTranslated,
@@ -30,6 +31,44 @@ export function useResultPanelModel() {
     usePanelBehavior(model);
     usePanelChannels(model);
     return createPanelViewModel(model);
+}
+
+function loadDisplaySetting(model, updateDisplaySetting) {
+    return getOrSetDefaultSettings("DisplaySetting", DEFAULT_SETTINGS).then((result) => {
+        if (result.DisplaySetting === undefined) {
+            updateDisplaySetting();
+            return;
+        }
+
+        model.displaySettingRef.current = normalizeDisplaySetting(result.DisplaySetting);
+    });
+}
+
+function createStableDisplayStatusChangeHandler({
+    modelRef,
+    removeFixedPanelRef,
+    showFixedPanelRef,
+    showFloatingPanelRef,
+    updateDisplaySettingRef,
+    showPanelRef,
+}) {
+    return (panelEl) => {
+        const currentModel = modelRef.current;
+        currentModel.panelElRef.current = panelEl;
+        if (!panelEl) {
+            handlePanelClosed(currentModel, removeFixedPanelRef.current);
+            return;
+        }
+        handlePanelOpened({
+            model: currentModel,
+            panelEl,
+            showFixedPanel: showFixedPanelRef.current,
+            removeFixedPanel: removeFixedPanelRef.current,
+            showFloatingPanel: showFloatingPanelRef.current,
+            updateDisplaySetting: updateDisplaySettingRef.current,
+            showPanel: showPanelRef.current,
+        });
+    };
 }
 
 function usePanelState() {
@@ -95,22 +134,16 @@ function usePanelBehavior(model) {
     }, [model.displaySettingRef]);
 
     const getDisplaySetting = useCallback(() => {
-        return new Promise((resolve) => {
-            getOrSetDefaultSettings("DisplaySetting", DEFAULT_SETTINGS).then((result) => {
-                if (result.DisplaySetting) {
-                    model.displaySettingRef.current = result.DisplaySetting;
-                } else {
-                    updateDisplaySetting();
-                }
-                resolve();
-            });
-        });
-    }, [model.displaySettingRef, updateDisplaySetting]);
+        return loadDisplaySetting(model, updateDisplaySetting);
+    }, [model, updateDisplaySetting]);
 
     const move = useCallback(
         (width, height, left, top) => {
-            model.moveablePanelRef.current.request("draggable", { x: left, y: top });
-            model.moveablePanelRef.current.request("resizable", { width, height });
+            const moveablePanel = model.moveablePanelRef.current;
+            if (!moveablePanel) return false;
+            moveablePanel.request("draggable", { x: left, y: top });
+            moveablePanel.request("resizable", { width, height });
+            return true;
         },
         [model.moveablePanelRef]
     );
@@ -127,9 +160,9 @@ function usePanelBehavior(model) {
         });
     }, [model]);
 
-    const showFixedPanel = useCallback(() => {
+    const showFixedPanel = useCallback(async () => {
         model.setDisplayType("fixed");
-        applyFixedPanelLayout({
+        await applyFixedPanelLayout({
             displaySettingRef: model.displaySettingRef,
             resizePageFlag: model.resizePageFlag,
             panelElRef: model.panelElRef,
@@ -181,6 +214,11 @@ function usePanelLifecycle(args) {
         showFixedPanel,
         removeFixedPanel,
     } = args;
+    const modelRef = useLatest(model);
+    const showFixedPanelRef = useLatest(showFixedPanel);
+    const showFloatingPanelRef = useLatest(showFloatingPanel);
+    const removeFixedPanelRef = useLatest(removeFixedPanel);
+    const updateDisplaySettingRef = useLatest(updateDisplaySetting);
 
     const showPanel = useCallback(async () => {
         await getDisplaySetting();
@@ -197,15 +235,16 @@ function usePanelLifecycle(args) {
                 y: position[1],
             });
         } else {
-            showFixedPanel();
+            await showFixedPanel();
         }
         model.setMoveableReady(true);
     }, [getDisplaySetting, model, showFixedPanel, showFloatingPanel, updateBounds]);
+    const showPanelRef = useLatest(showPanel);
 
     const windowResizeHandler = useCallback(() => {
         updateBounds();
         if (!model.panelElRef.current) return;
-        if (model.displaySettingRef.current.type === "fixed") showFixedPanel();
+        if (model.displaySettingRef.current.type === "fixed") void showFixedPanel();
         else showFloatingPanel();
     }, [
         model.displaySettingRef,
@@ -215,32 +254,25 @@ function usePanelLifecycle(args) {
         updateBounds,
     ]);
 
-    model.onDisplayStatusChange = useCallback(
-        (panelEl) => {
-            model.panelElRef.current = panelEl;
-            if (!panelEl) {
-                handlePanelClosed(model, removeFixedPanel);
-                return;
-            }
-            handlePanelOpened({
-                model,
-                panelEl,
-                showFixedPanel,
-                removeFixedPanel,
-                showFloatingPanel,
-                updateDisplaySetting,
-                showPanel,
-            });
-        },
+    const onDisplayStatusChange = useCallback(
+        createStableDisplayStatusChangeHandler({
+            modelRef,
+            removeFixedPanelRef,
+            showFixedPanelRef,
+            showFloatingPanelRef,
+            updateDisplaySettingRef,
+            showPanelRef,
+        }),
         [
-            model,
-            removeFixedPanel,
-            showFixedPanel,
-            showFloatingPanel,
-            showPanel,
-            updateDisplaySetting,
+            modelRef,
+            removeFixedPanelRef,
+            showFixedPanelRef,
+            showFloatingPanelRef,
+            showPanelRef,
+            updateDisplaySettingRef,
         ]
     );
+    model.onDisplayStatusChange = onDisplayStatusChange;
 
     useEffect(() => {
         if (model.displaySettingRef.current.type === "floating") {

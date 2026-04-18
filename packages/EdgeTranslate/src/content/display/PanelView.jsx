@@ -123,9 +123,11 @@ function DropdownItem({ translator }) {
 
 export function getContainerStyle(usePDFMaskLayer) {
     if (!usePDFMaskLayer) return {};
+    const pdfRoot = document.body.children[0];
+    if (!pdfRoot) return {};
     return {
-        width: document.body.children[0].clientWidth,
-        height: document.body.children[0].clientHeight,
+        width: pdfRoot.clientWidth,
+        height: pdfRoot.clientHeight,
         position: "fixed",
         zIndex: MaxZIndex,
     };
