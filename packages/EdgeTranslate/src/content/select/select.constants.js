@@ -7,8 +7,9 @@ export const SENTENCE_TRAILING_REGEXP = /[\s"'\])）】〕〉》」』]+/;
 export const CHUNK_TARGET_LENGTH = 90;
 export const CHUNK_MAX_LENGTH = 160;
 export const CHUNK_MIN_LENGTH = 24;
-export const BLOCK_TEXT_MAX_LENGTH = 1200;
+export const BLOCK_TEXT_MAX_LENGTH = 500;
 export const BLOCK_TEXT_MIN_LENGTH = 8;
+export const BLOCK_TEXT_IDEAL_LENGTH = 150;
 export const DIRECT_TEXT_BLOCK_TAG_REGEXP =
     /^(P|LI|BLOCKQUOTE|PRE|DD|DT|FIGCAPTION|CAPTION|H[1-6])$/;
 

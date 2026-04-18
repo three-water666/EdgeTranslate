@@ -4,10 +4,9 @@ import {
     CHUNK_TARGET_LENGTH,
     CHUNK_MAX_LENGTH,
     CHUNK_MIN_LENGTH,
-    BLOCK_TEXT_MAX_LENGTH,
-    BLOCK_TEXT_MIN_LENGTH,
     DIRECT_TEXT_BLOCK_TAG_REGEXP,
 } from "./select.constants.js";
+import { scoreContainer, isReasonableBlockContainer } from "./select.long_press_score.js";
 import {
     collectBlockCandidates,
     pickBestBlockContainer,
@@ -28,11 +27,16 @@ import {
 
 export function shouldIgnoreTarget(target) {
     if (!(target instanceof Element)) return true;
-    return Boolean(
+    if (
         target.closest(
-            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true']"
+            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true'], [role='slider'], [role='progressbar'], [role='scrollbar'], [role='tab']"
         )
-    );
+    ) {
+        return true;
+    }
+
+    const cursor = window.getComputedStyle(target).cursor;
+    return /^(move|([nsweo]|[nwse]w|col|row)-resize|grab|grabbing)$/.test(cursor);
 }
 
 export function getActionTarget(target) {
@@ -79,7 +83,15 @@ function getPreferredBlockContainer(textNode, x, y) {
         getSentenceContainer(textNode),
         ...collectBlockCandidates(textNode, isTraversableElement, isBlockContainerCandidate),
     ];
-    return pickBestBlockContainer(candidates, x, y, scoreContainer);
+    return pickBestBlockContainer(candidates, x, y, (element, clientX, clientY) =>
+        scoreContainer({
+            element,
+            x: clientX,
+            y: clientY,
+            collectTextNodes,
+            containsPoint,
+        })
+    );
 }
 
 function getDirectTextBlockContainer(textNode) {
@@ -262,52 +274,8 @@ function isReasonableLongPressRange(range, x, y) {
     return text.length > 0 && getHighlightRects(range).some((rect) => containsPoint(rect, x, y));
 }
 
-function scoreContainer(element, x, y) {
-    if (!isValidBlockContainer(element, x, y)) return -1;
-    return getBlockTextLength(element) + getContainerTagBonus(element) + getChildBonus(element);
-}
-
-function isValidBlockContainer(element, x, y) {
-    return (
-        !!element &&
-        !isIgnoredElement(element) &&
-        hasUsableRect(element, x, y) &&
-        isReasonableBlockContainer(element)
-    );
-}
-
-function isIgnoredElement(element) {
-    return Boolean(
-        element.closest?.(
-            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay"
-        )
-    );
-}
-
-function hasUsableRect(element, x, y) {
-    const rect = element.getBoundingClientRect();
-    return !!rect.width && !!rect.height && containsPoint(rect, x, y);
-}
-
 function containsPoint(rect, x, y) {
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-}
-
-function isReasonableBlockContainer(element) {
-    const textLength = getBlockTextLength(element);
-    return textLength >= BLOCK_TEXT_MIN_LENGTH && textLength <= BLOCK_TEXT_MAX_LENGTH;
-}
-
-function getBlockTextLength(element) {
-    return (element?.textContent || "").trim().length;
-}
-
-function getContainerTagBonus(element) {
-    return /^(P|LI|BLOCKQUOTE|ARTICLE|SECTION|MAIN|ASIDE|PRE)$/.test(element.tagName) ? 120 : 0;
-}
-
-function getChildBonus(element) {
-    return element.childElementCount > 0 ? Math.min(element.childElementCount, 6) * 10 : 0;
 }
 
 function isTraversableElement(element) {
