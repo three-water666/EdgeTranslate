@@ -121,7 +121,10 @@ export function handleTranslatorSelect(model, eventKey) {
     model.setCurrentTranslator(eventKey);
     panelChannel.request("update_default_translator", { translator: eventKey }).then(() => {
         if (!window.translateResult.originalText) return;
-        panelChannel.request("translate", { text: window.translateResult.originalText });
+        panelChannel.request("translate", {
+            text: window.translateResult.originalText,
+            translator: eventKey,
+        });
     });
 }
 

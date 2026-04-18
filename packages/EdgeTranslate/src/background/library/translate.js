@@ -166,7 +166,7 @@ class TranslatorManager {
      *
      * @returns {Promise<void>} translate finished Promise
      */
-    async translate(text, position) {
+    async translate(text, position, options = {}) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
         await this.createOffscreenDocument();
@@ -175,7 +175,7 @@ class TranslatorManager {
         const currentTabId = await this.getCurrentTabId();
         if (currentTabId === -1) return;
 
-        return this.translateOnTab(currentTabId, text, position);
+        return this.translateOnTabWithOptions(currentTabId, text, position, options);
     }
 
     async translateOnTab(tabId, text, position) {
@@ -191,7 +191,7 @@ class TranslatorManager {
 
         try {
             const languagePair = await this.resolveLanguagePair(text);
-            const result = await this.requestTranslation(text, languagePair);
+            const result = await this.requestTranslation(text, languagePair, options);
             this.channel.emitToTabs(tabId, "translating_finished", {
                 timestamp,
                 translateMode: options.translateMode,
@@ -236,8 +236,8 @@ class TranslatorManager {
         return { sourceLanguage, targetLanguage };
     }
 
-    async requestTranslation(text, languagePair) {
-        const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
+    async requestTranslation(text, languagePair, options = {}) {
+        const DEFAULT_TRANSLATOR = options.defaultTranslator || this.DEFAULT_TRANSLATOR;
         const result = await this.channel.request("translator_by_default_translator", {
             DEFAULT_TRANSLATOR,
             text,
@@ -401,6 +401,7 @@ class TranslatorManager {
      */
     updateDefaultTranslator(translator) {
         return new Promise((resolve) => {
+            this.DEFAULT_TRANSLATOR = translator;
             chrome.storage.sync.set({ DefaultTranslator: translator }, () => {
                 resolve();
             });

@@ -3,7 +3,9 @@ import { executeGoogleScript } from "./page_translate.js";
 
 function provideTranslatorServices(manager) {
     manager.channel.provide("translate", (params) =>
-        manager.translate(params.text, params.position)
+        manager.translate(params.text, params.position, {
+            defaultTranslator: params.translator,
+        })
     );
 
     manager.channel.provide("pronounce", (params) => {
