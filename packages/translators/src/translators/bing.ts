@@ -230,6 +230,14 @@ class BingTranslator {
      */
     AUDIO = new Audio();
 
+    getResponseHost(response: AxiosResponse<any>) {
+        const responseURL = response?.request?.responseURL;
+        if (typeof responseURL !== "string") {
+            return null;
+        }
+        return /(https:\/\/.*\.bing\.com\/).*/g.exec(responseURL);
+    }
+
     /**
      * Get IG and IID for urls.
      *
@@ -247,7 +255,7 @@ class BingTranslator {
          * If the requested host is different from the original host, which means there was a redirection,
          * update HOST and HOME_PAGE with the redirecting host.
          */
-        const responseHost = /(https:\/\/.*\.bing\.com\/).*/g.exec(response.request.responseURL);
+        const responseHost = this.getResponseHost(response);
         if (responseHost && responseHost[1] != this.HOST) {
             this.HOST = responseHost[1];
             this.HOME_PAGE = `${this.HOST}translator`;
@@ -608,9 +616,7 @@ class BingTranslator {
              * If the requested host is different from the original host, which means there was a redirection,
              * update HOST and HOME_PAGE with the redirecting host and retry.
              */
-            const responseHost = /(https:\/\/.*\.bing\.com\/).*/g.exec(
-                response.request.responseURL
-            );
+            const responseHost = this.getResponseHost(response);
             if (responseHost && responseHost[1] !== this.HOST) {
                 this.HOST = responseHost[1];
                 this.HOME_PAGE = `${this.HOST}translator`;
