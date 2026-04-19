@@ -214,9 +214,10 @@ function cancelLongPressSession(state) {
 }
 
 function triggerLongPressTranslate(state, session) {
-    if (!state.longPressEnabled || window.getSelection().toString().trim()) {
+    if (!state.longPressEnabled || !session || session.moved) {
         return Promise.resolve();
     }
+    if (window.getSelection().toString().trim()) cancelTextSelection();
     return isInBlacklist().then((inBlacklist) => {
         if (inBlacklist) return;
         if (

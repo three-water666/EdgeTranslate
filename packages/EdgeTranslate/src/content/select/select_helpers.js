@@ -36,8 +36,9 @@ export function isInBlacklist() {
 }
 
 export function cancelTextSelection() {
-    if (window.getSelection?.empty) return window.getSelection().empty();
-    if (window.getSelection?.removeAllRanges) return window.getSelection().removeAllRanges();
+    const selection = window.getSelection?.();
+    if (selection?.empty) return selection.empty();
+    if (selection?.removeAllRanges) return selection.removeAllRanges();
     if (document.selection) document.selection.empty();
 }
 
