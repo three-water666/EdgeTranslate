@@ -5,7 +5,18 @@
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**"]
         },
-        "test": {},
+        "test": {
+            "inputs": [
+                "src/**",
+                "test/**",
+                "package.json",
+                "jest.config.*",
+                "*.config.js",
+                "*.config.ts",
+                "*.setup.js"
+            ],
+            "outputs": []
+        },
         "dev": {
             "dependsOn": ["^build"],
             "cache": false,
