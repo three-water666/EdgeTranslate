@@ -89,7 +89,10 @@ export function handleTranslating(model, detail) {
 
 export function handleTranslated(model, detail) {
     if (!checkTimestamp(detail.timestamp)) return;
-    window.translateResult = detail;
+    window.translateResult = {
+        ...detail,
+        originalText: detail.originalText || window.translateResult.originalText,
+    };
     model.setOpen(true);
     model.setContentType("RESULT");
     model.setContent(detail);
@@ -119,13 +122,18 @@ export function handlePanelCommand(model, detail) {
 
 export function handleTranslatorSelect(model, eventKey) {
     model.setCurrentTranslator(eventKey);
-    panelChannel.request("update_default_translator", { translator: eventKey }).then(() => {
-        if (!window.translateResult.originalText) return;
-        panelChannel.request("translate", {
-            text: window.translateResult.originalText,
-            translator: eventKey,
+    panelChannel
+        .request("update_default_translator", { translator: eventKey })
+        .then(() => {
+            if (!window.translateResult.originalText) return;
+            return panelChannel.request("translate", {
+                text: window.translateResult.originalText,
+                translator: eventKey,
+            });
+        })
+        .catch((error) => {
+            console.error("Failed to switch translator", error);
         });
-    });
 }
 
 export function togglePin(model) {

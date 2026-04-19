@@ -113,9 +113,9 @@ function HeadAction({ children, title, onClick, testId }) {
     );
 }
 
-function DropdownItem({ translator }) {
+function DropdownItem({ translator, ...props }) {
     return (
-        <Dropdown.Item role="button" eventKey={translator}>
+        <Dropdown.Item {...props} eventKey={translator}>
             {chrome.i18n.getMessage(translator)}
         </Dropdown.Item>
     );
