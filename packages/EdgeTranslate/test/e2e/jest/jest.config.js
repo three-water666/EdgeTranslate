@@ -9,6 +9,6 @@ module.exports = {
     testTimeout: 100_000,
     transform: {
         "^.+\\.[t|j]sx?$": "babel-jest",
-        "\\.(css|less)$": "<rootDir>/test/jest/rawAssetTransform.js",
+        "\\.(css|less)$": "<rootDir>/../jest/rawAssetTransform.js",
     },
 };

@@ -10,7 +10,8 @@
         "dev": "gulp dev --browser chrome",
         "build": "gulp build --browser chrome",
         "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
-        "e2e": "SELENIUM_BROWSER=chrome jest -i --config './test/e2e/jest/jest.config.js'"
+        "e2e": "jest -i --config ./test/e2e/jest/jest.config.js",
+        "e2e:edge": "node ./test/e2e/run.js edge"
     },
     "devDependencies": {
         "@babel/core": "^7.17.7",
@@ -21,8 +22,10 @@
         "adm-zip": "^0.5.9",
         "axios": "^1.15.0",
         "babel-loader": "^8.2.3",
+        "chromedriver": "^147.0.4",
         "css": "^3.0.0",
         "del": "^6.0.0",
+        "edgedriver": "^6.3.0",
         "gulp": "^4.0.2",
         "gulp-stylus": "^2.7.1",
         "gulp-terser": "^2.1.0",
