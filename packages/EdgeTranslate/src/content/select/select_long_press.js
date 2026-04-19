@@ -3,7 +3,7 @@ import {
     getHighlightRects,
     getLongPressRangeFromPoint,
     shouldIgnoreTarget,
-} from "./select.long_press_core.js";
+} from "./select_long_press_core.js";
 
 export function createLongPressTools() {
     let highlightContainer = null;

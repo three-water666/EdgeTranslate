@@ -2,7 +2,7 @@ import {
     BLOCK_TEXT_IDEAL_LENGTH,
     BLOCK_TEXT_MAX_LENGTH,
     BLOCK_TEXT_MIN_LENGTH,
-} from "./select.constants.js";
+} from "./select_constants.js";
 
 function scoreContainer({ element, x, y, collectTextNodes, containsPoint }) {
     if (!isValidBlockContainer(element, x, y, containsPoint)) return -1;

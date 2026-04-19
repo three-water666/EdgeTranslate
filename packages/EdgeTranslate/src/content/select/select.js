@@ -5,9 +5,9 @@ import {
     LONG_PRESS_DURATION,
     LONG_PRESS_PREVIEW_DELAY,
     LONG_PRESS_MOVE_THRESHOLD,
-} from "./select.constants.js";
-import { createLongPressTools } from "./select.long_press.js";
-import { createScreenshotSelector } from "./select.screenshot.js";
+} from "./select_constants.js";
+import { createLongPressTools } from "./select_long_press.js";
+import { createScreenshotSelector } from "./select_screenshot.js";
 import {
     getSelection,
     shouldTranslate,
@@ -15,13 +15,13 @@ import {
     cancelTextSelection,
     cancelPageTranslate,
     syncChangedSettings,
-} from "./select.helpers.js";
+} from "./select_helpers.js";
 import {
     initializeButtonContainer,
     showButton,
     scrollHandler,
     disappearButton,
-} from "./select.button.js";
+} from "./select_button.js";
 
 if (!isNativePDFViewer()) {
     initSelectTranslate();

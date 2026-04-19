@@ -5,8 +5,8 @@ import {
     CHUNK_MAX_LENGTH,
     CHUNK_MIN_LENGTH,
     DIRECT_TEXT_BLOCK_TAG_REGEXP,
-} from "./select.constants.js";
-import { scoreContainer, isReasonableBlockContainer } from "./select.long_press_score.js";
+} from "./select_constants.js";
+import { scoreContainer, isReasonableBlockContainer } from "./select_long_press_score.js";
 import {
     collectBlockCandidates,
     pickBestBlockContainer,
@@ -23,7 +23,7 @@ import {
     restoreSelectionRanges,
     collapseRange,
     cloneSelectionRange,
-} from "./select.long_press_utils.js";
+} from "./select_long_press_utils.js";
 
 export function shouldIgnoreTarget(target) {
     if (!(target instanceof Element)) return true;

@@ -1,10 +1,10 @@
-import { IMAGE_DATA } from "./select.constants.js";
+import { IMAGE_DATA } from "./select_constants.js";
 import {
     applyButtonImageStyle,
     applyButtonStyle,
     getButtonPosition,
     getInnerParent,
-} from "./select.helpers.js";
+} from "./select_helpers.js";
 
 export function initializeButtonContainer(state, onMouseDown) {
     const iframeContainer = state.translationButtonContainer;
