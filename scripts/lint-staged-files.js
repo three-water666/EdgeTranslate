@@ -5,6 +5,7 @@ const path = require("path");
 const { isExcludedStagedFile } = require("./staged-file-filters");
 
 const repoRoot = path.resolve(__dirname, "..");
+const localRulesDir = path.join(repoRoot, "eslint", "rules");
 const edgeTranslateExtensions = new Set([".js", ".jsx"]);
 const translatorsExtensions = new Set([".ts", ".tsx"]);
 
@@ -55,6 +56,8 @@ function main() {
 
     if (edgeTranslateFiles.length > 0) {
         runBin(getBin("eslint"), [
+            "--rulesdir",
+            localRulesDir,
             "--fix",
             "--config",
             "packages/EdgeTranslate/.eslintrc.js",

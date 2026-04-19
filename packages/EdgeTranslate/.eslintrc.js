@@ -33,6 +33,12 @@ module.exports = {
     },
     overrides: [
         {
+            files: ["src/**/*.{js,jsx}"],
+            rules: {
+                "edge-translate-filename-convention": "error",
+            },
+        },
+        {
             files: ["test/**/*.{js,jsx}"],
             rules: {
                 complexity: "off",
