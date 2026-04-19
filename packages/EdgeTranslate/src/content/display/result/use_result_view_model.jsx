@@ -8,7 +8,7 @@ import {
     SourceContent,
     TargetContent,
 } from "./ResultSections.jsx";
-import { copyContent, sourcePronounce, targetPronounce, _setEditing } from "./ResultReducers.js";
+import { copyContent, sourcePronounce, targetPronounce, _setEditing } from "./result_reducers.js";
 import { createStorageChangeHandler, loadResultDisplaySettings } from "./result_settings.js";
 
 function useResultState(props) {
