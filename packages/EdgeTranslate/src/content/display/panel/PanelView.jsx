@@ -3,12 +3,12 @@ import { h, Fragment } from "preact";
 import { StyleSheetManager } from "styled-components";
 import root from "react-shadow/styled-components";
 import SimpleBar from "simplebar-react";
-import Dropdown from "./Dropdown.jsx";
-import Result from "./Result.jsx";
-import Loading from "./Loading.jsx";
-import Error from "./Error.jsx";
-import SettingIcon from "./icons/setting.svg";
-import CloseIcon from "./icons/close.svg";
+import Dropdown from "../components/Dropdown.jsx";
+import Result from "../result/Result.jsx";
+import Loading from "../components/Loading.jsx";
+import Error from "../components/Error.jsx";
+import SettingIcon from "../icons/setting.svg";
+import CloseIcon from "../icons/close.svg";
 import {
     MaxZIndex,
     GlobalStyle,
@@ -20,7 +20,7 @@ import {
     Body,
     SourceOption,
     Highlight,
-} from "./Panel.styles.js";
+} from "./panel_styles.js";
 
 export default function PanelView(props) {
     if (!props.open) return null;

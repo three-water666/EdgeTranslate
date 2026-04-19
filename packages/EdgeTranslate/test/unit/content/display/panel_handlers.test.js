@@ -1,7 +1,7 @@
-import { handleTranslated, handleTranslatorSelect } from "content/display/Panel.handlers.js";
-import { panelChannel } from "content/display/Panel.shared.js";
+import { handleTranslated, handleTranslatorSelect } from "content/display/panel/panel_handlers.js";
+import { panelChannel } from "content/display/panel/panel_shared.js";
 
-jest.mock("content/display/Panel.shared.js", () => ({
+jest.mock("content/display/panel/panel_shared.js", () => ({
     panelChannel: {
         request: jest.fn(),
     },

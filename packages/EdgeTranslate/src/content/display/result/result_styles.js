@@ -1,10 +1,10 @@
 import styled from "styled-components";
-import DrawerBlock from "./DrawerBlock.jsx";
-import EditIcon from "./icons/edit.svg";
-import EditDoneIcon from "./icons/edit-done.svg";
-import PronounceIcon from "./icons/pronounce.svg";
-import PronounceLoadingIcon from "./icons/loading.jsx";
-import CopyIcon from "./icons/copy.svg";
+import DrawerBlock from "../components/DrawerBlock.jsx";
+import EditIcon from "../icons/edit.svg";
+import EditDoneIcon from "../icons/edit-done.svg";
+import PronounceIcon from "../icons/pronounce.svg";
+import PronounceLoadingIcon from "../icons/loading.jsx";
+import CopyIcon from "../icons/copy.svg";
 
 const BlockPadding = "10px";
 const BlockMargin = "8px";

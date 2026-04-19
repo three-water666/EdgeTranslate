@@ -1,7 +1,7 @@
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
-import { isChromePDFViewer } from "../common.js";
-import { panelChannel, checkTimestamp } from "./Panel.shared.js";
-import { createMoveablePanel, attachDragHandlers, attachResizeHandlers } from "./Panel.runtime.js";
+import { isChromePDFViewer } from "../../common.js";
+import { panelChannel, checkTimestamp } from "./panel_shared.js";
+import { createMoveablePanel, attachDragHandlers, attachResizeHandlers } from "./panel_runtime.js";
 
 export function createDefaultDisplaySetting() {
     return {

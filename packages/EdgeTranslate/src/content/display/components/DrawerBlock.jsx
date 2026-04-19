@@ -3,8 +3,8 @@ import { h } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { useMeasure } from "react-use";
 import styled, { css } from "styled-components";
-import ArrowDownIcon from "./icons/arrow-down.svg";
-import ArrowUpIcon from "./icons/arrow-up.svg";
+import ArrowDownIcon from "../icons/arrow-down.svg";
+import ArrowUpIcon from "../icons/arrow-up.svg";
 
 /**
  *

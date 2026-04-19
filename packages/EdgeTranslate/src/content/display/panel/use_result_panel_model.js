@@ -8,8 +8,8 @@ import {
     resizeFloatingPanel,
     applyFixedPanelLayout,
     removeFixedPanelLayout,
-} from "./Panel.runtime.js";
-import { panelChannel } from "./Panel.shared.js";
+} from "./panel_runtime.js";
+import { panelChannel } from "./panel_shared.js";
 import {
     createDefaultDisplaySetting,
     normalizeDisplaySetting,
@@ -21,7 +21,7 @@ import {
     createPanelViewModel,
     handlePanelClosed,
     handlePanelOpened,
-} from "./Panel.handlers.js";
+} from "./panel_handlers.js";
 
 const scrollbarWidth = getScrollbarWidth();
 const bodyStyleState = { cssText: "" };

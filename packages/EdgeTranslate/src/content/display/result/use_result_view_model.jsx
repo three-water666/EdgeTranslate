@@ -9,7 +9,7 @@ import {
     TargetContent,
 } from "./ResultSections.jsx";
 import { copyContent, sourcePronounce, targetPronounce, _setEditing } from "./ResultReducers.js";
-import { createStorageChangeHandler, loadResultDisplaySettings } from "./Result.settings.js";
+import { createStorageChangeHandler, loadResultDisplaySettings } from "./result_settings.js";
 
 function useResultState(props) {
     const [contentDisplayOrder, setContentDisplayOrder] = useState([]);

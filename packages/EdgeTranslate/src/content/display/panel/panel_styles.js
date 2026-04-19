@@ -1,6 +1,6 @@
 import styled, { createGlobalStyle } from "styled-components";
-import Dropdown from "./Dropdown.jsx";
-import PinIcon from "./icons/pin.svg";
+import Dropdown from "../components/Dropdown.jsx";
+import PinIcon from "../icons/pin.svg";
 import SimpleBarStyle from "simplebar-react/dist/simplebar.min.css";
 
 export const MaxZIndex = 2147483647;

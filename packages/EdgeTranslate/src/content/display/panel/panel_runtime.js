@@ -1,7 +1,7 @@
-import Moveable from "./library/moveable/moveable.js";
+import Moveable from "../library/moveable/moveable.js";
 import { delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
-import { isChromePDFViewer } from "../common.js";
+import { isChromePDFViewer } from "../../common.js";
 
 const transitionDuration = 500;
 

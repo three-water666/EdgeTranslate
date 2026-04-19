@@ -3,7 +3,7 @@ import { h, cloneElement } from "preact";
 import { forwardRef } from "preact/compat";
 import { useState, useRef, useCallback, useEffect } from "preact/hooks";
 import styled, { css } from "styled-components";
-import ArrowDownIcon from "./icons/arrow-down.svg";
+import ArrowDownIcon from "../icons/arrow-down.svg";
 
 /**
  *

@@ -34,7 +34,7 @@ import {
     Target,
     TextContentDrawerHeight,
     TextLine,
-} from "./Result.styles.js";
+} from "./result_styles.js";
 
 function TargetContent({
     copyResult,

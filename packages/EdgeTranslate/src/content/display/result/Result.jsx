@@ -3,10 +3,10 @@ import { h, Fragment } from "preact";
 import { ThemeProvider } from "styled-components";
 import Channel from "common/scripts/channel.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
-import Notifier from "./library/notifier/notifier.js";
-import { checkTimestamp } from "./Panel.shared.js";
-import { useResultViewModel } from "./Result.helpers.jsx";
-import { ScreenshotNotice, ScreenshotNoticeAction, ScreenshotNoticeText } from "./Result.styles.js";
+import Notifier from "../library/notifier/notifier.js";
+import { checkTimestamp } from "../panel/panel_shared.js";
+import { useResultViewModel } from "./use_result_view_model.jsx";
+import { ScreenshotNotice, ScreenshotNoticeAction, ScreenshotNoticeText } from "./result_styles.js";
 
 // Communication channel.
 const channel = new Channel();
