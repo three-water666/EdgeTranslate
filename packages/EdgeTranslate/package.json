@@ -10,7 +10,7 @@
         "dev": "gulp dev --browser chrome",
         "build": "gulp build --browser chrome",
         "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
-        "e2e": "jest -i --config ./test/e2e/jest/jest.config.js",
+        "e2e": "node ./test/e2e/run.js",
         "e2e:edge": "node ./test/e2e/run.js edge"
     },
     "devDependencies": {
