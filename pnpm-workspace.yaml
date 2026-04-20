@@ -4,6 +4,7 @@ packages:
 onlyBuiltDependencies:
     - chromedriver
     - core-js
+    - edgedriver
     - es5-ext
     - esbuild
     - husky
