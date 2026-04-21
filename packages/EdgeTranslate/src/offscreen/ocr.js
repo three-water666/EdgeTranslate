@@ -6,7 +6,8 @@ import {
     downloadAndCacheOcrLanguage as downloadAndCacheOcrLanguageData,
     getOcrDownloadSource as buildOcrDownloadSource,
 } from "./ocr_download.js";
-import { cropImage, normalizeOcrText } from "./ocr_image.js";
+import { cropImage } from "./ocr_image.js";
+import { recognizeOcrImage } from "./ocr_recognition.js";
 import { createOcrCacheApi } from "./ocr_cache.js";
 
 const OCR_CORE_PATH = chrome.runtime.getURL("ocr/core/tesseract-core-lstm.wasm.js");
@@ -161,8 +162,7 @@ export async function recognizeScreenshotArea({
 }) {
     const worker = await initializeOcrWorker();
     const croppedImage = await cropImage(screenshotUrl, rect, viewportWidth, viewportHeight);
-    const result = await worker.recognize(croppedImage);
-    return normalizeOcrText(result.data.text);
+    return recognizeOcrImage(worker, croppedImage, rect);
 }
 
 async function getOcrLanguages() {
