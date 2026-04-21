@@ -1,8 +1,14 @@
-import { log } from "common/scripts/common.js";
 import { promiseTabs, delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
 import LocalTTS from "./local_tts.js";
 import { ensureOffscreenDocument } from "./offscreen.js";
+import { translatePage, executeGoogleScript } from "./page_translate.js";
+import { runScreenshotTranslate } from "./screenshot_translate.js";
+import {
+    listenToTranslatorEvents,
+    provideTranslatorServices,
+    resolveMutualLanguageSettings,
+} from "./translate_runtime.js";
 
 class TranslatorManager {
     /**
@@ -57,67 +63,7 @@ class TranslatorManager {
      * This should be called for only once!
      */
     provideServices() {
-        // Translate service.
-        this.channel.provide("translate", (params) => this.translate(params.text, params.position));
-
-        // Pronounce service.
-        this.channel.provide("pronounce", (params) => {
-            let speed = params.speed;
-            if (!speed) {
-                speed = this.TTS_SPEED;
-                this.TTS_SPEED = speed === "fast" ? "slow" : "fast";
-            }
-
-            return this.pronounce(params.pronouncing, params.text, params.language, speed);
-        });
-
-        // Get available translators service.
-        this.channel.provide("get_available_translators", (params) =>
-            this.getAvailableTranslators(params)
-        );
-
-        // Update default translator service.
-        this.channel.provide("update_default_translator", (detail) =>
-            this.updateDefaultTranslator(detail.translator)
-        );
-
-        this.channel.provide("get_translator_config", async () => {
-            console.log("Service Worker: Received config request from Offscreen.");
-
-            const configs = await getOrSetDefaultSettings(
-                ["HybridTranslatorConfig"],
-                DEFAULT_SETTINGS
-            );
-
-            return Promise.resolve(configs);
-        });
-
-        this.channel.provide("get_ocr_settings", async () => {
-            const configs = await getOrSetDefaultSettings(["OCRSettings"], DEFAULT_SETTINGS);
-            return Promise.resolve(configs.OCRSettings);
-        });
-
-        this.channel.provide("get_ocr_download_status", async (detail = {}) => {
-            await this.createOffscreenDocument();
-            return Promise.resolve(this.channel.request("get_ocr_language_status", detail));
-        });
-
-        this.channel.provide("download_ocr_languages", async (detail = {}) => {
-            await this.createOffscreenDocument();
-            return Promise.resolve(this.channel.request("download_ocr_languages", detail));
-        });
-
-        this.channel.provide("delete_ocr_languages", async (detail = {}) => {
-            await this.createOffscreenDocument();
-            return Promise.resolve(this.channel.request("delete_ocr_languages", detail));
-        });
-
-        this.channel.provide("cancel_ocr_language_downloads", async (detail = {}) => {
-            await this.createOffscreenDocument();
-            return Promise.resolve(this.channel.request("cancel_ocr_language_downloads", detail));
-        });
-
-        this.channel.provide("screenshot_translate", () => this.screenshotTranslate());
+        provideTranslatorServices(this);
     }
 
     /**
@@ -126,48 +72,7 @@ class TranslatorManager {
      * This should be called for only once!
      */
     listenToEvents() {
-        // Google page translate button clicked event.
-        this.channel.on("translate_page_google", () => {
-            executeGoogleScript(this.channel);
-        });
-
-        // Language setting updated event.
-        this.channel.on("language_setting_update", this.onLanguageSettingUpdated.bind(this));
-
-        // Result frame closed event.
-        this.channel.on("frame_closed", this.stopPronounce.bind(this));
-
-        /**
-         * Update config cache on config changed.
-         */
-        chrome.storage.onChanged.addListener(
-            (async (changes, area) => {
-                if (area === "sync") {
-                    // Ensure that configurations have been initialized.
-                    await this.config_loader;
-                    await this.createOffscreenDocument();
-
-                    if (changes["HybridTranslatorConfig"]) {
-                        this.channel.emit(
-                            "hybrid_translator_use_config",
-                            changes["HybridTranslatorConfig"].newValue
-                        );
-                    }
-
-                    if (changes["OtherSettings"]) {
-                        this.IN_MUTUAL_MODE = changes["OtherSettings"].newValue.MutualTranslate;
-                    }
-
-                    if (changes["languageSetting"]) {
-                        this.LANGUAGE_SETTING = changes["languageSetting"].newValue;
-                    }
-
-                    if (changes["DefaultTranslator"]) {
-                        this.DEFAULT_TRANSLATOR = changes["DefaultTranslator"].newValue;
-                    }
-                }
-            }).bind(this)
-        );
+        listenToTranslatorEvents(this);
     }
 
     /**
@@ -261,7 +166,7 @@ class TranslatorManager {
      *
      * @returns {Promise<void>} translate finished Promise
      */
-    async translate(text, position) {
+    async translate(text, position, options = {}) {
         // Ensure that configurations have been initialized.
         await this.config_loader;
         await this.createOffscreenDocument();
@@ -270,7 +175,7 @@ class TranslatorManager {
         const currentTabId = await this.getCurrentTabId();
         if (currentTabId === -1) return;
 
-        return this.translateOnTab(currentTabId, text, position);
+        return this.translateOnTabWithOptions(currentTabId, text, position, options);
     }
 
     async translateOnTab(tabId, text, position) {
@@ -281,68 +186,18 @@ class TranslatorManager {
         // Ensure that configurations have been initialized.
         await this.config_loader;
         await this.createOffscreenDocument();
-
-        /**
-         * Get current time as timestamp.
-         *
-         * Timestamp is used for preventing disordered translating message to disturb user.
-         *
-         * Every translating request has a unique timestamp and every message from that translating
-         * request will be assigned with the timestamp. About usage of the timestamp, please refer
-         * to display.js.
-         */
-        let timestamp = options.timestamp || new Date().getTime();
-
-        // Inform current tab translating started.
-        if (!options.skipStartEvent) {
-            this.channel.emitToTabs(tabId, "start_translating", {
-                text,
-                position,
-                timestamp,
-                loadingMessage: options.loadingMessage,
-                translateMode: options.translateMode,
-            });
-        }
-
-        let sl = this.LANGUAGE_SETTING.sl,
-            tl = this.LANGUAGE_SETTING.tl;
+        const timestamp = options.timestamp || new Date().getTime();
+        this.emitTranslateStart({ tabId, text, position, timestamp, options });
 
         try {
-            if (sl !== "auto" && this.IN_MUTUAL_MODE) {
-                // mutual translate mode, detect language first.
-                sl = await this.detect(text);
-                switch (sl) {
-                    case this.LANGUAGE_SETTING.sl:
-                        tl = this.LANGUAGE_SETTING.tl;
-                        break;
-                    case this.LANGUAGE_SETTING.tl:
-                        tl = this.LANGUAGE_SETTING.sl;
-                        break;
-                    default:
-                        sl = "auto";
-                        tl = this.LANGUAGE_SETTING.tl;
-                }
-            }
-
-            // Do translate.
-            const DEFAULT_TRANSLATOR = this.DEFAULT_TRANSLATOR;
-            let result = await this.channel.request("translator_by_default_translator", {
-                DEFAULT_TRANSLATOR,
-                text,
-                sl,
-                tl,
-            });
-            result.sourceLanguage = sl;
-            result.targetLanguage = tl;
-
-            // Send translating result to current tab.
+            const languagePair = await this.resolveLanguagePair(text);
+            const result = await this.requestTranslation(text, languagePair, options);
             this.channel.emitToTabs(tabId, "translating_finished", {
                 timestamp,
                 translateMode: options.translateMode,
                 ...result,
             });
         } catch (error) {
-            // Inform current tab translating failed.
             this.channel.emitToTabs(tabId, "translating_error", {
                 error,
                 timestamp,
@@ -352,84 +207,47 @@ class TranslatorManager {
     }
 
     async screenshotTranslate() {
-        await this.config_loader;
-        await this.createOffscreenDocument();
+        return runScreenshotTranslate(this);
+    }
 
-        const tabs = await promiseTabs.query({ active: true, currentWindow: true });
-        const currentTab = tabs[0];
-        if (!currentTab?.id) return;
-
-        this.channel.emitToTabs(currentTab.id, "command", {
-            command: "close_result_frame",
-        });
-        await delayPromise(80);
-
-        let selection;
-        try {
-            selection = await this.channel.requestToTab(currentTab.id, "select_capture_area");
-        } catch (error) {
-            notifyScreenshotTranslate(chrome.i18n.getMessage("ScreenshotTranslateUnsupported"));
-            throw error;
-        }
-
-        if (!selection || !selection.rect) return;
-
-        const timestamp = new Date().getTime();
-        this.channel.emitToTabs(currentTab.id, "start_translating", {
-            text: "",
-            position: selection.position,
-            timestamp,
-            loadingMessage: getScreenshotLoadingMessage(),
-            translateMode: "screenshot",
-        });
-
-        const screenshotUrl = await captureVisibleTab(currentTab.windowId);
-        let text;
-        try {
-            text = await this.channel.request("ocr_image", {
-                screenshotUrl,
-                rect: selection.rect,
-                viewportWidth: selection.viewportWidth,
-                viewportHeight: selection.viewportHeight,
-            });
-        } catch (error) {
-            if (String(error).includes("OCR_LANG_DATA_MISSING")) {
-                const message = getOcrDataMissingMessage();
-                notifyScreenshotTranslate(message);
-                this.emitTranslateError(currentTab.id, timestamp, message);
-            } else {
-                const message = chrome.i18n.getMessage("ScreenshotTranslateFailed");
-                notifyScreenshotTranslate(message);
-                this.emitTranslateError(currentTab.id, timestamp, message);
-            }
-            throw error;
-        }
-
-        const cleanedText = typeof text === "string" ? text.trim() : "";
-        if (!cleanedText) {
-            const message = chrome.i18n.getMessage("ScreenshotTranslateNoText");
-            notifyScreenshotTranslate(message);
-            this.emitTranslateError(currentTab.id, timestamp, message);
+    emitTranslateStart({ tabId, text, position, timestamp, options }) {
+        if (options.skipStartEvent) {
             return;
         }
 
-        return this.translateOnTabWithOptions(currentTab.id, cleanedText, selection.position, {
+        this.channel.emitToTabs(tabId, "start_translating", {
+            text,
+            position,
             timestamp,
-            skipStartEvent: true,
-            translateMode: "screenshot",
+            loadingMessage: options.loadingMessage,
+            translateMode: options.translateMode,
         });
     }
 
-    emitTranslateError(tabId, timestamp, errorMsg) {
-        this.channel.emitToTabs(tabId, "translating_error", {
-            timestamp,
-            translateMode: "screenshot",
-            error: {
-                errorType: "API_ERR",
-                errorCode: "OCR_ERR",
-                errorMsg,
-            },
+    async resolveLanguagePair(text) {
+        let sourceLanguage = this.LANGUAGE_SETTING.sl;
+        let targetLanguage = this.LANGUAGE_SETTING.tl;
+
+        if (sourceLanguage !== "auto" && this.IN_MUTUAL_MODE) {
+            const detectedLanguage = await this.detect(text);
+            return resolveMutualLanguageSettings(this.LANGUAGE_SETTING, detectedLanguage);
+        }
+
+        return { sourceLanguage, targetLanguage };
+    }
+
+    async requestTranslation(text, languagePair, options = {}) {
+        const DEFAULT_TRANSLATOR = options.defaultTranslator || this.DEFAULT_TRANSLATOR;
+        const result = await this.channel.request("translator_by_default_translator", {
+            DEFAULT_TRANSLATOR,
+            text,
+            sl: languagePair.sourceLanguage,
+            tl: languagePair.targetLanguage,
         });
+
+        result.sourceLanguage = languagePair.sourceLanguage;
+        result.targetLanguage = languagePair.targetLanguage;
+        return result;
     }
 
     /**
@@ -583,105 +401,12 @@ class TranslatorManager {
      */
     updateDefaultTranslator(translator) {
         return new Promise((resolve) => {
+            this.DEFAULT_TRANSLATOR = translator;
             chrome.storage.sync.set({ DefaultTranslator: translator }, () => {
                 resolve();
             });
         });
     }
-}
-
-/**
- * 使用用户选定的网页翻译引擎翻译当前网页。
- *
- * @param {import("../../common/scripts/channel.js").default} channel Communication channel.
- */
-function translatePage(channel) {
-    getOrSetDefaultSettings(["DefaultPageTranslator"], DEFAULT_SETTINGS).then((result) => {
-        let translator = result.DefaultPageTranslator;
-        switch (translator) {
-            case "GooglePageTranslate":
-                executeGoogleScript(channel);
-                break;
-            default:
-                executeGoogleScript(channel);
-                break;
-        }
-    });
-}
-
-/**
- * 执行谷歌网页翻译相关脚本。
- *
- * @param {import("../../common/scripts/channel.js").default} channel Communication channel.
- */
-async function executeGoogleScript(channel) {
-    let tabs;
-    try {
-        tabs = await promiseTabs.query({ active: true, currentWindow: true });
-        if (!tabs || tabs.length === 0) {
-            log("No active tab found to execute script.");
-            return;
-        }
-        const tabId = tabs[0].id;
-        await chrome.scripting.executeScript({
-            target: { tabId },
-            files: ["/google/init.js"],
-        });
-        channel.emitToTabs(tabId, "start_page_translate", { translator: "google" });
-    } catch (e) {
-        if (tabs && tabs.length > 0) {
-            log(`Failed to execute script on tab ${tabs[0].id} (${tabs[0].url}): ${e.message}`);
-        } else if (e instanceof Error) {
-            log(`Chrome runtime error: ${e.message}`);
-        } else {
-            log(`Chrome runtime error: ${String(e)}`);
-        }
-    }
-}
-
-function captureVisibleTab(windowId) {
-    return new Promise((resolve, reject) => {
-        chrome.tabs.captureVisibleTab(windowId, { format: "png" }, (dataUrl) => {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-                return;
-            }
-            resolve(dataUrl);
-        });
-    });
-}
-
-function notifyScreenshotTranslate(message) {
-    if (!message) return;
-
-    chrome.notifications.create({
-        type: "basic",
-        iconUrl: chrome.runtime.getURL("icon/icon128.png"),
-        title: chrome.i18n.getMessage("AppName"),
-        message,
-    });
-}
-
-function getOcrDataMissingMessage() {
-    const message = chrome.i18n.getMessage("ScreenshotTranslateOcrDataMissing");
-    if (message) return message;
-
-    const language = chrome.i18n.getUILanguage().toLowerCase();
-    if (language.startsWith("zh")) {
-        return "OCR 语言包未下载，请先到设置页手动下载后再使用截图翻译。";
-    }
-    return "OCR language data is not downloaded. Open settings and download it first.";
-}
-
-function getScreenshotLoadingMessage() {
-    const message = chrome.i18n.getMessage("ScreenshotTranslateLoading");
-    if (message) return message;
-
-    const language = chrome.i18n.getUILanguage().toLowerCase();
-    if (language.startsWith("zh")) {
-        return "正在识别截图中的文字并翻译...";
-    }
-    return "Recognizing text from screenshot...";
 }
 
 export { TranslatorManager, translatePage, executeGoogleScript };

@@ -21,34 +21,43 @@ let mutualTranslate = document.getElementById("mutual-translate");
  */
 window.onload = function () {
     i18nHTML();
+    setFoldTitles();
+    bindLanguageChangeHandlers();
+    bindMutualTranslateChangeHandler();
+    exchangeButton.onclick = exchangeLanguage;
+    loadInitialSettings();
+    // 统一添加事件监听
+    addEventListener();
+};
 
+function setFoldTitles() {
     let arrowUp = document.getElementById("arrow-up");
     let arrowDown = document.getElementById("arrow-down");
     arrowDown.setAttribute("title", chrome.i18n.getMessage("Unfold"));
     arrowUp.setAttribute("title", chrome.i18n.getMessage("Fold"));
+}
 
+function bindLanguageChangeHandlers() {
     sourceLanguage.onchange = function () {
         // 如果源语言是自动判断语言类型(值是auto),则按钮显示灰色，避免用户点击,如果不是，则显示蓝色，可以点击
         judgeValue(exchangeButton, sourceLanguage);
         updateLanguageSetting(
-            sourceLanguage.options[sourceLanguage.selectedIndex].value,
-            targetLanguage.options[targetLanguage.selectedIndex].value
+            getSelectedLanguageValue(sourceLanguage),
+            getSelectedLanguageValue(targetLanguage)
         );
         showSourceTarget(); // update source language and target language in input placeholder
     };
 
     targetLanguage.onchange = function () {
         updateLanguageSetting(
-            sourceLanguage.options[sourceLanguage.selectedIndex].value,
-            targetLanguage.options[targetLanguage.selectedIndex].value
+            getSelectedLanguageValue(sourceLanguage),
+            getSelectedLanguageValue(targetLanguage)
         );
         showSourceTarget(); // update source language and target language in input placeholder
     };
+}
 
-    // 添加交换按钮对点击事件的监听
-    exchangeButton.onclick = exchangeLanguage;
-
-    // 添加互译模式开关的事件监听
+function bindMutualTranslateChangeHandler() {
     mutualTranslate.onchange = () => {
         getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
             let OtherSettings = result.OtherSettings;
@@ -57,52 +66,57 @@ window.onload = function () {
         });
         showSourceTarget();
     };
+}
 
-    // 获得用户之前选择的语言翻译选项和互译设置
+function loadInitialSettings() {
     getOrSetDefaultSettings(["languageSetting", "OtherSettings"], DEFAULT_SETTINGS).then(
         (result) => {
             let OtherSettings = result.OtherSettings;
             let languageSetting = result.languageSetting;
 
-            // 根据源语言设定更新
-            if (languageSetting.sl === "auto") {
-                mutualTranslate.disabled = true;
-                mutualTranslate.parentElement.title = chrome.i18n.getMessage(
-                    "MutualTranslationWarning"
-                );
-                if (OtherSettings["MutualTranslate"]) {
-                    mutualTranslate.checked = false;
-                    mutualTranslate.onchange();
-                }
-            } else {
-                mutualTranslate.checked = OtherSettings["MutualTranslate"];
-                mutualTranslate.parentElement.title = "";
-            }
-
-            // languages是可选的源语言和目标语言的列表
-            for (let language in LANGUAGES) {
-                let value = language;
-                let name = chrome.i18n.getMessage(LANGUAGES[language]);
-
-                if (languageSetting && value == languageSetting.sl) {
-                    sourceLanguage.options.add(new Option(name, value, true, true));
-                } else {
-                    sourceLanguage.options.add(new Option(name, value));
-                }
-
-                if (languageSetting && value == languageSetting.tl) {
-                    targetLanguage.options.add(new Option(name, value, true, true));
-                } else {
-                    targetLanguage.options.add(new Option(name, value));
-                }
-            }
-
+            syncMutualTranslateState(languageSetting, OtherSettings);
+            populateLanguageOptions(languageSetting);
             showSourceTarget(); // show source language and target language in input placeholder
         }
     );
-    // 统一添加事件监听
-    addEventListener();
-};
+}
+
+function syncMutualTranslateState(languageSetting, OtherSettings) {
+    if (languageSetting.sl === "auto") {
+        mutualTranslate.disabled = true;
+        mutualTranslate.parentElement.title = chrome.i18n.getMessage("MutualTranslationWarning");
+        if (OtherSettings["MutualTranslate"]) {
+            mutualTranslate.checked = false;
+            mutualTranslate.onchange();
+        }
+        return;
+    }
+
+    mutualTranslate.checked = OtherSettings["MutualTranslate"];
+    mutualTranslate.parentElement.title = "";
+}
+
+function populateLanguageOptions(languageSetting) {
+    for (let language in LANGUAGES) {
+        let value = language;
+        let name = chrome.i18n.getMessage(LANGUAGES[language]);
+
+        sourceLanguage.options.add(createLanguageOption(name, value, languageSetting?.sl));
+        targetLanguage.options.add(createLanguageOption(name, value, languageSetting?.tl));
+    }
+}
+
+function createLanguageOption(name, value, selectedValue) {
+    if (selectedValue && value == selectedValue) {
+        return new Option(name, value, true, true);
+    }
+
+    return new Option(name, value);
+}
+
+function getSelectedLanguageValue(languageElement) {
+    return languageElement.options[languageElement.selectedIndex].value;
+}
 
 /**
  * 监听展开语言设置的快捷键

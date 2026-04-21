@@ -1,5 +1,6 @@
 const { configureToMatchImageSnapshot } = require("jest-image-snapshot");
 const path = require("path");
+const { Browser } = require("selenium-webdriver");
 import { BROWSER_LANGUAGES_MAP } from "../../../src/common/scripts/languages";
 
 Promise.all([
@@ -12,7 +13,7 @@ Promise.all([
         customSnapshotsDir: path.resolve(
             __dirname,
             "../image_snapshots",
-            process.env.SELENIUM_BROWSER,
+            process.env.SELENIUM_BROWSER || Browser.CHROME,
             process.platform,
             BROWSER_LANGUAGES_MAP[language],
             `${screenSize.width}x${screenSize.height}`

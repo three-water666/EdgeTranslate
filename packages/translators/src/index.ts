@@ -223,12 +223,6 @@ const LANGUAGES = {
 /**
  * Export languages.
  */
-export {
-    axios,
-    LANGUAGES,
-    HybridTranslator,
-    BingTranslator,
-    GoogleTranslator,
-};
+export { axios, LANGUAGES, HybridTranslator, BingTranslator, GoogleTranslator };
 export type { HybridSupportedTranslators, HybridConfig, Selections } from "./translators/hybrid";
 export * from "./types";

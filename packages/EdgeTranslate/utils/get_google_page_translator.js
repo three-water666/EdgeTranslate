@@ -1,5 +1,5 @@
 const fs = require("fs");
-const axios = require("axios").default;
+const axios = require("axios");
 const socks = require("socks-proxy-agent").SocksProxyAgent;
 
 const ELEMENT_JS_DIR = "static/google/elms";

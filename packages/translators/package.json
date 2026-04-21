@@ -9,6 +9,8 @@
     "scripts": {
         "dev": "vite build --watch",
         "build": "vite build && tsc --emitDeclarationOnly",
+        "lint": "node ../../scripts/run-eslint.js packages/translators .eslintrc.js \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.config.js\" \"*.config.ts\" \"*.setup.js\"",
+        "lint:fix": "pnpm lint --fix",
         "test": "jest"
     },
     "files": [
@@ -20,15 +22,10 @@
     "types": "./dist/types/index.d.ts",
     "devDependencies": {
         "@types/chrome": "^0.0.190",
-        "@types/jest": "^28.1.3",
-        "jest": "^28.1.1",
-        "jest-chrome": "^0.7.2",
-        "jest-environment-jsdom": "^28.1.1",
-        "ts-jest": "^28.0.5",
-        "typescript": "^4.7.4",
+        "typescript": "^5.9.3",
         "vite": "^2.9.13"
     },
     "peerDependencies": {
-        "axios": "^0.27.2"
+        "axios": "^1.15.0"
     }
 }

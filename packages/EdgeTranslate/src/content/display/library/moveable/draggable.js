@@ -129,63 +129,64 @@ export default class draggable {
             delta[0] + this.store.startTranslate[0],
             delta[1] + this.store.startTranslate[1],
         ];
+        const boundsDistance = this.getBoundsDistance(delta);
+        const boundingState = this.applyBounds(currentTranslate, boundsDistance);
+
+        if (boundingState.flag) {
+            // drag out of the area first time
+            if (!this.bounding) {
+                this.bounding = true;
+                this.boundStart(boundingState.direction);
+            }
+            this.bound(boundingState.direction, boundsDistance[boundingState.direction]);
+        }
+
+        // the target element is in the drag area
+        if (this.bounding && !boundingState.flag) {
+            this.bounding = false;
+            this.boundEnd();
+        }
+        this.store.currentTranslate = [currentTranslate[0], currentTranslate[1]];
+        this.emitDrag(e, delta);
+    }
+
+    getBoundsDistance(delta) {
         // update right and bottom value. cause the size of the target value might change
         this.store.startElement.right =
             this.store.startElement.left + this.targetElement.offsetWidth;
         this.store.startElement.bottom =
             this.store.startElement.top + this.targetElement.offsetHeight;
-        // calculate the distance between the bounds and the current element position
-        let boundsDistance = {
+
+        return {
             left: this.bounds.left - (delta[0] + this.store.startElement.left),
             top: this.bounds.top - (delta[1] + this.store.startElement.top),
             right: delta[0] + this.store.startElement.right - this.bounds.right,
             bottom: delta[1] + this.store.startElement.bottom - this.bounds.bottom,
         };
-        // flag whether the current position beyond the drag area
+    }
+
+    applyBounds(currentTranslate, boundsDistance) {
         let flag = false;
-        // store the direction in which the element is out of the boundary
         let direction;
-        // beyond the left boundary
-        if (boundsDistance.left >= 0) {
-            flag = true;
-            direction = "left";
-            currentTranslate[0] += boundsDistance[direction];
-        }
-        // beyond the top boundary
-        if (boundsDistance.top >= 0) {
-            flag = true;
-            direction = "top";
-            currentTranslate[1] += boundsDistance[direction];
-        }
-        // beyond the right boundary
-        if (boundsDistance.right >= 0) {
-            flag = true;
-            direction = "right";
-            currentTranslate[0] -= boundsDistance[direction];
-        }
-        // beyond the bottom boundary
-        if (boundsDistance.bottom >= 0) {
-            flag = true;
-            direction = "bottom";
-            currentTranslate[1] -= boundsDistance[direction];
-        }
+        const updates = [
+            { key: "left", axis: 0, offset: 1 },
+            { key: "top", axis: 1, offset: 1 },
+            { key: "right", axis: 0, offset: -1 },
+            { key: "bottom", axis: 1, offset: -1 },
+        ];
 
-        if (flag) {
-            // drag out of the area first time
-            if (!this.bounding) {
-                this.bounding = true;
-                this.boundStart(direction);
+        updates.forEach(({ key, axis, offset }) => {
+            if (boundsDistance[key] >= 0) {
+                flag = true;
+                direction = key;
+                currentTranslate[axis] += offset * boundsDistance[key];
             }
-            this.bound(direction, boundsDistance[direction]);
-        }
+        });
 
-        // the target element is in the drag area
-        if (this.bounding && !flag) {
-            this.bounding = false;
-            this.boundEnd();
-        }
-        this.store.currentTranslate = [currentTranslate[0], currentTranslate[1]];
+        return { flag, direction };
+    }
 
+    emitDrag(e, delta) {
         this.handlers.drag &&
             this.handlers.drag({
                 inputEvent: e,
