@@ -1,3 +1,6 @@
+/**
+ * 从文本节点向上收集可作为长按翻译范围的块级容器候选。
+ */
 export function collectBlockCandidates(textNode, isTraversableElement, isBlockContainerCandidate) {
     const candidates = [];
     for (
@@ -10,6 +13,9 @@ export function collectBlockCandidates(textNode, isTraversableElement, isBlockCo
     return candidates;
 }
 
+/**
+ * 在候选容器中按评分选择最适合的长按翻译容器。
+ */
 export function pickBestBlockContainer(candidates, x, y, scoreContainer) {
     let bestContainer = candidates[0];
     let bestScore = scoreContainer(bestContainer, x, y);
@@ -23,6 +29,9 @@ export function pickBestBlockContainer(candidates, x, y, scoreContainer) {
     return bestContainer;
 }
 
+/**
+ * 将多个文本节点拼接为完整文本，并记录每个节点的全局偏移。
+ */
 export function buildTextEntries(textNodes) {
     let fullText = "";
     return {
@@ -36,6 +45,9 @@ export function buildTextEntries(textNodes) {
     };
 }
 
+/**
+ * 从当前句子片段向前后扩展，形成接近目标长度的文本窗口。
+ */
 export function expandChunkWindow(segments, currentIndex, targetLength, maxLength) {
     let state = {
         startIndex: currentIndex,
@@ -50,6 +62,9 @@ export function expandChunkWindow(segments, currentIndex, targetLength, maxLengt
     return state;
 }
 
+/**
+ * 根据最大/最小长度限制修正片段边界，并去掉首尾空白。
+ */
 export function normalizeChunkBounds(args) {
     let start = args.segments[args.expanded.startIndex].trimmedStart;
     let end = args.segments[args.expanded.endIndex].trimmedEnd;
@@ -65,17 +80,26 @@ export function normalizeChunkBounds(args) {
     return { start, end };
 }
 
+/**
+ * 将原始偏移量限制在文本有效索引范围内。
+ */
 export function normalizeOffset(text, rawOffset) {
     let offset = Math.max(0, Math.min(rawOffset, text.length));
     if (offset === text.length) offset -= 1;
     return offset;
 }
 
+/**
+ * 从候选索引中选择第一个非空白可见字符位置。
+ */
 export function pickVisibleCharacter(text, indexes) {
     const visibleIndex = indexes.find((index) => text[index] && !/\s/.test(text[index]));
     return visibleIndex === undefined ? null : visibleIndex;
 }
 
+/**
+ * 从指定偏移量向两侧扫描最近的可见字符。
+ */
 export function scanNearestVisibleCharacter(text, offset, pickChar) {
     let left = offset - 1;
     let right = offset + 1;
@@ -88,12 +112,18 @@ export function scanNearestVisibleCharacter(text, offset, pickChar) {
     return null;
 }
 
+/**
+ * 将片段结束位置推进到连续尾随标点之后。
+ */
 export function advanceTrailingBoundary(text, startIndex, trailingRegexp) {
     let segmentEnd = startIndex;
     while (segmentEnd < text.length && trailingRegexp.test(text[segmentEnd])) segmentEnd += 1;
     return segmentEnd;
 }
 
+/**
+ * 去除片段首尾空白后，将有效片段加入列表。
+ */
 export function pushSegment(segments, text, start, end) {
     let trimmedStart = start;
     let trimmedEnd = end;
@@ -109,6 +139,9 @@ export function pushSegment(segments, text, start, end) {
     });
 }
 
+/**
+ * 将完整文本中的全局索引映射回具体文本节点和节点内偏移。
+ */
 export function locateTextPosition(entries, index) {
     for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
@@ -123,6 +156,9 @@ export function locateTextPosition(entries, index) {
     return { node: lastEntry.node, offset: lastEntry.node.textContent.length };
 }
 
+/**
+ * 保存当前页面选区范围，便于临时操作后恢复。
+ */
 export function snapshotSelectionRanges(selection) {
     const ranges = [];
     for (let i = 0; i < selection.rangeCount; i++) {
@@ -131,23 +167,35 @@ export function snapshotSelectionRanges(selection) {
     return ranges;
 }
 
+/**
+ * 恢复之前保存的页面选区范围。
+ */
 export function restoreSelectionRanges(selection, ranges) {
     selection.removeAllRanges();
     ranges.forEach((range) => selection.addRange(range));
 }
 
+/**
+ * 克隆文本范围并折叠到起点。
+ */
 export function collapseRange(range) {
     const collapsed = range.cloneRange();
     collapsed.collapse(true);
     return collapsed;
 }
 
+/**
+ * 克隆当前选区的第一个非折叠范围。
+ */
 export function cloneSelectionRange(selection) {
     if (!selection.rangeCount) return null;
     const result = selection.getRangeAt(0).cloneRange();
     return result.collapsed ? null : result;
 }
 
+/**
+ * 选择向前或向后扩展片段窗口的下一步。
+ */
 function chooseExpansion(segments, state, maxLength) {
     const previousSegment = segments[state.startIndex - 1];
     const nextSegment = segments[state.endIndex + 1];
@@ -169,6 +217,9 @@ function chooseExpansion(segments, state, maxLength) {
           };
 }
 
+/**
+ * 当首选方向没有片段时，回退到另一侧继续扩展。
+ */
 function fallbackExpansion(state, usePrevious, previousSegment, nextSegment) {
     return usePrevious
         ? {

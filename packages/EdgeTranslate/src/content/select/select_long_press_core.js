@@ -25,6 +25,9 @@ import {
     cloneSelectionRange,
 } from "./select_long_press_utils.js";
 
+/**
+ * 判断长按起点是否应该被忽略，避免干扰输入控件和插件自身 UI。
+ */
 export function shouldIgnoreTarget(target) {
     if (!(target instanceof Element)) return true;
     if (
@@ -39,26 +42,41 @@ export function shouldIgnoreTarget(target) {
     return /^(move|([nsweo]|[nwse]w|col|row)-resize|grab|grabbing)$/.test(cursor);
 }
 
+/**
+ * 获取需要在长按翻译后临时拦截点击的交互目标。
+ */
 export function getActionTarget(target) {
     const element = target instanceof Element ? target : target?.parentElement;
     if (!element) return null;
     return element.closest("a, button, [role='button']") || element;
 }
 
+/**
+ * 根据页面坐标获取长按应翻译的文本范围。
+ */
 export function getLongPressRangeFromPoint(x, y) {
     return getBlockRangeFromPoint(x, y) || getNativeOrChunkRange(x, y);
 }
 
+/**
+ * 获取文本范围中可见且有效的高亮矩形区域。
+ */
 export function getHighlightRects(range) {
     return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
 }
 
+/**
+ * 优先尝试浏览器原生段落范围，失败时回退到分句片段范围。
+ */
 function getNativeOrChunkRange(x, y) {
     const nativeRange = getNativeParagraphRangeFromPoint(x, y);
     if (nativeRange && isReasonableLongPressRange(nativeRange, x, y)) return nativeRange;
     return getChunkRangeFromPoint(x, y);
 }
 
+/**
+ * 从坐标所在文本节点向上寻找合适的块级容器，并返回其完整文本范围。
+ */
 function getBlockRangeFromPoint(x, y) {
     const caretRange = getCaretRangeFromPoint(x, y);
     if (!caretRange) return null;
@@ -76,6 +94,9 @@ function getBlockRangeFromPoint(x, y) {
     return range.toString().trim() ? range : null;
 }
 
+/**
+ * 为文本节点选择最适合作为长按翻译单位的块级容器。
+ */
 function getPreferredBlockContainer(textNode, x, y) {
     const directContainer = getDirectTextBlockContainer(textNode);
     if (directContainer) return directContainer;
@@ -94,6 +115,9 @@ function getPreferredBlockContainer(textNode, x, y) {
     );
 }
 
+/**
+ * 查找文本节点直接归属的简单块级容器。
+ */
 function getDirectTextBlockContainer(textNode) {
     let currentElement = textNode.parentElement;
     while (isTraversableElement(currentElement)) {
@@ -108,6 +132,9 @@ function getDirectTextBlockContainer(textNode) {
     return null;
 }
 
+/**
+ * 使用浏览器 Selection API 获取坐标处的原生段落范围。
+ */
 function getNativeParagraphRangeFromPoint(x, y) {
     const caretRange = getCaretRangeFromPoint(x, y);
     if (!caretRange || !window.getSelection) return null;
@@ -128,6 +155,9 @@ function getNativeParagraphRangeFromPoint(x, y) {
     }
 }
 
+/**
+ * 根据坐标所在文本节点构造一段长度适中的文本片段范围。
+ */
 function getChunkRangeFromPoint(x, y) {
     const caretRange = getCaretRangeFromPoint(x, y);
     if (!caretRange) return null;
@@ -141,6 +171,9 @@ function getChunkRangeFromPoint(x, y) {
     return range;
 }
 
+/**
+ * 计算文本节点偏移量在合并文本中的片段起止位置。
+ */
 function getChunkContext(textNode, rawOffset) {
     const textNodes = collectTextNodes(getSentenceContainer(textNode));
     if (!textNodes.length) return null;
@@ -157,6 +190,9 @@ function getChunkContext(textNode, rawOffset) {
     };
 }
 
+/**
+ * 根据当前字符位置确定应翻译片段在完整文本中的边界。
+ */
 function getChunkBounds(text, offset) {
     const segments = splitIntoSentenceSegments(text);
     const currentIndex = segments.findIndex(
@@ -182,6 +218,9 @@ function getChunkBounds(text, offset) {
     return bounds.start < bounds.end ? bounds : null;
 }
 
+/**
+ * 将原始偏移量修正到附近可见字符的位置。
+ */
 function resolveSentenceOffset(text, rawOffset) {
     if (!text?.length) return null;
     const offset = normalizeOffset(text, rawOffset);
@@ -191,6 +230,9 @@ function resolveSentenceOffset(text, rawOffset) {
     );
 }
 
+/**
+ * 按中英文句末标点将文本拆成可扩展的句子片段。
+ */
 function splitIntoSentenceSegments(text) {
     const segments = [];
     let segmentStart = 0;
@@ -204,6 +246,9 @@ function splitIntoSentenceSegments(text) {
     return segments;
 }
 
+/**
+ * 查找承载当前句子上下文的块级容器。
+ */
 function getSentenceContainer(textNode) {
     let element = textNode.parentElement;
     while (isTraversableElement(element)) {
@@ -213,6 +258,9 @@ function getSentenceContainer(textNode) {
     return textNode.parentElement || document.body;
 }
 
+/**
+ * 收集根节点下所有可用于长按翻译的非空文本节点。
+ */
 function collectTextNodes(rootNode) {
     if (!rootNode) return [];
     const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT, {
@@ -227,12 +275,18 @@ function collectTextNodes(rootNode) {
     return textNodes;
 }
 
+/**
+ * 从光标范围中解析实际命中的文本节点。
+ */
 function resolveTargetTextNode(caretRange, x, y) {
     return caretRange.startContainer.nodeType === Node.TEXT_NODE
         ? caretRange.startContainer
         : getNearestTextNode(caretRange.startContainer, x, y, caretRange.startOffset);
 }
 
+/**
+ * 兼容不同浏览器，从页面坐标获取折叠的光标范围。
+ */
 function getCaretRangeFromPoint(x, y) {
     if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
     if (!document.caretPositionFromPoint) return null;
@@ -244,6 +298,9 @@ function getCaretRangeFromPoint(x, y) {
     return range;
 }
 
+/**
+ * 在给定节点或坐标命中的元素附近查找最近的文本节点。
+ */
 function getNearestTextNode(node, x, y, offset = 0) {
     if (!node) return null;
     if (node.nodeType === Node.TEXT_NODE) return node;
@@ -256,6 +313,9 @@ function getNearestTextNode(node, x, y, offset = 0) {
     return findTextNode(target) || findTextNode(node);
 }
 
+/**
+ * 在节点子树中查找第一个非空文本节点。
+ */
 function findTextNode(rootNode) {
     if (!rootNode) return null;
     if (rootNode.nodeType === Node.TEXT_NODE) return rootNode;
@@ -269,19 +329,31 @@ function findTextNode(rootNode) {
     return walker.nextNode();
 }
 
+/**
+ * 判断原生段落范围是否有文本且覆盖长按坐标。
+ */
 function isReasonableLongPressRange(range, x, y) {
     const text = range.toString().trim();
     return text.length > 0 && getHighlightRects(range).some((rect) => containsPoint(rect, x, y));
 }
 
+/**
+ * 判断坐标是否位于矩形区域内。
+ */
 function containsPoint(rect, x, y) {
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }
 
+/**
+ * 判断元素是否仍可继续向上遍历寻找容器。
+ */
 function isTraversableElement(element) {
     return element && element !== document.body && element !== document.documentElement;
 }
 
+/**
+ * 判断元素是否适合作为块级文本容器候选。
+ */
 function isBlockContainerCandidate(element) {
     const display = window.getComputedStyle(element).display;
     return (

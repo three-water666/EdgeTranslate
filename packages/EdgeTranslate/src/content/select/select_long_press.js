@@ -5,6 +5,9 @@ import {
     shouldIgnoreTarget,
 } from "./select_long_press_core.js";
 
+/**
+ * 创建长按取词需要的工具集合，并维护高亮容器的生命周期。
+ */
 export function createLongPressTools() {
     let highlightContainer = null;
 
@@ -16,6 +19,9 @@ export function createLongPressTools() {
         shouldIgnoreTarget,
     };
 
+    /**
+     * 根据选中的文本范围渲染长按预览高亮。
+     */
     function renderHighlight(range) {
         clearHighlight();
         if (!range) return;
@@ -42,6 +48,9 @@ export function createLongPressTools() {
         });
     }
 
+    /**
+     * 清理当前长按预览高亮和对应 DOM 容器。
+     */
     function clearHighlight() {
         if (!highlightContainer) return;
         highlightContainer.replaceChildren();

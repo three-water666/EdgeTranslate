@@ -4,6 +4,9 @@ import {
     BLOCK_TEXT_MIN_LENGTH,
 } from "./select_constants.js";
 
+/**
+ * 为块级容器计算长按翻译适配分数。
+ */
 function scoreContainer({ element, x, y, collectTextNodes, containsPoint }) {
     if (!isValidBlockContainer(element, x, y, containsPoint)) return -1;
     const textNodes = collectTextNodes(element);
@@ -16,6 +19,9 @@ function scoreContainer({ element, x, y, collectTextNodes, containsPoint }) {
     return score;
 }
 
+/**
+ * 判断容器是否可见、可命中且文本长度合理。
+ */
 function isValidBlockContainer(element, x, y, containsPoint) {
     return (
         !!element &&
@@ -25,6 +31,9 @@ function isValidBlockContainer(element, x, y, containsPoint) {
     );
 }
 
+/**
+ * 判断元素是否属于插件自身 UI，需要排除在长按取词之外。
+ */
 function isIgnoredElement(element) {
     return Boolean(
         element.closest?.(
@@ -33,11 +42,17 @@ function isIgnoredElement(element) {
     );
 }
 
+/**
+ * 判断元素是否有有效布局区域并包含长按坐标。
+ */
 function hasUsableRect(element, x, y, containsPoint) {
     const rect = element.getBoundingClientRect();
     return !!rect.width && !!rect.height && containsPoint(rect, x, y);
 }
 
+/**
+ * 判断块级容器的文本长度是否适合作为翻译范围。
+ */
 function isReasonableBlockContainer(element) {
     const textLength = (element?.textContent || "").trim().length;
     const minLength = /^(LI|H[1-6]|TD|TH|CAPTION)$/.test(element.tagName)
@@ -46,12 +61,18 @@ function isReasonableBlockContainer(element) {
     return textLength >= minLength && textLength <= BLOCK_TEXT_MAX_LENGTH;
 }
 
+/**
+ * 根据标签语义给更像自然文本块的容器加分。
+ */
 function getContainerTagBonus(element) {
     if (/^(P|LI|BLOCKQUOTE|PRE)$/.test(element.tagName)) return 150;
     if (/^(H[1-6]|TD|TH|CAPTION)$/.test(element.tagName)) return 100;
     return 0;
 }
 
+/**
+ * 根据文本长度和标签类型计算接近理想长度的分数。
+ */
 function getIdealLengthScore(element, textLength) {
     let idealLength = BLOCK_TEXT_IDEAL_LENGTH;
     if (/^(H[1-6])$/.test(element.tagName)) idealLength = 40;
@@ -59,11 +80,17 @@ function getIdealLengthScore(element, textLength) {
     return 200 - Math.abs(idealLength - textLength) / 2;
 }
 
+/**
+ * 根据句读标点数量给更完整的自然语言文本加分。
+ */
 function getPunctuationBonus(text) {
     const punctuationCount = (text.match(/[.!?。！？；;，,]/g) || []).length;
     return Math.min(punctuationCount, 10) * 15;
 }
 
+/**
+ * 对子元素过多的容器扣分，降低误选大容器的概率。
+ */
 function getChildPenalty(element) {
     return element.childElementCount > 0 ? -element.childElementCount * 20 : 0;
 }
