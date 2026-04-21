@@ -150,8 +150,14 @@ function eslintJS(done) {
         }
     );
 
+    if (result.error) {
+        done(result.error);
+        return;
+    }
+
     if (result.status !== 0) {
-        log(`eslint exited with code ${result.status}`);
+        done(new Error(`eslint exited with code ${result.status}`));
+        return;
     }
 
     done();
