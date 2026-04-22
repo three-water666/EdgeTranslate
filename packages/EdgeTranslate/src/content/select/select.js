@@ -217,7 +217,7 @@ function triggerLongPressTranslate(state, session) {
     if (!state.longPressEnabled || !session || session.moved) {
         return Promise.resolve();
     }
-    if (window.getSelection().toString().trim()) cancelTextSelection();
+    if (window.getSelection().toString().trim()) return Promise.resolve();
     return isInBlacklist().then((inBlacklist) => {
         if (inBlacklist) return;
         if (
@@ -249,6 +249,8 @@ function canStartLongPress(state, event) {
     return (
         state.longPressEnabled &&
         event.button === 0 &&
+        event.clientX <= document.documentElement.clientWidth &&
+        event.clientY <= document.documentElement.clientHeight &&
         !event.ctrlKey &&
         !event.metaKey &&
         !event.altKey &&
