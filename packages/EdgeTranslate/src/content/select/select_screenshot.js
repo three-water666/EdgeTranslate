@@ -3,6 +3,8 @@ export function createScreenshotSelector() {
     return { start: () => session?.promise || createSession((value) => (session = value)) };
 }
 
+const CLICK_SUPPRESSION_FALLBACK_DELAY = 80;
+
 function createSession(updateSession) {
     const view = createOverlayView();
     const pointerState = { startPoint: null, currentRect: null, finished: false };
@@ -68,35 +70,24 @@ function createOverlayView() {
 }
 
 function createSessionHandlers(view, pointerState, session, clearSession) {
-    const cleanup = () => {
-        window.removeEventListener("keydown", handlers.keydownHandler, true);
-        view.overlay.removeEventListener("mousedown", handlers.mousedownHandler, true);
-        view.overlay.removeEventListener("mousemove", handlers.mousemoveHandler, true);
-        view.overlay.removeEventListener("mouseup", handlers.mouseupHandler, true);
-        if (document.documentElement.contains(view.overlay)) {
-            document.documentElement.removeChild(view.overlay);
-        }
-        clearSession();
-    };
+    let handlers = null;
+    const resolver = createSelectionResolver({
+        view,
+        pointerState,
+        session,
+        clearSession,
+        getHandlers: () => handlers,
+    });
 
-    const resolveSelection = (value) => {
-        if (pointerState.finished) return;
-        pointerState.finished = true;
-        cleanup();
-        session.resolve(value);
-    };
-
-    const handlers = {
+    handlers = {
         keydownHandler(event) {
             if (event.key !== "Escape") return;
-            event.preventDefault();
-            event.stopPropagation();
-            resolveSelection(null);
+            consumeEvent(event);
+            resolver.resolveSelection(null);
         },
         mousedownHandler(event) {
             if (event.button !== 0) return;
-            event.preventDefault();
-            event.stopPropagation();
+            consumeEvent(event);
             pointerState.startPoint = { x: event.clientX, y: event.clientY };
             pointerState.currentRect = null;
             view.selectionBox.style.display = "block";
@@ -109,8 +100,7 @@ function createSessionHandlers(view, pointerState, session, clearSession) {
         },
         mousemoveHandler(event) {
             if (!pointerState.startPoint) return;
-            event.preventDefault();
-            event.stopPropagation();
+            consumeEvent(event);
             pointerState.currentRect = normalizeRect(
                 pointerState.startPoint.x,
                 pointerState.startPoint.y,
@@ -121,8 +111,7 @@ function createSessionHandlers(view, pointerState, session, clearSession) {
         },
         mouseupHandler(event) {
             if (event.button !== 0 || !pointerState.startPoint) return;
-            event.preventDefault();
-            event.stopPropagation();
+            consumeEvent(event);
             pointerState.currentRect = normalizeRect(
                 pointerState.startPoint.x,
                 pointerState.startPoint.y,
@@ -130,26 +119,89 @@ function createSessionHandlers(view, pointerState, session, clearSession) {
                 event.clientY
             );
             if (pointerState.currentRect.width < 8 || pointerState.currentRect.height < 8) {
-                resolveSelection(null);
+                resolver.resolveSelection(null, true);
                 return;
             }
-            resolveSelection({
-                rect: pointerState.currentRect,
-                position: [pointerState.currentRect.left, pointerState.currentRect.top],
-                viewportWidth: window.innerWidth,
-                viewportHeight: window.innerHeight,
-            });
+            resolver.resolveSelection(
+                {
+                    rect: pointerState.currentRect,
+                    position: [pointerState.currentRect.left, pointerState.currentRect.top],
+                    viewportWidth: window.innerWidth,
+                    viewportHeight: window.innerHeight,
+                },
+                true
+            );
+        },
+        clickHandler(event) {
+            consumeEvent(event);
+            if (pointerState.finished) resolver.finalizePendingSelection();
         },
     };
 
     return handlers;
 }
 
+function createSelectionResolver({ view, pointerState, session, clearSession, getHandlers }) {
+    let pendingResolution = null;
+    let clickFallbackTimer = null;
+
+    const cleanup = () => {
+        if (clickFallbackTimer) {
+            window.clearTimeout(clickFallbackTimer);
+            clickFallbackTimer = null;
+        }
+        removeSessionHandlers(view.overlay, getHandlers());
+        if (document.documentElement.contains(view.overlay)) {
+            document.documentElement.removeChild(view.overlay);
+        }
+        clearSession();
+    };
+
+    const finalizeSelection = (value) => {
+        cleanup();
+        session.resolve(value);
+    };
+
+    const resolveSelection = (value, waitForClick = false) => {
+        if (pointerState.finished) return;
+        pointerState.finished = true;
+        if (!waitForClick) {
+            finalizeSelection(value);
+            return;
+        }
+        pendingResolution = value;
+        clickFallbackTimer = window.setTimeout(
+            () => finalizeSelection(pendingResolution),
+            CLICK_SUPPRESSION_FALLBACK_DELAY
+        );
+    };
+
+    return {
+        resolveSelection,
+        finalizePendingSelection: () => finalizeSelection(pendingResolution),
+    };
+}
+
 function registerSessionHandlers(overlay, handlers) {
     overlay.addEventListener("mousedown", handlers.mousedownHandler, true);
     overlay.addEventListener("mousemove", handlers.mousemoveHandler, true);
     overlay.addEventListener("mouseup", handlers.mouseupHandler, true);
+    overlay.addEventListener("click", handlers.clickHandler, true);
     window.addEventListener("keydown", handlers.keydownHandler, true);
+}
+
+function removeSessionHandlers(overlay, handlers) {
+    window.removeEventListener("keydown", handlers.keydownHandler, true);
+    overlay.removeEventListener("mousedown", handlers.mousedownHandler, true);
+    overlay.removeEventListener("mousemove", handlers.mousemoveHandler, true);
+    overlay.removeEventListener("mouseup", handlers.mouseupHandler, true);
+    overlay.removeEventListener("click", handlers.clickHandler, true);
+}
+
+function consumeEvent(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
 }
 
 function normalizeRect(startX, startY, endX, endY) {
