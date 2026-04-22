@@ -36,7 +36,7 @@ exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
     ensureOutputDirectory,
-    gulp.parallel(eslintJS, buildJSDev, copyManifest, html, styl, packStatic, touchHotReloadStamp),
+    gulp.parallel(buildJSDev, copyManifest, html, styl, packStatic, touchHotReloadStamp),
     watcher
 );
 
@@ -117,7 +117,6 @@ function packToZip() {
  * @param {Function} done execute done to inform gulp that the task is finished
  */
 function watcher(done) {
-    gulp.watch("./src/**/*.{js,jsx}").on("change", gulp.series(eslintJS));
     gulp.watch("./src/manifest_chrome.json").on(
         "change",
         gulp.series(copyManifest, touchHotReloadStamp)
@@ -297,7 +296,7 @@ function packStatic() {
                 since: gulp.lastRun(packStatic),
             }
         )
-        .pipe(terser().on("error", (error) => log(error)))
+        .pipe(minifyStaticJS())
         .pipe(gulp.dest(output_dir));
 
     let vendoredJSFiles = gulp
@@ -328,6 +327,12 @@ function packStatic() {
 
 function getOutputDir() {
     return environment === "development" ? `./dev/${browser}/` : `./build/${browser}/`;
+}
+
+function minifyStaticJS() {
+    return environment === "development"
+        ? through.obj()
+        : terser().on("error", (error) => log(error));
 }
 
 // Write gulp and webpack output directly to stdout.
