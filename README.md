@@ -62,6 +62,16 @@ After the build finishes, the unpacked extension output is available under:
 
 -   `./packages/EdgeTranslate/build/chrome/`
 
+Start a development build with file watching:
+
+```shell
+pnpm dev
+```
+
+The development output is available under:
+
+-   `./packages/EdgeTranslate/dev/chrome/`
+
 ## Load Unpacked Extension In Your Browser
 
 ### Chrome
@@ -69,14 +79,14 @@ After the build finishes, the unpacked extension output is available under:
 -   Open `chrome://extensions`.
 -   Enable `Developer mode`.
 -   Click `Load unpacked`.
--   Select `./packages/EdgeTranslate/build/chrome/`.
+-   Select `./packages/EdgeTranslate/dev/chrome/` for development builds, or `./packages/EdgeTranslate/build/chrome/` for production builds.
 
 ### Microsoft Edge
 
 -   Open `edge://extensions`.
 -   Enable `Developer mode`.
 -   Click `Load unpacked`.
--   Select `./packages/EdgeTranslate/build/chrome/`.
+-   Select `./packages/EdgeTranslate/dev/chrome/` for development builds, or `./packages/EdgeTranslate/build/chrome/` for production builds.
 
 ## Acknowledgement
 

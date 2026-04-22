@@ -82,13 +82,13 @@ function setProductEnvironment(done) {
  * A private task to clean old packages before building new ones
  */
 function clean() {
-    let output_dir = `./build/${browser}/`;
+    let output_dir = getOutputDir();
     let packageName = `edge_translate_${browser}_v${version}.zip`;
     return del([output_dir, `${PACKAGE_OUTPUT_DIR}/${packageName}`]);
 }
 
 function ensureOutputDirectory(done) {
-    fs.mkdirSync(`./build/${browser}/`, { recursive: true });
+    fs.mkdirSync(getOutputDir(), { recursive: true });
     done();
 }
 
@@ -98,7 +98,7 @@ function touchHotReloadStamp(done) {
         return;
     }
 
-    const stampPath = `./build/${browser}/hot-reload.json`;
+    const stampPath = `${getOutputDir()}hot-reload.json`;
     fs.writeFileSync(stampPath, `${JSON.stringify({ updatedAt: Date.now() })}\n`);
     done();
 }
@@ -167,7 +167,7 @@ function eslintJS(done) {
  * A private code to build JS code
  */
 function buildJS() {
-    let output_dir = `./build/${browser}/`;
+    let output_dir = getOutputDir();
     let webpack_path =
         environment === "production"
             ? "./config/webpack.prod.config.js"
@@ -236,7 +236,7 @@ function buildJSDev(done) {
  * A private task to copy the browser manifest as the final manifest.json
  */
 function copyManifest() {
-    let output_dir = `./build/${browser}/`;
+    let output_dir = getOutputDir();
     return gulp
         .src(`./src/manifest_${browser}.json`)
         .pipe(
@@ -257,7 +257,7 @@ function copyManifest() {
  * A private task to pack HTML files except HTML templates
  */
 function html() {
-    let output_dir = `./build/${browser}/`;
+    let output_dir = getOutputDir();
     return gulp.src(["./src/**/*.html"], { base: "src" }).pipe(gulp.dest(output_dir));
 }
 
@@ -265,7 +265,7 @@ function html() {
  * A private task to convert styl to css files
  */
 function styl() {
-    let output_dir = `./build/${browser}/`;
+    let output_dir = getOutputDir();
     return gulp
         .src("./src/!(common)/**/*.styl", { base: "src" })
         .pipe(
@@ -280,7 +280,7 @@ function styl() {
  * A private task to pack static files under "./static/"
  */
 function packStatic() {
-    let output_dir = `./build/${browser}/`;
+    let output_dir = getOutputDir();
 
     // Minify project-owned static JS, but copy vendored third-party bundles as-is.
     let staticJSFiles = gulp
@@ -325,6 +325,10 @@ function packStatic() {
 /**
  * End private tasks' definition
  */
+
+function getOutputDir() {
+    return environment === "development" ? `./dev/${browser}/` : `./build/${browser}/`;
+}
 
 // Write gulp and webpack output directly to stdout.
 function log(d) {

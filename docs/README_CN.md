@@ -62,6 +62,16 @@ pnpm package
 
 -   `./packages/EdgeTranslate/build/chrome/`
 
+启动带文件监听的开发构建：
+
+```shell
+pnpm dev
+```
+
+开发构建输出目录为：
+
+-   `./packages/EdgeTranslate/dev/chrome/`
+
 ## 在浏览器中加载已解压扩展
 
 ### Chrome
@@ -69,14 +79,14 @@ pnpm package
 -   打开 `chrome://extensions`。
 -   开启`开发者模式`。
 -   点击`加载已解压的扩展程序`。
--   选择 `./packages/EdgeTranslate/build/chrome/`。
+-   开发构建选择 `./packages/EdgeTranslate/dev/chrome/`，生产构建选择 `./packages/EdgeTranslate/build/chrome/`。
 
 ### Microsoft Edge
 
 -   打开 `edge://extensions`。
 -   开启`开发者模式`。
 -   点击`加载解压缩的扩展`。
--   选择 `./packages/EdgeTranslate/build/chrome/`。
+-   开发构建选择 `./packages/EdgeTranslate/dev/chrome/`，生产构建选择 `./packages/EdgeTranslate/build/chrome/`。
 
 ## 致谢
 
