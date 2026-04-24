@@ -7,27 +7,35 @@ import {
 /**
  * 为块级容器计算长按翻译适配分数。
  */
-function scoreContainer({ element, x, y, collectTextNodes, containsPoint }) {
-    if (!isValidBlockContainer(element, x, y, containsPoint)) return -1;
+function scoreContainer({ element, x, y, depth = 0, collectTextNodes, containsPoint }) {
     const textNodes = collectTextNodes(element);
     const fullText = textNodes.reduce((acc, node) => acc + (node.textContent || ""), "");
+    const blockTextLength = textNodes.reduce(
+        (total, node) => total + (node.textContent || "").trim().length,
+        0
+    );
+    if (!isValidBlockContainer({ element, x, y, textLength: blockTextLength, containsPoint })) {
+        return -1;
+    }
+
     const textLength = fullText.trim().length;
     let score = getIdealLengthScore(element, textLength);
     score += getPunctuationBonus(fullText);
     score += getContainerTagBonus(element);
     score += getChildPenalty(element);
+    score += getDepthPenalty(depth);
     return score;
 }
 
 /**
  * 判断容器是否可见、可命中且文本长度合理。
  */
-function isValidBlockContainer(element, x, y, containsPoint) {
+function isValidBlockContainer({ element, x, y, textLength, containsPoint }) {
     return (
         !!element &&
         !isIgnoredElement(element) &&
         hasUsableRect(element, x, y, containsPoint) &&
-        isReasonableBlockContainer(element)
+        isReasonableBlockContainer(element, textLength)
     );
 }
 
@@ -53,8 +61,10 @@ function hasUsableRect(element, x, y, containsPoint) {
 /**
  * 判断块级容器的文本长度是否适合作为翻译范围。
  */
-function isReasonableBlockContainer(element) {
-    const textLength = (element?.textContent || "").trim().length;
+function isReasonableBlockContainer(
+    element,
+    textLength = (element?.textContent || "").trim().length
+) {
     const minLength = /^(LI|H[1-6]|TD|TH|CAPTION)$/.test(element.tagName)
         ? 2
         : BLOCK_TEXT_MIN_LENGTH;
@@ -93,6 +103,13 @@ function getPunctuationBonus(text) {
  */
 function getChildPenalty(element) {
     return element.childElementCount > 0 ? -element.childElementCount * 20 : 0;
+}
+
+/**
+ * 优先选择更贴近命中文本的内层容器。
+ */
+function getDepthPenalty(depth) {
+    return -depth * 10;
 }
 
 export { scoreContainer, isReasonableBlockContainer };

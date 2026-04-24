@@ -8,8 +8,6 @@ import {
 } from "./select_constants.js";
 import { scoreContainer, isReasonableBlockContainer } from "./select_long_press_score.js";
 import {
-    collectBlockCandidates,
-    pickBestBlockContainer,
     buildTextEntries,
     expandChunkWindow,
     normalizeChunkBounds,
@@ -100,19 +98,35 @@ function getBlockRangeFromPoint(x, y) {
 function getPreferredBlockContainer(textNode, x, y) {
     const directContainer = getDirectTextBlockContainer(textNode);
     if (directContainer) return directContainer;
-    const candidates = [
-        getSentenceContainer(textNode),
-        ...collectBlockCandidates(textNode, isTraversableElement, isBlockContainerCandidate),
-    ];
-    return pickBestBlockContainer(candidates, x, y, (element, clientX, clientY) =>
-        scoreContainer({
-            element,
-            x: clientX,
-            y: clientY,
-            collectTextNodes,
-            containsPoint,
-        })
-    );
+    return findBestAncestorBlockContainer(textNode, x, y);
+}
+
+/**
+ * 从当前文本节点向上评分，选择最合适的块级容器。
+ */
+function findBestAncestorBlockContainer(textNode, x, y) {
+    const best = {
+        container: getSentenceContainer(textNode),
+        score: null,
+    };
+    best.score = getBlockContainerScore(best.container, x, y, 0);
+
+    let depth = 0;
+    let currentElement = textNode.parentElement;
+    while (isTraversableElement(currentElement)) {
+        if (isBlockContainerCandidate(currentElement)) {
+            const score = getBlockContainerScore(currentElement, x, y, depth);
+            if (score > best.score) {
+                best.container = currentElement;
+                best.score = score;
+            }
+        }
+
+        currentElement = currentElement.parentElement;
+        depth += 1;
+    }
+
+    return best.container;
 }
 
 /**
@@ -123,13 +137,27 @@ function getDirectTextBlockContainer(textNode) {
     while (isTraversableElement(currentElement)) {
         if (
             DIRECT_TEXT_BLOCK_TAG_REGEXP.test(currentElement.tagName) &&
-            isReasonableBlockContainer(currentElement)
+            isReasonableBlockContainer(currentElement, getBlockTextLength(currentElement))
         ) {
             return currentElement;
         }
         currentElement = currentElement.parentElement;
     }
     return null;
+}
+
+/**
+ * 为块级候选容器计算长按翻译适配分数。
+ */
+function getBlockContainerScore(element, x, y, depth = 0) {
+    return scoreContainer({
+        element,
+        x,
+        y,
+        depth,
+        collectTextNodes,
+        containsPoint,
+    });
 }
 
 /**
@@ -276,6 +304,15 @@ function collectTextNodes(rootNode) {
 }
 
 /**
+ * 统计容器内实际会参与长按翻译的文本长度。
+ */
+function getBlockTextLength(element) {
+    const textNodes = collectTextNodes(element);
+    if (!textNodes.length) return 0;
+    return textNodes.reduce((total, node) => total + (node.textContent || "").trim().length, 0);
+}
+
+/**
  * 从光标范围中解析实际命中的文本节点。
  */
 function resolveTargetTextNode(caretRange, x, y) {
@@ -334,7 +371,10 @@ function findTextNode(rootNode) {
  */
 function isReasonableLongPressRange(range, x, y) {
     const text = range.toString().trim();
-    return text.length > 0 && getHighlightRects(range).some((rect) => containsPoint(rect, x, y));
+    return (
+        text.length >= Math.min(CHUNK_MIN_LENGTH, 2) &&
+        getHighlightRects(range).some((rect) => containsPoint(rect, x, y))
+    );
 }
 
 /**
