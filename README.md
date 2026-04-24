@@ -62,15 +62,19 @@ Build the extension:
 pnpm build
 ```
 
+After the build finishes, the unpacked extension output is available under:
+
+-   `./packages/EdgeTranslate/build/chrome/`
+
 Create a zip package:
 
 ```shell
 pnpm package
 ```
 
-After the build finishes, the unpacked extension output is available under:
+After packaging finishes, the release package is available under:
 
--   `./packages/EdgeTranslate/build/chrome/`
+-   `./packages/EdgeTranslate/artifacts/`
 
 Start a development build with file watching:
 
@@ -81,22 +85,6 @@ pnpm dev
 The development output is available under:
 
 -   `./packages/EdgeTranslate/dev/chrome/`
-
-## Load Unpacked Extension In Your Browser
-
-### Chrome
-
--   Open `chrome://extensions`.
--   Enable `Developer mode`.
--   Click `Load unpacked`.
--   Select `./packages/EdgeTranslate/dev/chrome/` for development builds, or `./packages/EdgeTranslate/build/chrome/` for production builds.
-
-### Microsoft Edge
-
--   Open `edge://extensions`.
--   Enable `Developer mode`.
--   Click `Load unpacked`.
--   Select `./packages/EdgeTranslate/dev/chrome/` for development builds, or `./packages/EdgeTranslate/build/chrome/` for production builds.
 
 ## Acknowledgement
 

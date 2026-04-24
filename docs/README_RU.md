@@ -62,15 +62,19 @@ pnpm install
 pnpm build
 ```
 
+После сборки распакованная версия будет доступна в каталоге:
+
+-   `./packages/EdgeTranslate/build/chrome/`
+
 Создайте zip-пакет:
 
 ```shell
 pnpm package
 ```
 
-После сборки распакованная версия будет доступна в каталоге:
+После упаковки release-пакет будет доступен в каталоге:
 
--   `./packages/EdgeTranslate/build/chrome/`
+-   `./packages/EdgeTranslate/artifacts/`
 
 Запустите разработческую сборку с отслеживанием файлов:
 
@@ -81,22 +85,6 @@ pnpm dev
 Результат разработческой сборки будет доступен в каталоге:
 
 -   `./packages/EdgeTranslate/dev/chrome/`
-
-## Загрузка распакованного расширения в браузер
-
-### Chrome
-
--   Откройте `chrome://extensions`.
--   Включите `Developer mode`.
--   Нажмите `Load unpacked`.
--   Выберите `./packages/EdgeTranslate/dev/chrome/` для разработческой сборки или `./packages/EdgeTranslate/build/chrome/` для production-сборки.
-
-### Microsoft Edge
-
--   Откройте `edge://extensions`.
--   Включите `Developer mode`.
--   Нажмите `Load unpacked`.
--   Выберите `./packages/EdgeTranslate/dev/chrome/` для разработческой сборки или `./packages/EdgeTranslate/build/chrome/` для production-сборки.
 
 ## Благодарность
 
