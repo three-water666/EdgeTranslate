@@ -1,4 +1,6 @@
 **/build/
+packages/EdgeTranslate/dev/
+packages/translators/dev/
 **/dist/
 **/artifacts/
 **/node_modules/

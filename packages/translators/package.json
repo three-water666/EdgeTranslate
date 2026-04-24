@@ -7,7 +7,8 @@
         "translator"
     ],
     "scripts": {
-        "dev": "vite build --watch",
+        "dev": "vite build --watch --outDir dev --minify false",
+        "dev:prepare": "vite build --outDir dev --minify false",
         "build": "vite build && tsc --emitDeclarationOnly",
         "lint": "node ../../scripts/run-eslint.js packages/translators .eslintrc.js \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.config.js\" \"*.config.ts\" \"*.setup.js\"",
         "lint:fix": "pnpm lint --fix",
