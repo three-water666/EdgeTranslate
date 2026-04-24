@@ -1,4 +1,4 @@
-# 侧边翻译 - 网页划词翻译插件 | PDF 翻译 | MV3 | 开源免费
+# 侧边翻译 - 浏览器翻译插件 | PDF 翻译 | MV3 | 开源免费
 
 查看其他语言版本：
 
@@ -8,7 +8,17 @@
 
 ## 演示
 
-![demo_zh_CN](./images/demo_zh_CN.gif)
+### 划词翻译示例
+
+![selection_translation_demo_zh_CN](./images/demo_zh_CN.gif)
+
+### 长按翻译示例
+
+![long_press_translate](./images/long_press_translate.gif)
+
+### 截图翻译示例
+
+![screenshot_translate](./images/screenshot_translate.gif)
 
 ## 手动安装
 

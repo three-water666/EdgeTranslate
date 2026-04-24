@@ -1,4 +1,4 @@
-# Edge Translate - Web Selection Translation Extension | PDF Translation | MV3 | Free and Open Source
+# Edge Translate - Browser Translation Extension | PDF Translation | MV3 | Free and Open Source
 
 Read this page in other languages:
 
@@ -8,7 +8,17 @@ Read this page in other languages:
 
 ## Demo
 
-![demo_en](./docs/images/demo_en.gif)
+### Selection Translation Example
+
+![selection_translation_demo_en](./docs/images/demo_en.gif)
+
+### Long-Press Translation Example
+
+![long_press_translate](./docs/images/long_press_translate.gif)
+
+### Screenshot Translation Example
+
+![screenshot_translate](./docs/images/screenshot_translate.gif)
 
 ## Manually Install
 

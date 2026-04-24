@@ -1,4 +1,4 @@
-# 側邊翻譯 - 網頁劃詞翻譯插件 | PDF 翻譯 | MV3 | 開源免費
+# 側邊翻譯 - 瀏覽器翻譯插件 | PDF 翻譯 | MV3 | 開源免費
 
 查看其他語言版本：
 
@@ -8,7 +8,17 @@
 
 ## 展示
 
-![demo_zh_TW](./images/demo_zh_TW.gif)
+### 劃詞翻譯範例
+
+![selection_translation_demo_zh_TW](./images/demo_zh_TW.gif)
+
+### 長按翻譯範例
+
+![long_press_translate](./images/long_press_translate.gif)
+
+### 截圖翻譯範例
+
+![screenshot_translate](./images/screenshot_translate.gif)
 
 ## 手動安裝
 
