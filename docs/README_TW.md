@@ -62,6 +62,16 @@ pnpm package
 
 -   `./packages/EdgeTranslate/build/chrome/`
 
+啟動帶檔案監聽的開發建置：
+
+```shell
+pnpm dev
+```
+
+開發建置輸出目錄為：
+
+-   `./packages/EdgeTranslate/dev/chrome/`
+
 ## 在瀏覽器中載入已解壓擴充套件
 
 ### Chrome
@@ -69,14 +79,14 @@ pnpm package
 -   開啟 `chrome://extensions`。
 -   啟用`開發人員模式`。
 -   點擊`載入未封裝項目`。
--   選擇 `./packages/EdgeTranslate/build/chrome/`。
+-   開發建置選擇 `./packages/EdgeTranslate/dev/chrome/`，生產建置選擇 `./packages/EdgeTranslate/build/chrome/`。
 
 ### Microsoft Edge
 
 -   開啟 `edge://extensions`。
 -   啟用`開發人員模式`。
 -   點擊`載入解壓縮的擴充功能`。
--   選擇 `./packages/EdgeTranslate/build/chrome/`。
+-   開發建置選擇 `./packages/EdgeTranslate/dev/chrome/`，生產建置選擇 `./packages/EdgeTranslate/build/chrome/`。
 
 ## 致謝
 

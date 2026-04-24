@@ -7,7 +7,7 @@
         "lint": "node ../../scripts/run-eslint.js packages/EdgeTranslate .eslintrc.js gulpfile.js \"src/**/*.{js,jsx}\" \"config/**/*.js\" \"utils/**/*.js\" \"test/**/*.{js,jsx}\"",
         "lint:fix": "pnpm lint --fix",
         "format": "node ../../scripts/run-eslint.js packages/EdgeTranslate \"src/**/*.js\" \"config/**/*.js\" --fix",
-        "dev": "gulp dev --browser chrome",
+        "dev": "pnpm --dir ../translators dev:prepare && gulp dev --browser chrome",
         "build": "gulp build --browser chrome",
         "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
         "e2e": "node ./test/e2e/run.js",
