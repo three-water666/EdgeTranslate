@@ -354,6 +354,10 @@
         "message": "Fold long content",
         "description": "Fold too long translation content."
     },
+    "AutoClosePanelOnPageScrollSetting": {
+        "message": "Auto-close panel after one page scroll",
+        "description": "Automatically close the translation result panel after the page scrolls by one viewport."
+    },
     "OtherSettings": {
         "message": "Other Settings",
         "description": "Other settings of the extension."

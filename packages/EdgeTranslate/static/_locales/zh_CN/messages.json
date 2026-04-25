@@ -354,6 +354,10 @@
         "message": "折叠过长的内容",
         "description": "折叠过长的翻译内容。"
     },
+    "AutoClosePanelOnPageScrollSetting": {
+        "message": "滚动一页后自动关闭结果面板",
+        "description": "页面上下滚动一整页后自动关闭翻译结果面板。"
+    },
     "OtherSettings": {
         "message": "其他设置",
         "description": "插件的其他设置。"

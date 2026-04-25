@@ -1,6 +1,10 @@
 import Channel from "common/scripts/channel.js";
 import { i18nHTML } from "common/scripts/common.js";
-import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
+import {
+    DEFAULT_SETTINGS,
+    getOrSetDefaultSettings,
+    setDefaultSettings,
+} from "common/scripts/settings.js";
 import { setUpOcrDownloadManager } from "./ocr_download_manager.js";
 
 /**
@@ -48,6 +52,9 @@ window.onload = () => {
      * attribute "setting-path": indicate the nested setting path. used to locate the path of one setting item in chrome storage
      */
     getOrSetDefaultSettings(undefined, DEFAULT_SETTINGS).then((result) => {
+        setDefaultSettings(result, DEFAULT_SETTINGS);
+        chrome.storage.sync.set(result);
+
         const settingElements = document.querySelectorAll("[setting-path]");
         for (let element of settingElements) {
             let settingItemPath = element.getAttribute("setting-path").split(/\s/g);

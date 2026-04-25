@@ -11,11 +11,13 @@ const DEFAULT_SETTINGS = {
     // Resize: determine whether the web page will resize when showing translation result
     // RTL: determine whether the text in translation block should display from right to left
     // FoldLongContent: determine whether to fold long translation content
+    // AutoClosePanelOnPageScroll: close result panel after the page scrolls by one viewport
     // SelectTranslatePosition: the position of select translate button.
     LayoutSettings: {
         Resize: false,
         RTL: false,
         FoldLongContent: true,
+        AutoClosePanelOnPageScroll: true,
         SelectTranslatePosition: "TopRight",
     },
     // Default settings of source language and target language

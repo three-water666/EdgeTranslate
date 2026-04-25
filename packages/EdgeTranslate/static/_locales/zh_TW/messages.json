@@ -354,6 +354,10 @@
         "message": "折疊過長的內容",
         "description": "折疊過長的翻譯內容。"
     },
+    "AutoClosePanelOnPageScrollSetting": {
+        "message": "滾動一頁後自動關閉結果面板",
+        "description": "頁面上下滾動一整頁後自動關閉翻譯結果面板。"
+    },
     "OtherSettings": {
         "message": "其他設定",
         "description": "插件的其他設定。"

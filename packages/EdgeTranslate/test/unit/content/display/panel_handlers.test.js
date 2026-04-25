@@ -1,4 +1,8 @@
-import { handleTranslated, handleTranslatorSelect } from "content/display/panel/panel_handlers.js";
+import {
+    handleTranslated,
+    handleTranslatorSelect,
+    syncPanelChangedSettings,
+} from "content/display/panel/panel_handlers.js";
 import { panelChannel } from "content/display/panel/panel_shared.js";
 
 jest.mock("content/display/panel/panel_shared.js", () => ({
@@ -44,6 +48,34 @@ describe("panel handlers", () => {
             translator: "GoogleTranslate",
         });
     });
+
+    it("syncs the page-scroll auto-close setting from storage changes", () => {
+        const model = createModel();
+
+        syncPanelChangedSettings(
+            model,
+            {
+                LayoutSettings: {
+                    newValue: { AutoClosePanelOnPageScroll: false },
+                },
+            },
+            "sync"
+        );
+
+        expect(model.autoClosePanelOnPageScrollRef.current).toBe(false);
+
+        syncPanelChangedSettings(
+            model,
+            {
+                LayoutSettings: {
+                    newValue: { AutoClosePanelOnPageScroll: true },
+                },
+            },
+            "sync"
+        );
+
+        expect(model.autoClosePanelOnPageScrollRef.current).toBe(true);
+    });
 });
 
 function createModel() {
@@ -52,5 +84,6 @@ function createModel() {
         setContentType: jest.fn(),
         setContent: jest.fn(),
         setCurrentTranslator: jest.fn(),
+        autoClosePanelOnPageScrollRef: { current: true },
     };
 }

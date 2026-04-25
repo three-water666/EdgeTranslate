@@ -9,6 +9,7 @@ import {
     applyFixedPanelLayout,
     removeFixedPanelLayout,
 } from "./panel_runtime.js";
+import { usePanelScrollAutoClose } from "./use_panel_scroll_auto_close.js";
 import { panelChannel } from "./panel_shared.js";
 import {
     createDefaultDisplaySetting,
@@ -21,6 +22,7 @@ import {
     createPanelViewModel,
     handlePanelClosed,
     handlePanelOpened,
+    syncPanelChangedSettings,
 } from "./panel_handlers.js";
 
 const scrollbarWidth = getScrollbarWidth();
@@ -133,6 +135,10 @@ function usePanelRefState() {
         simplebarRef: useRef(),
         resizePageFlag: useRef(false),
         displaySettingRef: useRef(createDefaultDisplaySetting()),
+        autoClosePanelOnPageScrollRef: useRef(
+            DEFAULT_SETTINGS.LayoutSettings.AutoClosePanelOnPageScroll
+        ),
+        panelScrollStartTopRef: useRef(0),
     };
 }
 
@@ -279,7 +285,7 @@ function usePanelLifecycle(args) {
         }
     }, [model.contentType, model.displaySettingRef, showFloatingPanel]);
 
-    useEvent("scroll", updateBounds, window);
+    usePanelScrollAutoClose(model, updateBounds);
     useEvent("resize", windowResizeHandler, window);
     useClickAway(model.containerElRef, () => {
         if (!model.panelFix) model.setOpen(false);
@@ -301,6 +307,12 @@ function usePanelChannels(model) {
             }
         );
         panelChannel.on("command", (detail) => handlePanelCommand(model, detail));
+        const storageChangeHandler = (changes, area) =>
+            syncPanelChangedSettings(model, changes, area);
+        chrome.storage.onChanged.addListener(storageChangeHandler);
+        return () => {
+            chrome.storage.onChanged.removeListener(storageChangeHandler);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 }

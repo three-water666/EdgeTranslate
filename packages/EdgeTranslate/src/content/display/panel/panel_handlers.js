@@ -2,6 +2,7 @@ import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settin
 import { isChromePDFViewer } from "../../common.js";
 import { panelChannel, checkTimestamp } from "./panel_shared.js";
 import { createMoveablePanel, attachDragHandlers, attachResizeHandlers } from "./panel_runtime.js";
+import { isAutoClosePanelOnPageScrollEnabled } from "./panel_scroll.js";
 
 export function createDefaultDisplaySetting() {
     return {
@@ -77,6 +78,21 @@ export function initializePanelSettings(model) {
     getOrSetDefaultSettings("fixSetting", DEFAULT_SETTINGS).then((result) => {
         model.setPanelFix(result.fixSetting);
     });
+
+    getOrSetDefaultSettings("LayoutSettings", DEFAULT_SETTINGS).then((result) => {
+        model.autoClosePanelOnPageScrollRef.current = isAutoClosePanelOnPageScrollEnabled(
+            result.LayoutSettings
+        );
+    });
+}
+
+export function syncPanelChangedSettings(model, changes, area) {
+    if (area !== "sync") return;
+    if (!changes.LayoutSettings) return;
+
+    model.autoClosePanelOnPageScrollRef.current = isAutoClosePanelOnPageScrollEnabled(
+        changes.LayoutSettings.newValue
+    );
 }
 
 export function handleTranslating(model, detail) {

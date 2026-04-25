@@ -354,6 +354,10 @@
         "message": "長いコンテンツを折りたたむ",
         "description": "長すぎる翻訳コンテンツを折ります。"
     },
+    "AutoClosePanelOnPageScrollSetting": {
+        "message": "1ページ分スクロールしたら結果パネルを自動で閉じる",
+        "description": "ページが1画面分スクロールされた後、翻訳結果パネルを自動で閉じます。"
+    },
     "OtherSettings": {
         "message": "その他の設定",
         "description": "拡張機能のその他の設定"
