@@ -141,7 +141,7 @@ function eslintJS(done) {
             "src/**/*.{js,jsx}",
             "config/**/*.js",
             "utils/**/*.js",
-            "test/**/*.{js,jsx}",
+            "test/**/*.js",
         ],
         {
             stdio: "inherit",
