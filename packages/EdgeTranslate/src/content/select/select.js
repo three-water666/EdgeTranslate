@@ -6,6 +6,7 @@ import {
     LONG_PRESS_PREVIEW_DELAY,
     LONG_PRESS_MOVE_THRESHOLD,
 } from "./select_constants.js";
+import { finishLongPressMouseUp } from "./select_long_press_events.js";
 import { createLongPressTools } from "./select_long_press.js";
 import { createScreenshotSelector } from "./select_screenshot.js";
 import {
@@ -149,12 +150,7 @@ function longPressMoveHandler(state, event) {
 }
 
 function longPressEndHandler(state, event) {
-    const session = state.longPressSession;
-    cancelLongPressSession(state);
-    if (!session || event.button !== 0 || !session.triggered) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation?.();
+    finishLongPressMouseUp(state, event, cancelLongPressSession);
 }
 
 function longPressClickHandler(state, event) {
