@@ -34,6 +34,33 @@ jobs:
                     echo "Tag version $TAG_VERSION does not match package version $PACKAGE_VERSION"
                     exit 1
                   fi
+                  echo "RELEASE_VERSION=$TAG_VERSION" >> "$GITHUB_ENV"
+                  echo "RELEASE_TAG=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+
+            - name: prepare release notes
+              run: |
+                  CHANGELOG_DIR="docs/changelog"
+                  EN_CHANGELOG="$CHANGELOG_DIR/en/$RELEASE_TAG.md"
+                  ZH_CN_CHANGELOG="$CHANGELOG_DIR/zh-CN/$RELEASE_TAG.md"
+                  ZH_TW_CHANGELOG="$CHANGELOG_DIR/zh-TW/$RELEASE_TAG.md"
+
+                  for file in "$EN_CHANGELOG" "$ZH_CN_CHANGELOG" "$ZH_TW_CHANGELOG"; do
+                    if [ ! -f "$file" ]; then
+                      echo "::error file=$file::Missing changelog file for release $RELEASE_VERSION"
+                      exit 1
+                    fi
+                  done
+
+                  {
+                    echo "## English"
+                    cat "$EN_CHANGELOG"
+                    echo
+                    echo "## 简体中文"
+                    cat "$ZH_CN_CHANGELOG"
+                    echo
+                    echo "## 繁體中文"
+                    cat "$ZH_TW_CHANGELOG"
+                  } > release-notes.md
 
             - name: package extension for chrome
               run: pnpm package
@@ -41,5 +68,5 @@ jobs:
             - name: create github release
               uses: softprops/action-gh-release@v2
               with:
-                  generate_release_notes: true
+                  body_path: release-notes.md
                   files: packages/EdgeTranslate/artifacts/*.zip
