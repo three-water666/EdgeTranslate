@@ -1,13 +1,7 @@
 import { isPDFjsPDFViewer, isNativePDFViewer, detectSelect } from "../common.js";
 import Channel from "common/scripts/channel.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
-import {
-    LONG_PRESS_DURATION,
-    LONG_PRESS_PREVIEW_DELAY,
-    LONG_PRESS_MOVE_THRESHOLD,
-} from "./select_constants.js";
-import { finishLongPressMouseUp } from "./select_long_press_events.js";
-import { createLongPressTools } from "./select_long_press.js";
+import { createLongPressController } from "./select_long_press_controller.js";
 import { createScreenshotSelector } from "./select_screenshot.js";
 import {
     getSelection,
@@ -30,9 +24,15 @@ if (!isNativePDFViewer()) {
 
 function initSelectTranslate() {
     const state = createSelectState();
+    const longPressController = createLongPressController({
+        cancelTextSelection,
+        isInBlacklist,
+        shouldTranslate,
+        translateSelection: () => translateSubmit(state),
+    });
     initializeButtonContainer(state, (event) => buttonClickHandler(state, event));
-    initializeSettings(state);
-    registerDomEvents(state);
+    initializeSettings(state, longPressController);
+    registerDomEvents(state, longPressController);
     registerChannelEvents(state);
 }
 
@@ -41,10 +41,6 @@ function createSelectState() {
         buttonPositionSetting: "TopRight",
         channel: new Channel(),
         hasButtonShown: false,
-        longPressEnabled: false,
-        longPressPreventClickTarget: null,
-        longPressPreventClickUntil: 0,
-        longPressSession: null,
         originPositionX: 0,
         originPositionY: 0,
         originScrollX: 0,
@@ -53,25 +49,28 @@ function createSelectState() {
         scrollPropertyX: "pageXOffset",
         scrollPropertyY: "pageYOffset",
         scrollingElement: window,
-        tools: createLongPressTools(),
         translationButtonContainer: document.createElement("iframe"),
     };
 }
 
-function initializeSettings(state) {
+function initializeSettings(state, longPressController) {
     getOrSetDefaultSettings("LayoutSettings", DEFAULT_SETTINGS).then((result) => {
         state.buttonPositionSetting = result.LayoutSettings.SelectTranslatePosition;
     });
     getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
-        state.longPressEnabled = Boolean(result.OtherSettings?.TranslateAfterLongPress);
+        longPressController.setEnabled(Boolean(result.OtherSettings?.TranslateAfterLongPress));
     });
     chrome.storage.onChanged.addListener((changes, area) =>
-        syncChangedSettings(state, changes, area, cancelLongPressSession)
+        syncChangedSettings(state, changes, area, (enabled) =>
+            longPressController.setEnabled(enabled)
+        )
     );
 }
 
-function registerDomEvents(state) {
-    window.addEventListener("DOMContentLoaded", () => initializeDomListeners(state));
+function registerDomEvents(state, longPressController) {
+    window.addEventListener("DOMContentLoaded", () =>
+        initializeDomListeners(state, longPressController)
+    );
 }
 
 function registerChannelEvents(state) {
@@ -84,7 +83,7 @@ function registerChannelEvents(state) {
     state.channel.on("command", (detail) => handleCommand(state, detail));
 }
 
-function initializeDomListeners(state) {
+function initializeDomListeners(state, longPressController) {
     if (isPDFjsPDFViewer()) {
         state.scrollingElement = document.getElementById("viewerContainer");
         state.scrollPropertyX = "scrollLeft";
@@ -95,12 +94,20 @@ function initializeDomListeners(state) {
         disappearButton(state);
         detectSelect(document, (event) => selectTranslate(state, event));
     });
-    document.addEventListener("mousedown", (event) => longPressStartHandler(state, event), true);
-    document.addEventListener("mousemove", (event) => longPressMoveHandler(state, event), true);
-    document.addEventListener("mouseup", (event) => longPressEndHandler(state, event), true);
-    document.addEventListener("click", (event) => longPressClickHandler(state, event), true);
-    document.addEventListener("dragstart", () => cancelLongPressSession(state), true);
-    window.addEventListener("blur", () => cancelLongPressSession(state));
+    document.addEventListener(
+        "mousedown",
+        (event) => longPressController.handleMouseDown(event),
+        true
+    );
+    document.addEventListener(
+        "mousemove",
+        (event) => longPressController.handleMouseMove(event),
+        true
+    );
+    document.addEventListener("mouseup", (event) => longPressController.handleMouseUp(event), true);
+    document.addEventListener("click", (event) => longPressController.handleClick(event), true);
+    document.addEventListener("dragstart", () => longPressController.cancel(), true);
+    window.addEventListener("blur", () => longPressController.cancel());
     document.addEventListener("dblclick", (event) => selectTranslate(state, event, true));
     document.addEventListener("click", (event) => {
         if (event.detail === 3) selectTranslate(state, event, true);
@@ -131,35 +138,6 @@ function buttonClickHandler(state, event) {
     event.stopPropagation();
     if (event.button === 0) translateSubmit(state);
     else if (event.button === 2) pronounceSubmit(state);
-}
-
-function longPressStartHandler(state, event) {
-    if (!canStartLongPress(state, event)) {
-        cancelLongPressSession(state);
-        return;
-    }
-    if (window.getSelection().toString().trim()) cancelTextSelection();
-    state.longPressSession = createLongPressSession(state, event);
-}
-
-function longPressMoveHandler(state, event) {
-    if (!state.longPressSession) return;
-    if (!hasLongPressMoved(state.longPressSession, event)) return;
-    state.longPressSession.moved = true;
-    state.tools.clearHighlight();
-}
-
-function longPressEndHandler(state, event) {
-    finishLongPressMouseUp(state, event, cancelLongPressSession);
-}
-
-function longPressClickHandler(state, event) {
-    if (!shouldPreventLongPressClick(state, event)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation?.();
-    state.longPressPreventClickTarget = null;
-    state.longPressPreventClickUntil = 0;
 }
 
 function handleCommand(state, detail) {
@@ -198,109 +176,4 @@ function pronounceSubmit(state) {
     const selection = getSelection();
     if (!selection.text?.length) return;
     state.channel.request("pronounce", { text: selection.text, language: "auto" });
-}
-
-function cancelLongPressSession(state) {
-    if (state.longPressSession?.previewTimer)
-        window.clearTimeout(state.longPressSession.previewTimer);
-    if (state.longPressSession?.translateTimer)
-        window.clearTimeout(state.longPressSession.translateTimer);
-    state.tools.clearHighlight();
-    state.longPressSession = null;
-}
-
-function triggerLongPressTranslate(state, session) {
-    if (!state.longPressEnabled || !session || session.moved) {
-        return Promise.resolve();
-    }
-    if (window.getSelection().toString().trim()) return Promise.resolve();
-    return isInBlacklist().then((inBlacklist) => {
-        if (inBlacklist) return;
-        if (
-            !selectTextAtPoint(state, session.startX, session.startY, session.previewRange) ||
-            !shouldTranslate()
-        ) {
-            return;
-        }
-        session.triggered = true;
-        state.longPressPreventClickTarget =
-            session.target ||
-            state.tools.getActionTarget(document.elementFromPoint(session.startX, session.startY));
-        state.longPressPreventClickUntil = Date.now() + 1000;
-        state.tools.clearHighlight();
-        translateSubmit(state);
-    });
-}
-
-function selectTextAtPoint(state, x, y, existingRange) {
-    const range = existingRange?.cloneRange() || state.tools.getRangeFromPoint(x, y);
-    if (!range || range.collapsed) return false;
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    return selection.toString().trim().length > 0;
-}
-
-function canStartLongPress(state, event) {
-    return (
-        state.longPressEnabled &&
-        event.button === 0 &&
-        event.clientX <= document.documentElement.clientWidth &&
-        event.clientY <= document.documentElement.clientHeight &&
-        !event.ctrlKey &&
-        !event.metaKey &&
-        !event.altKey &&
-        !event.shiftKey &&
-        !state.tools.shouldIgnoreTarget(event.target)
-    );
-}
-
-function createLongPressSession(state, event) {
-    return {
-        startX: event.clientX,
-        startY: event.clientY,
-        moved: false,
-        triggered: false,
-        target: state.tools.getActionTarget(event.target),
-        previewRange: null,
-        previewTimer: window.setTimeout(
-            () => previewLongPressRange(state),
-            LONG_PRESS_PREVIEW_DELAY
-        ),
-        translateTimer: window.setTimeout(
-            () => triggerLongPressTranslate(state, state.longPressSession),
-            LONG_PRESS_DURATION
-        ),
-    };
-}
-
-function previewLongPressRange(state) {
-    if (!state.longPressSession || state.longPressSession.moved) return;
-    state.longPressSession.previewRange = state.tools.getRangeFromPoint(
-        state.longPressSession.startX,
-        state.longPressSession.startY
-    );
-    state.tools.renderHighlight(state.longPressSession.previewRange);
-}
-
-function hasLongPressMoved(session, event) {
-    return (
-        Math.abs(event.clientX - session.startX) > LONG_PRESS_MOVE_THRESHOLD ||
-        Math.abs(event.clientY - session.startY) > LONG_PRESS_MOVE_THRESHOLD
-    );
-}
-
-function shouldPreventLongPressClick(state, event) {
-    if (!state.longPressPreventClickTarget || Date.now() > state.longPressPreventClickUntil) {
-        state.longPressPreventClickTarget = null;
-        state.longPressPreventClickUntil = 0;
-        return false;
-    }
-    return (
-        event.target instanceof Element &&
-        (event.target === state.longPressPreventClickTarget ||
-            state.longPressPreventClickTarget.contains(event.target) ||
-            event.target.contains(state.longPressPreventClickTarget) ||
-            event.composedPath?.().includes(state.longPressPreventClickTarget))
-    );
 }

@@ -72,14 +72,13 @@ export function getButtonPosition(positionSetting, container, event) {
     return { left, top };
 }
 
-export function syncChangedSettings(state, changes, area, cancelLongPressSession) {
+export function syncChangedSettings(state, changes, area, setLongPressEnabled) {
     if (area !== "sync") return;
     if (changes.LayoutSettings) {
         state.buttonPositionSetting = changes.LayoutSettings.newValue.SelectTranslatePosition;
     }
     if (changes.OtherSettings) {
-        state.longPressEnabled = Boolean(changes.OtherSettings.newValue?.TranslateAfterLongPress);
-        if (!state.longPressEnabled) cancelLongPressSession(state);
+        setLongPressEnabled(Boolean(changes.OtherSettings.newValue?.TranslateAfterLongPress));
     }
 }
 

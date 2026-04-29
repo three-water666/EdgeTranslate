@@ -7,6 +7,8 @@ import {
     DIRECT_TEXT_BLOCK_TAG_REGEXP,
 } from "./select_constants.js";
 import { scoreContainer, isReasonableBlockContainer } from "./select_long_press_score.js";
+import { getVisibleRangeRects } from "./select_long_press_rects.js";
+import { shouldIgnoreTarget } from "./select_long_press_target.js";
 import {
     buildTextEntries,
     expandChunkWindow,
@@ -24,43 +26,10 @@ import {
 } from "./select_long_press_utils.js";
 
 /**
- * 判断长按起点是否应该被忽略，避免干扰输入控件和插件自身 UI。
- */
-export function shouldIgnoreTarget(target) {
-    if (!(target instanceof Element)) return true;
-    if (
-        target.closest(
-            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true'], [role='slider'], [role='progressbar'], [role='scrollbar'], [role='tab']"
-        )
-    ) {
-        return true;
-    }
-
-    const cursor = window.getComputedStyle(target).cursor;
-    return /^(move|([nsweo]|[nwse]w|col|row)-resize|grab|grabbing)$/.test(cursor);
-}
-
-/**
- * 获取需要在长按翻译后临时拦截点击的交互目标。
- */
-export function getActionTarget(target) {
-    const element = target instanceof Element ? target : target?.parentElement;
-    if (!element) return null;
-    return element.closest("a, button, [role='button']") || element;
-}
-
-/**
  * 根据页面坐标获取长按应翻译的文本范围。
  */
 export function getLongPressRangeFromPoint(x, y) {
     return getBlockRangeFromPoint(x, y) || getNativeOrChunkRange(x, y);
-}
-
-/**
- * 获取文本范围中可见且有效的高亮矩形区域。
- */
-export function getHighlightRects(range) {
-    return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
 }
 
 /**
@@ -373,7 +342,7 @@ function isReasonableLongPressRange(range, x, y) {
     const text = range.toString().trim();
     return (
         text.length >= Math.min(CHUNK_MIN_LENGTH, 2) &&
-        getHighlightRects(range).some((rect) => containsPoint(rect, x, y))
+        getVisibleRangeRects(range).some((rect) => containsPoint(rect, x, y))
     );
 }
 

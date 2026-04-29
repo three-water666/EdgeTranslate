@@ -1,35 +1,4 @@
 /**
- * 从文本节点向上收集可作为长按翻译范围的块级容器候选。
- */
-export function collectBlockCandidates(textNode, isTraversableElement, isBlockContainerCandidate) {
-    const candidates = [];
-    for (
-        let element = textNode.parentElement;
-        isTraversableElement(element);
-        element = element.parentElement
-    ) {
-        if (isBlockContainerCandidate(element)) candidates.push(element);
-    }
-    return candidates;
-}
-
-/**
- * 在候选容器中按评分选择最适合的长按翻译容器。
- */
-export function pickBestBlockContainer(candidates, x, y, scoreContainer) {
-    let bestContainer = candidates[0];
-    let bestScore = scoreContainer(bestContainer, x, y);
-    candidates.forEach((candidate) => {
-        const score = scoreContainer(candidate, x, y);
-        if (score > bestScore) {
-            bestContainer = candidate;
-            bestScore = score;
-        }
-    });
-    return bestContainer;
-}
-
-/**
  * 将多个文本节点拼接为完整文本，并记录每个节点的全局偏移。
  */
 export function buildTextEntries(textNodes) {
