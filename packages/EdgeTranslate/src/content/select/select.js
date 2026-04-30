@@ -251,6 +251,7 @@ function canStartLongPress(state, event) {
         !event.metaKey &&
         !event.altKey &&
         !event.shiftKey &&
+        !state.tools.isInNativeScrollbar(event) &&
         !state.tools.shouldIgnoreTarget(event.target)
     );
 }

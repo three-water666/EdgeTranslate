@@ -4,6 +4,7 @@ import {
     getLongPressRangeFromPoint,
     shouldIgnoreTarget,
 } from "./select_long_press_core.js";
+import { isInNativeScrollbar } from "./select_long_press_scrollbar.js";
 
 /**
  * 创建长按取词需要的工具集合，并维护高亮容器的生命周期。
@@ -15,6 +16,7 @@ export function createLongPressTools() {
         clearHighlight,
         getActionTarget,
         getRangeFromPoint: getLongPressRangeFromPoint,
+        isInNativeScrollbar,
         renderHighlight,
         shouldIgnoreTarget,
     };
