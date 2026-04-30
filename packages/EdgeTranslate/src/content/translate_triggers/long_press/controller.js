@@ -146,14 +146,16 @@ function canStartLongPress(state, event) {
         event.button === 0 &&
         isWithinViewport(event) &&
         !hasModifierKey(event) &&
-        !state.tools.shouldIgnoreTarget(event.target)
+        !state.tools.shouldIgnoreTarget(event.target, event)
     );
 }
 
 function isWithinViewport(event) {
     return (
-        event.clientX <= document.documentElement.clientWidth &&
-        event.clientY <= document.documentElement.clientHeight
+        event.clientX >= 0 &&
+        event.clientY >= 0 &&
+        event.clientX < document.documentElement.clientWidth &&
+        event.clientY < document.documentElement.clientHeight
     );
 }
 

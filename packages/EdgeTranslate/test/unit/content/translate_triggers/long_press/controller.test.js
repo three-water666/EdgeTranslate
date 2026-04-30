@@ -62,6 +62,21 @@ describe("long press controller", () => {
         expect(translateSelection).not.toHaveBeenCalled();
         expect(tools.clearHighlight).toHaveBeenCalledTimes(1);
     });
+
+    it("does not start from the viewport scrollbar boundary", async () => {
+        const target = appendTarget("span");
+        const tools = createTools({ range: createRangeStub("Viewport scrollbar"), target });
+        const translateSelection = jest.fn();
+        const controller = createController({ tools, translateSelection });
+
+        controller.setEnabled(true);
+        controller.handleMouseDown(createMouseEvent("mousedown", target, 1024, 30));
+        jest.advanceTimersByTime(LONG_PRESS_DURATION);
+        await flushPromises();
+
+        expect(tools.getRangeFromPoint).not.toHaveBeenCalled();
+        expect(translateSelection).not.toHaveBeenCalled();
+    });
 });
 
 function createTranslationScenario(tagName, text) {
