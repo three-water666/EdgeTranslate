@@ -113,8 +113,8 @@
         {
             "matches": ["<all_urls>"],
             "run_at": "document_start",
-            "js": ["./content/select/select.js"],
-            "css": ["./content/select/select.css"],
+            "js": ["./content/translate_triggers/index.js"],
+            "css": ["./content/translate_triggers/styles.css"],
             "all_frames": true
         },
         {

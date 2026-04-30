@@ -1,10 +1,4 @@
-import { IMAGE_DATA } from "./select_constants.js";
-import {
-    applyButtonImageStyle,
-    applyButtonStyle,
-    getButtonPosition,
-    getInnerParent,
-} from "./select_helpers.js";
+import { IMAGE_DATA } from "../shared/constants.js";
 
 export function initializeButtonContainer(state, onMouseDown) {
     const iframeContainer = state.translationButtonContainer;
@@ -68,4 +62,71 @@ function renderButton(state, onMouseDown) {
     Object.assign(state.translationButtonContainer.contentDocument?.body.style || {}, cleanStyle);
     translationButton.addEventListener("mousedown", onMouseDown);
     translationButton.addEventListener("contextmenu", (event) => event.preventDefault());
+}
+
+function getInnerParent(container) {
+    if (container.tagName === "IFRAME") return container.contentDocument.body;
+    if (!container.shadowRoot) container.attachShadow({ mode: "open" });
+    return container.shadowRoot;
+}
+
+function getButtonPosition(positionSetting, container, event) {
+    const offset = resolveButtonOffset(positionSetting, container);
+    let left = event.x + offset.x;
+    let top = event.y + offset.y;
+    if (left <= 0 || left + container.clientWidth > window.innerWidth) {
+        left = event.x - offset.x - container.clientWidth;
+    }
+    if (top <= 0 || top + container.clientHeight > window.innerHeight) {
+        top = event.y - offset.y - container.clientHeight;
+    }
+    return { left, top };
+}
+
+function applyButtonImageStyle(buttonImage) {
+    const buttonSize = "20px";
+    Object.assign(buttonImage.style, {
+        width: buttonSize,
+        height: buttonSize,
+        minWidth: 0,
+        maxWidth: buttonSize,
+        minHeight: 0,
+        maxHeight: buttonSize,
+        padding: 0,
+        border: 0,
+        margin: 0,
+        verticalAlign: 0,
+        filter: "none",
+    });
+}
+
+function applyButtonStyle(translationButton) {
+    const buttonSize = "20px";
+    Object.assign(translationButton.style, {
+        width: buttonSize,
+        height: buttonSize,
+        padding: "6px",
+        margin: 0,
+        borderRadius: "50%",
+        boxSizing: "content-box",
+        overflow: "hidden",
+        border: "none",
+        cursor: "pointer",
+    });
+}
+
+function resolveButtonOffset(position, container) {
+    const offsetX = 10;
+    const offsetY = 20;
+    switch (position) {
+        case "TopLeft":
+            return { x: -offsetX - container.clientWidth, y: -offsetY - container.clientHeight };
+        case "BottomRight":
+            return { x: offsetX, y: offsetY };
+        case "BottomLeft":
+            return { x: -offsetX - container.clientWidth, y: offsetY };
+        case "TopRight":
+        default:
+            return { x: offsetX, y: -offsetY - container.clientHeight };
+    }
 }

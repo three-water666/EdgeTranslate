@@ -1,3 +1,4 @@
+// Constants shared by the translate trigger content-script bundle.
 export const LONG_PRESS_DURATION = 450;
 export const LONG_PRESS_PREVIEW_DELAY = 140;
 export const LONG_PRESS_MOVE_THRESHOLD = 8;

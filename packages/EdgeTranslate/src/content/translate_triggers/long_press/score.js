@@ -2,7 +2,7 @@ import {
     BLOCK_TEXT_IDEAL_LENGTH,
     BLOCK_TEXT_MAX_LENGTH,
     BLOCK_TEXT_MIN_LENGTH,
-} from "./select_constants.js";
+} from "../shared/constants.js";
 
 /**
  * 为块级容器计算长按翻译适配分数。

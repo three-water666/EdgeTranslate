@@ -1,4 +1,4 @@
-import { createScreenshotSelector } from "content/select/select_screenshot.js";
+import { createScreenshotSelector } from "content/translate_triggers/screenshot/selector.js";
 
 describe("screenshot selector", () => {
     beforeEach(() => {
