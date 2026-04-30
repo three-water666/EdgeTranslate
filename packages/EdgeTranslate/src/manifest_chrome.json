@@ -89,15 +89,11 @@
         "notifications",
         "contextMenus",
         "storage",
-        "cookies",
         "tabs",
-        "webRequest",
         "declarativeNetRequest",
-        "alarms",
         "scripting",
         "tts",
-        "offscreen",
-        "activeTab"
+        "offscreen"
     ],
     "host_permissions": ["<all_urls>"],
     "content_scripts": [
