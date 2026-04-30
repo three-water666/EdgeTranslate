@@ -1,3 +1,52 @@
+// 负责按句子边界计算长按片段取词的文本窗口。
+import {
+    SENTENCE_BOUNDARY_REGEXP,
+    SENTENCE_TRAILING_REGEXP,
+    CHUNK_TARGET_LENGTH,
+    CHUNK_MAX_LENGTH,
+    CHUNK_MIN_LENGTH,
+} from "../../../shared/constants.js";
+
+/**
+ * 根据当前字符位置确定应翻译片段在完整文本中的边界。
+ */
+export function getChunkBounds(text, offset) {
+    const segments = splitIntoSentenceSegments(text);
+    const currentIndex = segments.findIndex(
+        (segment) => offset >= segment.start && offset < segment.end
+    );
+    if (currentIndex === -1) return null;
+    const expanded = expandChunkWindow(
+        segments,
+        currentIndex,
+        CHUNK_TARGET_LENGTH,
+        CHUNK_MAX_LENGTH
+    );
+    const bounds = normalizeChunkBounds({
+        text,
+        segments,
+        currentIndex,
+        expanded,
+        limits: {
+            maxLength: CHUNK_MAX_LENGTH,
+            minLength: CHUNK_MIN_LENGTH,
+        },
+    });
+    return bounds.start < bounds.end ? bounds : null;
+}
+
+/**
+ * 将原始偏移量修正到附近可见字符的位置。
+ */
+export function resolveSentenceOffset(text, rawOffset) {
+    if (!text?.length) return null;
+    const offset = normalizeOffset(text, rawOffset);
+    return (
+        pickVisibleCharacter(text, [offset, offset - 1]) ??
+        scanNearestVisibleCharacter(text, offset, pickVisibleCharacter)
+    );
+}
+
 /**
  * 将多个文本节点拼接为完整文本，并记录每个节点的全局偏移。
  */
@@ -12,100 +61,6 @@ export function buildTextEntries(textNodes) {
         }),
         fullText,
     };
-}
-
-/**
- * 从当前句子片段向前后扩展，形成接近目标长度的文本窗口。
- */
-export function expandChunkWindow(segments, currentIndex, targetLength, maxLength) {
-    let state = {
-        startIndex: currentIndex,
-        endIndex: currentIndex,
-        currentLength: segments[currentIndex].trimmedLength,
-    };
-    while (state.currentLength < targetLength) {
-        const nextState = chooseExpansion(segments, state, maxLength);
-        if (!nextState) break;
-        state = nextState;
-    }
-    return state;
-}
-
-/**
- * 根据最大/最小长度限制修正片段边界，并去掉首尾空白。
- */
-export function normalizeChunkBounds(args) {
-    let start = args.segments[args.expanded.startIndex].trimmedStart;
-    let end = args.segments[args.expanded.endIndex].trimmedEnd;
-    if (args.expanded.currentLength > args.limits.maxLength) {
-        end = Math.min(end, start + args.limits.maxLength);
-    }
-    if (end - start < args.limits.minLength) {
-        start = args.segments[args.currentIndex].trimmedStart;
-        end = args.segments[args.currentIndex].trimmedEnd;
-    }
-    while (start < end && /\s/.test(args.text[start])) start += 1;
-    while (end > start && /\s/.test(args.text[end - 1])) end -= 1;
-    return { start, end };
-}
-
-/**
- * 将原始偏移量限制在文本有效索引范围内。
- */
-export function normalizeOffset(text, rawOffset) {
-    let offset = Math.max(0, Math.min(rawOffset, text.length));
-    if (offset === text.length) offset -= 1;
-    return offset;
-}
-
-/**
- * 从候选索引中选择第一个非空白可见字符位置。
- */
-export function pickVisibleCharacter(text, indexes) {
-    const visibleIndex = indexes.find((index) => text[index] && !/\s/.test(text[index]));
-    return visibleIndex === undefined ? null : visibleIndex;
-}
-
-/**
- * 从指定偏移量向两侧扫描最近的可见字符。
- */
-export function scanNearestVisibleCharacter(text, offset, pickChar) {
-    let left = offset - 1;
-    let right = offset + 1;
-    while (left >= 0 || right < text.length) {
-        const hit = pickChar(text, [left, right]);
-        if (hit !== null) return hit;
-        left -= 1;
-        right += 1;
-    }
-    return null;
-}
-
-/**
- * 将片段结束位置推进到连续尾随标点之后。
- */
-export function advanceTrailingBoundary(text, startIndex, trailingRegexp) {
-    let segmentEnd = startIndex;
-    while (segmentEnd < text.length && trailingRegexp.test(text[segmentEnd])) segmentEnd += 1;
-    return segmentEnd;
-}
-
-/**
- * 去除片段首尾空白后，将有效片段加入列表。
- */
-export function pushSegment(segments, text, start, end) {
-    let trimmedStart = start;
-    let trimmedEnd = end;
-    while (trimmedStart < trimmedEnd && /\s/.test(text[trimmedStart])) trimmedStart += 1;
-    while (trimmedEnd > trimmedStart && /\s/.test(text[trimmedEnd - 1])) trimmedEnd -= 1;
-    if (trimmedStart >= trimmedEnd) return;
-    segments.push({
-        start,
-        end,
-        trimmedStart,
-        trimmedEnd,
-        trimmedLength: trimmedEnd - trimmedStart,
-    });
 }
 
 /**
@@ -126,40 +81,113 @@ export function locateTextPosition(entries, index) {
 }
 
 /**
- * 保存当前页面选区范围，便于临时操作后恢复。
+ * 按中英文句末标点将文本拆成可扩展的句子片段。
  */
-export function snapshotSelectionRanges(selection) {
-    const ranges = [];
-    for (let i = 0; i < selection.rangeCount; i++) {
-        ranges.push(selection.getRangeAt(i).cloneRange());
+function splitIntoSentenceSegments(text) {
+    const segments = [];
+    let segmentStart = 0;
+    for (let i = 0; i < text.length; i++) {
+        if (!SENTENCE_BOUNDARY_REGEXP.test(text[i])) continue;
+        const segmentEnd = advanceTrailingBoundary(text, i + 1, SENTENCE_TRAILING_REGEXP);
+        pushSegment(segments, text, segmentStart, segmentEnd);
+        segmentStart = segmentEnd;
     }
-    return ranges;
+    pushSegment(segments, text, segmentStart, text.length);
+    return segments;
 }
 
 /**
- * 恢复之前保存的页面选区范围。
+ * 从当前句子片段向前后扩展，形成接近目标长度的文本窗口。
  */
-export function restoreSelectionRanges(selection, ranges) {
-    selection.removeAllRanges();
-    ranges.forEach((range) => selection.addRange(range));
+function expandChunkWindow(segments, currentIndex, targetLength, maxLength) {
+    let state = {
+        startIndex: currentIndex,
+        endIndex: currentIndex,
+        currentLength: segments[currentIndex].trimmedLength,
+    };
+    while (state.currentLength < targetLength) {
+        const nextState = chooseExpansion(segments, state, maxLength);
+        if (!nextState) break;
+        state = nextState;
+    }
+    return state;
 }
 
 /**
- * 克隆文本范围并折叠到起点。
+ * 根据最大/最小长度限制修正片段边界，并去掉首尾空白。
  */
-export function collapseRange(range) {
-    const collapsed = range.cloneRange();
-    collapsed.collapse(true);
-    return collapsed;
+function normalizeChunkBounds(args) {
+    let start = args.segments[args.expanded.startIndex].trimmedStart;
+    let end = args.segments[args.expanded.endIndex].trimmedEnd;
+    if (args.expanded.currentLength > args.limits.maxLength) {
+        end = Math.min(end, start + args.limits.maxLength);
+    }
+    if (end - start < args.limits.minLength) {
+        start = args.segments[args.currentIndex].trimmedStart;
+        end = args.segments[args.currentIndex].trimmedEnd;
+    }
+    while (start < end && /\s/.test(args.text[start])) start += 1;
+    while (end > start && /\s/.test(args.text[end - 1])) end -= 1;
+    return { start, end };
 }
 
 /**
- * 克隆当前选区的第一个非折叠范围。
+ * 将原始偏移量限制在文本有效索引范围内。
  */
-export function cloneSelectionRange(selection) {
-    if (!selection.rangeCount) return null;
-    const result = selection.getRangeAt(0).cloneRange();
-    return result.collapsed ? null : result;
+function normalizeOffset(text, rawOffset) {
+    let offset = Math.max(0, Math.min(rawOffset, text.length));
+    if (offset === text.length) offset -= 1;
+    return offset;
+}
+
+/**
+ * 从候选索引中选择第一个非空白可见字符位置。
+ */
+function pickVisibleCharacter(text, indexes) {
+    const visibleIndex = indexes.find((index) => text[index] && !/\s/.test(text[index]));
+    return visibleIndex === undefined ? null : visibleIndex;
+}
+
+/**
+ * 从指定偏移量向两侧扫描最近的可见字符。
+ */
+function scanNearestVisibleCharacter(text, offset, pickChar) {
+    let left = offset - 1;
+    let right = offset + 1;
+    while (left >= 0 || right < text.length) {
+        const hit = pickChar(text, [left, right]);
+        if (hit !== null) return hit;
+        left -= 1;
+        right += 1;
+    }
+    return null;
+}
+
+/**
+ * 将片段结束位置推进到连续尾随标点之后。
+ */
+function advanceTrailingBoundary(text, startIndex, trailingRegexp) {
+    let segmentEnd = startIndex;
+    while (segmentEnd < text.length && trailingRegexp.test(text[segmentEnd])) segmentEnd += 1;
+    return segmentEnd;
+}
+
+/**
+ * 去除片段首尾空白后，将有效片段加入列表。
+ */
+function pushSegment(segments, text, start, end) {
+    let trimmedStart = start;
+    let trimmedEnd = end;
+    while (trimmedStart < trimmedEnd && /\s/.test(text[trimmedStart])) trimmedStart += 1;
+    while (trimmedEnd > trimmedStart && /\s/.test(text[trimmedEnd - 1])) trimmedEnd -= 1;
+    if (trimmedStart >= trimmedEnd) return;
+    segments.push({
+        start,
+        end,
+        trimmedStart,
+        trimmedEnd,
+        trimmedLength: trimmedEnd - trimmedStart,
+    });
 }
 
 /**

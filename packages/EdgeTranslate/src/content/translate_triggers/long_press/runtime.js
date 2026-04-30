@@ -1,3 +1,4 @@
+// 负责初始化长按翻译触发器，监听设置变化并注册页面事件。
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
 import { cancelTextSelection, isInBlacklist, shouldTranslate } from "../shared/helpers.js";
 import { createLongPressController } from "./controller.js";

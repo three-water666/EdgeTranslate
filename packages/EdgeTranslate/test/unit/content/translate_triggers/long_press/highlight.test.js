@@ -1,5 +1,5 @@
 import { LONG_PRESS_HIGHLIGHT_ID } from "content/translate_triggers/shared/constants.js";
-import { createLongPressHighlighter } from "content/translate_triggers/long_press/highlight.js";
+import { createLongPressHighlighter } from "content/translate_triggers/long_press/highlight/index.js";
 
 describe("long press highlighter", () => {
     beforeEach(() => {

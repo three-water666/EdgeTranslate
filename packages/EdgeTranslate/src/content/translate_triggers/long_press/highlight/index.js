@@ -1,4 +1,5 @@
-import { LONG_PRESS_HIGHLIGHT_ID } from "../shared/constants.js";
+// 负责渲染和清理长按取词预览高亮。
+import { LONG_PRESS_HIGHLIGHT_ID } from "../../shared/constants.js";
 import { getVisibleRangeRects } from "./rects.js";
 
 /**

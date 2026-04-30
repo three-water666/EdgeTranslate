@@ -1,3 +1,4 @@
+// 负责管理长按翻译的状态机、计时器、预览和最终触发流程。
 import {
     LONG_PRESS_DURATION,
     LONG_PRESS_MOVE_THRESHOLD,

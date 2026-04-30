@@ -1,5 +1,6 @@
-import { getLongPressRangeFromPoint } from "./range.js";
-import { createLongPressHighlighter } from "./highlight.js";
+// 负责组装长按翻译控制器依赖的取词、高亮和目标过滤工具。
+import { getLongPressRangeFromPoint } from "./range/index.js";
+import { createLongPressHighlighter } from "./highlight/index.js";
 import { getActionTarget, shouldIgnoreTarget } from "./target.js";
 
 /**
