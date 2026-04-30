@@ -1,4 +1,4 @@
-import { executeGoogleScript } from "../page_translate/page_translate.js";
+import { executeGoogleScript } from "../../page_translate/page_translate.js";
 
 export function registerTranslationEvents({
     channel,

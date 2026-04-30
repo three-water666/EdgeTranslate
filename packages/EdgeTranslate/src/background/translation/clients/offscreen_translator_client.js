@@ -1,4 +1,4 @@
-import { ensureOffscreenDocument } from "../offscreen/document.js";
+import { ensureOffscreenDocument } from "../../offscreen/document.js";
 
 export function createOffscreenTranslatorClient(channel) {
     async function request(service, params) {

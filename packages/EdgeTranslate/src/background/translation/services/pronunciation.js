@@ -1,4 +1,4 @@
-import LocalTTS from "./local_tts.js";
+import LocalTTS from "../tts/local_tts.js";
 
 export function createPronunciationService({
     state,

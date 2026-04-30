@@ -1,4 +1,4 @@
-import { submitTranslationRequest } from "background/translation/translation_request.js";
+import { submitTranslationRequest } from "background/translation/services/translation_request.js";
 
 describe("translation request", () => {
     it("uses the current-tab translation path when no tab id is provided", () => {

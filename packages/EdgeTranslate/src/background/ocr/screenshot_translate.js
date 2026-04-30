@@ -1,5 +1,5 @@
 import { delayPromise, promiseTabs } from "common/scripts/promise.js";
-import { submitTranslationRequest } from "../translation/translation_request.js";
+import { submitTranslationRequest } from "../translation/services/translation_request.js";
 
 export function createScreenshotTranslationService({
     channel,

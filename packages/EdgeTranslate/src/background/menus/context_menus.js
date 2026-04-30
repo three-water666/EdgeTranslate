@@ -6,7 +6,7 @@ import {
 } from "../blacklist/blacklist.js";
 import { executeGoogleScript, translatePage } from "../page_translate/page_translate.js";
 import { resolveContextMenuSelection } from "./selection.js";
-import { submitTranslationRequest } from "../translation/translation_request.js";
+import { submitTranslationRequest } from "../translation/services/translation_request.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
 
 const CONTEXT_MENU_CONFIGS = [

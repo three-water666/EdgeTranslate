@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
-import { submitTranslationRequest } from "./translation_request.js";
+import { submitTranslationRequest } from "../services/translation_request.js";
 
 export function registerTranslationChannelServices({
     channel,
