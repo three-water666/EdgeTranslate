@@ -20,9 +20,26 @@ Read this page in other languages:
 
 ![screenshot_translate](./docs/images/screenshot_translate.gif)
 
+## Install from the Store
+
+The recommended way to install Edge Translate is from the [Chrome Web Store](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb). Chrome can install it directly, and Microsoft Edge also supports installing it from the Chrome Web Store.
+
+### Chrome
+
+-   Open the [Chrome Web Store listing](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb).
+-   Click `Add to Chrome`.
+-   Confirm the installation when prompted.
+
+### Microsoft Edge
+
+-   Open the [Chrome Web Store listing](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb) in Microsoft Edge.
+-   If prompted, allow extensions from other stores.
+-   Click `Add to Chrome`.
+-   Confirm the installation when prompted.
+
 ## Manually Install
 
-The extension has not been published to browser stores yet. For now, you can install it manually from the release packages or from an unpacked local build. Release packages are available at [GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases).
+If you need to install a release package manually or load an unpacked local build, release packages are available at [GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases).
 
 ### Chrome
 

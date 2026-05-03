@@ -20,9 +20,26 @@
 
 ![screenshot_translate](./images/screenshot_translate.gif)
 
+## 從商店安裝
+
+建議從 [Chrome 線上應用程式商店](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb) 安裝側邊翻譯。Chrome 可以直接安裝，Microsoft Edge 也支援從 Chrome 線上應用程式商店安裝。
+
+### Chrome
+
+-   開啟 [Chrome 線上應用程式商店頁面](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb)。
+-   點擊`加到 Chrome`。
+-   依照瀏覽器提示確認安裝。
+
+### Microsoft Edge
+
+-   在 Microsoft Edge 中開啟 [Chrome 線上應用程式商店頁面](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb)。
+-   如果瀏覽器提示，請允許安裝來自其他商店的擴充功能。
+-   點擊`加到 Chrome`。
+-   依照瀏覽器提示確認安裝。
+
 ## 手動安裝
 
-外掛目前尚未上架瀏覽器商店，現階段可透過發佈頁安裝封裝檔或解壓後的本地建置產物手動安裝。發佈頁地址：[GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases)。
+如果需要手動安裝發佈封裝檔，或載入解壓後的本地建置產物，可從 [GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases) 取得發佈封裝檔。
 
 ### Chrome
 

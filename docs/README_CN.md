@@ -20,9 +20,26 @@
 
 ![screenshot_translate](./images/screenshot_translate.gif)
 
+## 从商店安装
+
+推荐从 [Chrome 网上应用店](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb) 安装侧边翻译。Chrome 可以直接安装，Microsoft Edge 也支持从 Chrome 网上应用店安装。
+
+### Chrome
+
+-   打开 [Chrome 网上应用店页面](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb)。
+-   点击`添加至 Chrome`。
+-   按浏览器提示确认安装。
+
+### Microsoft Edge
+
+-   在 Microsoft Edge 中打开 [Chrome 网上应用店页面](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb)。
+-   如果浏览器提示，请允许安装来自其他商店的扩展。
+-   点击`添加至 Chrome`。
+-   按浏览器提示确认安装。
+
 ## 手动安装
 
-插件目前还没有上架浏览器商店，现阶段可通过发布页安装包或解压后的本地构建产物手动安装。发布页地址：[GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases)。
+如果需要手动安装发布包，或加载解压后的本地构建产物，可从 [GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases) 获取发布包。
 
 ### Chrome
 

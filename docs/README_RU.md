@@ -20,9 +20,26 @@
 
 ![screenshot_translate](./images/screenshot_translate.gif)
 
+## Установка из магазина
+
+Рекомендуемый способ установки Edge Translate - через [Chrome Web Store](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb). Chrome может установить расширение напрямую, а Microsoft Edge также поддерживает установку из Chrome Web Store.
+
+### Chrome
+
+-   Откройте [страницу расширения в Chrome Web Store](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb).
+-   Нажмите `Add to Chrome`.
+-   Подтвердите установку в браузере.
+
+### Microsoft Edge
+
+-   Откройте [страницу расширения в Chrome Web Store](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb) в Microsoft Edge.
+-   Если браузер попросит, разрешите установку расширений из других магазинов.
+-   Нажмите `Add to Chrome`.
+-   Подтвердите установку в браузере.
+
 ## Ручная установка
 
-Расширение пока не опубликовано в магазинах браузеров. Сейчас его можно устанавливать вручную из пакетов на странице релизов или из распакованной локальной сборки. Страница релизов: [GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases).
+Если нужно установить release-пакет вручную или загрузить распакованную локальную сборку, пакеты доступны на странице [GitHub Releases](https://github.com/three-water666/EdgeTranslate/releases).
 
 ### Chrome
 
