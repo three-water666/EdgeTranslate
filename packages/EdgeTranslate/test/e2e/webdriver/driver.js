@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 const { promises: fs } = require("fs");
 const { until, By } = require("selenium-webdriver");
 

@@ -6,7 +6,10 @@ const { isExcludedStagedFile } = require("./staged-file-filters");
 
 const repoRoot = path.resolve(__dirname, "..");
 const localRulesDir = path.join(repoRoot, "eslint", "rules");
+const edgeTranslateDir = path.join(repoRoot, "packages", "EdgeTranslate");
+const edgeTranslatePathPrefix = "packages/EdgeTranslate/";
 const edgeTranslateExtensions = new Set([".js", ".jsx"]);
+const translatorsPathPrefix = "packages/translators/";
 const translatorsExtensions = new Set([".ts", ".tsx"]);
 
 function getBin(name) {
@@ -18,10 +21,10 @@ function quote(value) {
     return `"${value.replace(/"/g, '\\"')}"`;
 }
 
-function runBin(bin, args) {
+function runBin(bin, args, options = {}) {
     const command = [quote(bin), ...args.map(quote)].join(" ");
     execSync(command, {
-        cwd: repoRoot,
+        cwd: options.cwd ?? repoRoot,
         stdio: "inherit",
         shell: true,
     });
@@ -41,12 +44,16 @@ function getStagedFiles() {
 
 function shouldLintEdgeTranslate(filePath) {
     const ext = path.extname(filePath).toLowerCase();
-    return edgeTranslateExtensions.has(ext) && filePath.startsWith("packages/EdgeTranslate/");
+    return edgeTranslateExtensions.has(ext) && filePath.startsWith(edgeTranslatePathPrefix);
 }
 
 function shouldLintTranslators(filePath) {
     const ext = path.extname(filePath).toLowerCase();
-    return translatorsExtensions.has(ext) && filePath.startsWith("packages/translators/");
+    return translatorsExtensions.has(ext) && filePath.startsWith(translatorsPathPrefix);
+}
+
+function toEdgeTranslateRelativePath(filePath) {
+    return filePath.slice(edgeTranslatePathPrefix.length);
 }
 
 function main() {
@@ -55,14 +62,20 @@ function main() {
     const translatorsFiles = stagedFiles.filter(shouldLintTranslators);
 
     if (edgeTranslateFiles.length > 0) {
-        runBin(getBin("eslint"), [
-            "--rulesdir",
-            localRulesDir,
-            "--fix",
-            "--config",
-            "packages/EdgeTranslate/.eslintrc.js",
-            ...edgeTranslateFiles,
-        ]);
+        runBin(
+            getBin("eslint"),
+            [
+                "--rulesdir",
+                localRulesDir,
+                "--fix",
+                "--config",
+                ".eslintrc.js",
+                ...edgeTranslateFiles.map(toEdgeTranslateRelativePath),
+            ],
+            {
+                cwd: edgeTranslateDir,
+            }
+        );
 
         execFileSync("git", ["add", "--", ...edgeTranslateFiles], {
             cwd: repoRoot,
