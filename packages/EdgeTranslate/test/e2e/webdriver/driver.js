@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 const { promises: fs } = require("fs");
 const { until, By } = require("selenium-webdriver");
 
@@ -151,11 +152,16 @@ class Driver {
      * @returns the result panel element
      */
     async getPanel() {
-        const panelContainerEl = await this.findElement({ xpath: "/html/div[last()]" });
+        const rootElement = await this.findElement("#edge-translate-root");
+        const panelContainerEl = (await rootElement.findElements(By.css("div")))[0];
+        if (!panelContainerEl) return undefined;
+
         const shadowRoot = await this.driver.executeScript(
             "return arguments[0].shadowRoot",
             panelContainerEl
         );
+        if (!shadowRoot) return undefined;
+
         return (await shadowRoot.findElements(By.css("div")))[0];
     }
 
@@ -185,15 +191,49 @@ class Driver {
      */
     async selectElement(rawLocator) {
         const element = await this.findElement(rawLocator);
-        const actions = this.driver.actions({ async: true });
-        const { width, x, y } = await element.getRect();
-        // The arguments x and y must be int.
-        await actions
-            .move({ x: Math.floor(x), y: Math.floor(y) })
-            .press()
-            .move({ x: Math.ceil(x + width), y: Math.ceil(y) })
-            .release()
-            .perform();
+        await this.driver.executeScript((element) => {
+            function createMouseEvent(type, x, y, buttons) {
+                return new MouseEvent(type, {
+                    bubbles: true,
+                    cancelable: true,
+                    button: 0,
+                    buttons,
+                    clientX: x,
+                    clientY: y,
+                    screenX: x,
+                    screenY: y,
+                });
+            }
+
+            function selectElementText(element) {
+                const textNodes = [];
+                const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+                for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+                    if (node.textContent.length) textNodes.push(node);
+                }
+                if (!textNodes.length) return;
+
+                const range = document.createRange();
+                range.setStart(textNodes[0], 0);
+                range.setEnd(
+                    textNodes[textNodes.length - 1],
+                    textNodes[textNodes.length - 1].textContent.length
+                );
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+
+            const rect = element.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            element.dispatchEvent(createMouseEvent("mousedown", x, y, 1));
+            selectElementText(element);
+            document.dispatchEvent(createMouseEvent("mousemove", x + 1, y, 1));
+            document.dispatchEvent(createMouseEvent("mouseup", x + 1, y, 0));
+        }, element);
     }
 
     /**

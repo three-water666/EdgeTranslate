@@ -1,6 +1,11 @@
 import path from "path";
 import { By } from "selenium-webdriver";
-import { expectImageSnapshot, expectPanelContains, toggleOption } from "../library/test_mode";
+import {
+    expectImageSnapshot,
+    expectPanelContains,
+    setOption,
+    withOption,
+} from "../library/test_mode";
 
 const SelectionButtonId = "edge-translate-button";
 const WaitTranslationResultTime = 250; // Delayed time for waiting the response of translation result.
@@ -10,27 +15,17 @@ const Text = "edge";
 
 describe("panel resize", () => {
     test("Resize page after panel showing.", async () => {
-        await driver.navigate(driver.PAGES.OPTIONS);
-        await toggleOption("#Resize");
-        let resizeEnabled = true;
-
-        try {
+        await withOption("#Resize", true, async () => {
             await openPanelFromSelectedText();
             await driver.delay(500);
-            await expectImageSnapshot(driver.takeScreenshot());
+            await expectPageSnapshot();
 
             await driver.navigate(driver.PAGES.OPTIONS);
-            await toggleOption("#Resize");
-            resizeEnabled = false;
+            await setOption("#Resize", false);
 
             await openPanelFromSelectedText();
-            await expectImageSnapshot(driver.takeScreenshot());
-        } finally {
-            if (resizeEnabled) {
-                await driver.navigate(driver.PAGES.OPTIONS);
-                await toggleOption("#Resize");
-            }
-        }
+            await expectPageSnapshot();
+        });
     });
 });
 
@@ -38,18 +33,18 @@ describe("panel actions", () => {
     test("Click icon to pin panel.", async () => {
         const panel = await openPanelFromSelectedText();
         const pinIcon = await expectPanelIcon(panel, "PinIcon");
-        await expectImageSnapshot(pinIcon.takeScreenshot(true));
+        await expectElementSnapshot(pinIcon);
 
         await pinIcon.click();
         await driver.delay(400);
-        await expectImageSnapshot(pinIcon.takeScreenshot(true));
+        await expectElementSnapshot(pinIcon);
 
         await driver.clickElement(`#${Text}`);
         expect(await driver.getPanel()).not.toBeUndefined();
 
         await pinIcon.click();
         await driver.delay(400);
-        await expectImageSnapshot(pinIcon.takeScreenshot(true));
+        await expectElementSnapshot(pinIcon);
 
         await driver.clickElement(`#${Text}`);
         expect(await driver.getPanel()).toBeUndefined();
@@ -57,23 +52,21 @@ describe("panel actions", () => {
 
     test("Click icon to open settings.", async () => {
         const panel = await openPanelFromSelectedText();
-        const mainPageHandle = await expectSingleMainWindow();
         const settingIcon = await expectPanelIcon(panel, "SettingIcon");
+        const previousOptionsTargets = await getOptionsPageTargets();
 
         await clickSettingsIcon(settingIcon);
-        await expectWindowCount(2);
-        await clickSettingsIconAgain(settingIcon, mainPageHandle);
-        await closeSettingsWindow(mainPageHandle);
+        await expectOptionsPageTarget(previousOptionsTargets);
     });
 });
 
 describe("panel layout", () => {
     test("Display content from right to left.", async () => {
-        await withOption("#RTL", async () => {
+        await withOption("#RTL", true, async () => {
             const panel = await openPanelFromSelectedText();
             const rtlElements = await panel.findElements(By.css("[dir='rtl']"));
             expect(rtlElements.length).toBeGreaterThan(0);
-            await expectImageSnapshot(driver.takeScreenshot(await driver.getPanel()));
+            await expectPageSnapshot();
         });
     });
 });
@@ -97,11 +90,12 @@ async function expectPanelIcon(panel, testId) {
     return icon;
 }
 
-async function expectSingleMainWindow() {
-    const mainPageHandle = await driver.getWindowHandle();
-    expect(typeof mainPageHandle).toBe("string");
-    await expectWindowCount(1);
-    return mainPageHandle;
+async function expectPageSnapshot() {
+    await expectImageSnapshot(() => driver.takeScreenshot());
+}
+
+async function expectElementSnapshot(element) {
+    await expectImageSnapshot(() => element.takeScreenshot(true));
 }
 
 async function clickSettingsIcon(settingIcon) {
@@ -109,32 +103,17 @@ async function clickSettingsIcon(settingIcon) {
     await driver.delay(100);
 }
 
-async function clickSettingsIconAgain(settingIcon, mainPageHandle) {
-    await driver.switchToWindow(mainPageHandle);
-    await clickSettingsIcon(settingIcon);
-    await expectWindowCount(2);
+async function expectOptionsPageTarget(previousTargets) {
+    const previousTargetIds = new Set(previousTargets.map((target) => target.targetId));
+    await driver.wait(async () => {
+        const targets = await getOptionsPageTargets();
+        return targets.some((target) => !previousTargetIds.has(target.targetId));
+    }, 5000);
 }
 
-async function closeSettingsWindow(mainPageHandle) {
-    await driver.switchToWindow(-1);
-    await driver.close();
-    await driver.switchToWindow(mainPageHandle);
-    await expectWindowCount(1);
-    expect(await driver.getTitle()).toEqual(PageName);
-}
-
-async function expectWindowCount(count) {
-    expect((await driver.getAllWindowHandles()).length).toEqual(count);
-}
-
-async function withOption(selector, callback) {
-    await driver.navigate(driver.PAGES.OPTIONS);
-    await toggleOption(selector);
-
-    try {
-        await callback();
-    } finally {
-        await driver.navigate(driver.PAGES.OPTIONS);
-        await toggleOption(selector);
-    }
+async function getOptionsPageTargets() {
+    const result = await driver.driver.sendAndGetDevToolsCommand("Target.getTargets");
+    return (result.targetInfos || []).filter((target) =>
+        target.url?.includes("/options/options.html")
+    );
 }
