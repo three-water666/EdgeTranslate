@@ -7,7 +7,7 @@ const edgedriver = require("edgedriver");
 let proxy = require("selenium-webdriver/proxy");
 
 class EdgeDriver {
-    static async build({ responsive, port, headless, language, proxyUrl }) {
+    static async build({ responsive, port, headless, language, proxyUrl, windowSize }) {
         const extensionPath = path.resolve(process.cwd(), "build/chrome").replace(/\\/g, "/");
         const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "edgetranslate-edge-e2e-"));
         const args = buildBrowserArgs({
@@ -17,6 +17,7 @@ class EdgeDriver {
             headless,
             language,
             proxyUrl,
+            windowSize,
         });
         const options = buildEdgeOptions(args, proxyUrl);
         console.log(`[e2e] edge args: ${args.join(" ")}`);
@@ -53,8 +54,14 @@ function buildBrowserArgs({
     headless,
     language,
     proxyUrl,
+    windowSize,
 }) {
-    const args = [`user-data-dir=${userDataDir}`, `load-extension=${extensionPath}`];
+    const args = [
+        `user-data-dir=${userDataDir}`,
+        `load-extension=${extensionPath}`,
+        "force-device-scale-factor=1",
+    ];
+    if (windowSize) args.push(`window-size=${windowSize.width},${windowSize.height}`);
     if (responsive) args.push("--auto-open-devtools-for-tabs");
     if (headless) args.push("--headless");
     if (language) args.push(`--lang=${language}`);
