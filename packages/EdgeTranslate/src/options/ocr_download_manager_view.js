@@ -103,6 +103,7 @@ function createOcrLanguageCard({
 }) {
     const card = document.createElement("div");
     card.className = "ocr-download-card";
+    card.dataset.ocrLanguage = language.code;
 
     card.appendChild(
         createOcrLanguageCardHeader({
@@ -156,10 +157,15 @@ function createOcrLanguageCardHeader({
 function createOcrActionButtons(languageCode, state, onActions) {
     const actions = document.createElement("div");
     actions.className = "ocr-download-actions";
-    actions.appendChild(onActions.primary(languageCode, state));
-    actions.appendChild(onActions.upload(languageCode, state));
-    actions.appendChild(onActions.delete(languageCode, state));
+    actions.appendChild(withOcrAction(onActions.primary(languageCode, state), "primary"));
+    actions.appendChild(withOcrAction(onActions.upload(languageCode, state), "upload"));
+    actions.appendChild(withOcrAction(onActions.delete(languageCode, state), "delete"));
     return actions;
+}
+
+function withOcrAction(button, action) {
+    button.dataset.ocrAction = action;
+    return button;
 }
 
 function createOcrLanguageMeta(appendOcrSourceMeta, state) {
