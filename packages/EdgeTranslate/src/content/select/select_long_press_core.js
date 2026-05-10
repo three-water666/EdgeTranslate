@@ -4,9 +4,18 @@ import {
     CHUNK_TARGET_LENGTH,
     CHUNK_MAX_LENGTH,
     CHUNK_MIN_LENGTH,
+    DIRECT_TEXT_BLOCK_MAX_LENGTH,
+    BLOCK_TEXT_MAX_LENGTH,
+    BLOCK_TEXT_MIN_LENGTH,
     DIRECT_TEXT_BLOCK_TAG_REGEXP,
 } from "./select_constants.js";
-import { scoreContainer, isReasonableBlockContainer } from "./select_long_press_score.js";
+import {
+    getHighlightRects,
+    isHiddenTextContainer,
+    isSimpleDirectTextBlockContainer,
+    shouldIgnoreTarget,
+} from "./select_long_press_dom.js";
+import { scoreContainer } from "./select_long_press_score.js";
 import {
     buildTextEntries,
     expandChunkWindow,
@@ -24,43 +33,10 @@ import {
 } from "./select_long_press_utils.js";
 
 /**
- * 判断长按起点是否应该被忽略，避免干扰输入控件和插件自身 UI。
- */
-export function shouldIgnoreTarget(target) {
-    if (!(target instanceof Element)) return true;
-    if (
-        target.closest(
-            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true'], [role='slider'], [role='progressbar'], [role='scrollbar'], [role='tab']"
-        )
-    ) {
-        return true;
-    }
-
-    const cursor = window.getComputedStyle(target).cursor;
-    return /^(move|([nsweo]|[nwse]w|col|row)-resize|grab|grabbing)$/.test(cursor);
-}
-
-/**
- * 获取需要在长按翻译后临时拦截点击的交互目标。
- */
-export function getActionTarget(target) {
-    const element = target instanceof Element ? target : target?.parentElement;
-    if (!element) return null;
-    return element.closest("a, button, [role='button']") || element;
-}
-
-/**
  * 根据页面坐标获取长按应翻译的文本范围。
  */
 export function getLongPressRangeFromPoint(x, y) {
     return getBlockRangeFromPoint(x, y) || getNativeOrChunkRange(x, y);
-}
-
-/**
- * 获取文本范围中可见且有效的高亮矩形区域。
- */
-export function getHighlightRects(range) {
-    return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
 }
 
 /**
@@ -126,7 +102,7 @@ function findBestAncestorBlockContainer(textNode, x, y) {
         depth += 1;
     }
 
-    return best.container;
+    return best.score >= 0 ? best.container : null;
 }
 
 /**
@@ -135,15 +111,33 @@ function findBestAncestorBlockContainer(textNode, x, y) {
 function getDirectTextBlockContainer(textNode) {
     let currentElement = textNode.parentElement;
     while (isTraversableElement(currentElement)) {
+        const textLength = getBlockTextLength(currentElement);
         if (
             DIRECT_TEXT_BLOCK_TAG_REGEXP.test(currentElement.tagName) &&
-            isReasonableBlockContainer(currentElement, getBlockTextLength(currentElement))
+            isReasonableDirectTextBlock(currentElement, textLength)
+        ) {
+            return currentElement;
+        }
+        if (
+            isSimpleDirectTextBlockContainer(currentElement, {
+                textLength,
+                maxLength: DIRECT_TEXT_BLOCK_MAX_LENGTH,
+                isBlockContainerCandidate,
+                getBlockTextLength,
+            })
         ) {
             return currentElement;
         }
         currentElement = currentElement.parentElement;
     }
     return null;
+}
+
+function isReasonableDirectTextBlock(element, textLength) {
+    const minLength = /^(LI|H[1-6]|TD|TH|CAPTION)$/.test(element.tagName)
+        ? 2
+        : BLOCK_TEXT_MIN_LENGTH;
+    return textLength >= minLength && textLength <= DIRECT_TEXT_BLOCK_MAX_LENGTH;
 }
 
 /**
@@ -295,6 +289,7 @@ function collectTextNodes(rootNode) {
         acceptNode(textNode) {
             if (!textNode.textContent?.trim()) return NodeFilter.FILTER_REJECT;
             if (shouldIgnoreTarget(textNode.parentElement)) return NodeFilter.FILTER_REJECT;
+            if (isHiddenTextContainer(textNode.parentElement)) return NodeFilter.FILTER_REJECT;
             return NodeFilter.FILTER_ACCEPT;
         },
     });
@@ -373,6 +368,7 @@ function isReasonableLongPressRange(range, x, y) {
     const text = range.toString().trim();
     return (
         text.length >= Math.min(CHUNK_MIN_LENGTH, 2) &&
+        text.length <= BLOCK_TEXT_MAX_LENGTH &&
         getHighlightRects(range).some((rect) => containsPoint(rect, x, y))
     );
 }
