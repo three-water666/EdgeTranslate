@@ -10,8 +10,14 @@
         "dev": "pnpm --dir ../translators dev:prepare && gulp dev --browser chrome",
         "build": "gulp build --browser chrome",
         "package": "node -e \"console.log('\\npacking package for chrome')\" && gulp pack --browser chrome",
-        "e2e": "node ./test/e2e/run.js",
-        "e2e:edge": "node ./test/e2e/run.js edge"
+        "e2e": "pnpm run e2e:chrome:functional",
+        "e2e:functional": "pnpm run e2e:chrome:functional",
+        "e2e:visual": "pnpm run e2e:chrome:visual",
+        "e2e:chrome:functional": "node ./test/e2e/run.js --mode=functional --browser=chrome",
+        "e2e:chrome:visual": "node ./test/e2e/run.js --mode=visual --browser=chrome",
+        "e2e:edge": "pnpm run e2e:edge:functional",
+        "e2e:edge:functional": "node ./test/e2e/run.js --mode=functional --browser=edge",
+        "e2e:edge:visual": "node ./test/e2e/run.js --mode=visual --browser=edge"
     },
     "devDependencies": {
         "@babel/core": "^7.17.7",

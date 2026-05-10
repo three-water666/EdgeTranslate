@@ -5,6 +5,11 @@ const mockttp = require("mockttp");
 import { buildWebDriver } from "../webdriver";
 import { changeLanguageSetting } from "../library/initiate.js";
 
+const DEFAULT_VIEWPORT = {
+    width: 1600,
+    height: 872,
+};
+
 module.exports = async () => {
     const { server, proxyPort } = await startTranslationProxy();
     global.server = server;
@@ -30,15 +35,18 @@ async function startTranslationProxy() {
 }
 
 async function launchWebDriver(proxyPort) {
+    const viewport = getViewport();
     console.log("[e2e] launching browser webdriver");
     const driver = (
         await buildWebDriver({
+            language: process.env.E2E_BROWSER_LANGUAGE || "en",
             proxyUrl: `localhost:${proxyPort}`,
+            windowSize: viewport,
         })
     ).driver;
     console.log("[e2e] browser webdriver launched");
-    await driver.driver.manage().window().maximize();
-    console.log("[e2e] browser window maximized");
+    await driver.driver.manage().window().setRect(viewport);
+    console.log(`[e2e] browser window set to ${viewport.width}x${viewport.height}`);
     return driver;
 }
 
@@ -89,4 +97,16 @@ function getAvailablePort(startPort) {
             server.close(() => resolve(port));
         });
     });
+}
+
+function getViewport() {
+    return {
+        width: parseDimension(process.env.E2E_VIEWPORT_WIDTH, DEFAULT_VIEWPORT.width),
+        height: parseDimension(process.env.E2E_VIEWPORT_HEIGHT, DEFAULT_VIEWPORT.height),
+    };
+}
+
+function parseDimension(value, fallback) {
+    const parsedValue = Number.parseInt(value, 10);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : fallback;
 }

@@ -1,9 +1,5 @@
-import {
-    getActionTarget,
-    getHighlightRects,
-    getLongPressRangeFromPoint,
-    shouldIgnoreTarget,
-} from "./select_long_press_core.js";
+import { getActionTarget, getHighlightRects, shouldIgnoreTarget } from "./select_long_press_dom.js";
+import { getLongPressRangeFromPoint } from "./select_long_press_core.js";
 import { isInNativeScrollbar } from "./select_long_press_scrollbar.js";
 
 /**

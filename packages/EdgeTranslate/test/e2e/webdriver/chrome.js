@@ -9,12 +9,19 @@ let proxy = require("selenium-webdriver/proxy");
  * A wrapper around a {@code WebDriver} instance exposing Chrome-specific functionality
  */
 class ChromeDriver {
-    static async build({ responsive, port, headless, language, proxyUrl }) {
+    static async build({ responsive, port, headless, language, proxyUrl, windowSize }) {
         const extensionPath = path.resolve(process.cwd(), "build/chrome").replace(/\\/g, "/");
-        const args = buildBrowserArgs({ extensionPath, responsive, headless, language, proxyUrl });
+        const args = buildBrowserArgs({
+            extensionPath,
+            responsive,
+            headless,
+            language,
+            proxyUrl,
+            windowSize,
+        });
         const options = buildChromeOptions(args, proxyUrl);
         console.log(`[e2e] chrome args: ${args.join(" ")}`);
-        console.log(`[e2e] chromedriver path: ${chromedriver.path}`);
+        console.log(`[e2e] chromedriver path: ${getChromeDriverPath()}`);
 
         const builder = new Builder().forBrowser("chrome").setChromeOptions(options);
         builder.setChromeService(buildChromeService(port));
@@ -37,6 +44,13 @@ class ChromeDriver {
      * @returns {Promise<string|undefined>} the extension ID
      */
     async getExtensionIdByName(extensionName) {
+        const extensionIdFromTargets = await waitForExtensionIdFromTargets(this._driver).catch(
+            () => null
+        );
+        if (extensionIdFromTargets) {
+            return extensionIdFromTargets;
+        }
+
         const capabilities = await this._driver.getCapabilities();
         const userDataDir = capabilities.get("chrome")?.userDataDir;
         if (!userDataDir) {
@@ -52,8 +66,9 @@ class ChromeDriver {
     }
 }
 
-function buildBrowserArgs({ extensionPath, responsive, headless, language, proxyUrl }) {
-    const args = [`load-extension=${extensionPath}`];
+function buildBrowserArgs({ extensionPath, responsive, headless, language, proxyUrl, windowSize }) {
+    const args = [`load-extension=${extensionPath}`, "force-device-scale-factor=1"];
+    if (windowSize) args.push(`window-size=${windowSize.width},${windowSize.height}`);
     if (responsive) args.push("--auto-open-devtools-for-tabs");
     if (headless) args.push("--headless");
     if (language) args.push(`--lang=${language}`);
@@ -63,6 +78,9 @@ function buildBrowserArgs({ extensionPath, responsive, headless, language, proxy
 
 function buildChromeOptions(args, proxyUrl) {
     const options = new chrome.Options().addArguments(args).excludeSwitches("disable-extensions");
+    if (process.env.CHROME_BINARY) {
+        options.setChromeBinaryPath(process.env.CHROME_BINARY);
+    }
     if (proxyUrl) {
         options.setProxy(proxy.manual({ http: proxyUrl, https: proxyUrl }));
     }
@@ -70,7 +88,7 @@ function buildChromeOptions(args, proxyUrl) {
 }
 
 function buildChromeService(port) {
-    const service = new chrome.ServiceBuilder(chromedriver.path);
+    const service = new chrome.ServiceBuilder(getChromeDriverPath());
     service
         .enableVerboseLogging()
         .loggingTo(path.resolve(process.cwd(), "test/e2e/chromedriver.log"));
@@ -78,6 +96,10 @@ function buildChromeService(port) {
         service.setPort(port);
     }
     return service;
+}
+
+function getChromeDriverPath() {
+    return process.env.CHROMEDRIVER_BINARY || chromedriver.path;
 }
 
 async function createDriverSession(driver, extensionPath) {
@@ -94,6 +116,23 @@ async function createDriverSession(driver, extensionPath) {
         extensionId,
         extensionUrl: `chrome-extension://${extensionId}`,
     };
+}
+
+async function waitForExtensionIdFromTargets(driver, timeout = 10000) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+        const result = await driver.sendAndGetDevToolsCommand("Target.getTargets");
+        const targets = result?.targetInfos || [];
+        const extensionTarget = targets.find((target) =>
+            target.url?.startsWith("chrome-extension://")
+        );
+        const id = extensionTarget?.url?.match(/^chrome-extension:\/\/([^/]+)/)?.[1];
+        if (id) {
+            return id;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    throw new Error("Failed to find extension target via DevTools.");
 }
 
 async function waitForExtensionId(preferencesPath, expected, timeout = 10000) {
