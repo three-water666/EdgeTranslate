@@ -24,6 +24,7 @@ describe("OCR screenshot translation", () => {
         await patchFileInputClickForUpload();
 
         await clickOcrAction("eng", "upload");
+        await driver.clickElement(".ocr-upload-dialog-choose");
         const input = await driver.waitForSelector(`#${OcrUploadInputId}`);
         await input.sendKeys(path.resolve(__dirname, "../fixtures/ocr/eng.traineddata"));
 

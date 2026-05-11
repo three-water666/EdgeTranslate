@@ -108,6 +108,12 @@ function getOcrStatusText(state) {
     return getMessageOrFallback("OCRStatusNotDownloaded", "未下载");
 }
 
+function getOcrEnabledStateText(state) {
+    return state.enabled
+        ? getMessageOrFallback("OCRStateEnabled", "Enabled")
+        : getMessageOrFallback("OCRStateDisabled", "Disabled");
+}
+
 function getOcrPhaseText(status) {
     switch (status) {
         case "queued":
@@ -147,43 +153,6 @@ function formatOcrError(state) {
         typeTextMap[state.errorType] || getMessageOrFallback("OCRErrorTypeUnknown", "unknown");
     const detail = state.error ? ` (${state.error})` : "";
     return `${prefix}: ${typeText}${detail}`;
-}
-
-function appendOcrSourceMeta(container, state) {
-    const sourceLabel = getMessageOrFallback("OCRSourceLabel", "Source");
-    const stateText = state.enabled
-        ? getMessageOrFallback("OCRStateEnabled", "Enabled")
-        : getMessageOrFallback("OCRStateDisabled", "Disabled");
-
-    appendSourceLabel(container, sourceLabel);
-    appendSourceValue(container, state);
-    appendTextSpan(container, " | ");
-    appendTextSpan(container, stateText);
-}
-
-function appendSourceLabel(container, sourceLabel) {
-    appendTextSpan(container, `${sourceLabel}: `);
-}
-
-function appendSourceValue(container, state) {
-    if (state.source && /^https?:\/\//.test(state.source)) {
-        const sourceLink = document.createElement("a");
-        sourceLink.className = "ocr-download-link";
-        sourceLink.href = state.source;
-        sourceLink.target = "_blank";
-        sourceLink.rel = "noreferrer";
-        sourceLink.textContent = getMessageOrFallback("OCROpenSourceLink", "打开下载地址");
-        container.appendChild(sourceLink);
-        return;
-    }
-
-    appendTextSpan(container, state.source || getMessageOrFallback("OCRStateUnknown", "unknown"));
-}
-
-function appendTextSpan(container, text) {
-    const node = document.createElement("span");
-    node.textContent = text;
-    container.appendChild(node);
 }
 
 function getMessageWithFallback(key, substitutions, fallback) {
@@ -285,10 +254,10 @@ async function toggleOcrLanguageEnabled(ocrLanguageStates, language, enabled, op
 }
 
 export {
-    appendOcrSourceMeta,
     applyEnabledLanguages,
     createDefaultOcrLanguageState,
     formatOcrError,
+    getOcrEnabledStateText,
     getErrorText,
     getMessageOrFallback,
     getOcrLanguageDisplayName,

@@ -223,6 +223,30 @@
         "message": "Загрузить",
         "description": "Загрузить локальный языковой пакет OCR."
     },
+    "OCRUploadDialogTitle": {
+        "message": "Загрузить языковой пакет OCR",
+        "description": "Заголовок диалога загрузки OCR."
+    },
+    "OCRUploadDialogDescription": {
+        "message": "Если встроенная загрузка не удалась, откройте ссылку загрузки ниже и загрузите языковой пакет вручную. Используйте файл traineddata для этого языка; файлы с неподходящим именем будут отклонены.",
+        "description": "Описание диалога загрузки OCR."
+    },
+    "OCRUploadDialogSourceLabel": {
+        "message": "Ссылка загрузки по умолчанию",
+        "description": "Метка ссылки загрузки по умолчанию в диалоге OCR."
+    },
+    "OCRUploadDialogSourceUnavailable": {
+        "message": "Ссылка загрузки по умолчанию недоступна.",
+        "description": "Сообщение о недоступной ссылке загрузки по умолчанию в диалоге OCR."
+    },
+    "OCRUploadDialogCancel": {
+        "message": "Отмена",
+        "description": "Кнопка отмены в диалоге загрузки OCR."
+    },
+    "OCRUploadDialogChooseFile": {
+        "message": "Выбрать файл",
+        "description": "Кнопка выбора файла в диалоге загрузки OCR."
+    },
     "OCREnableButton": {
         "message": "Включить",
         "description": "Включить язык OCR."

@@ -223,6 +223,30 @@
         "message": "Upload",
         "description": "Upload a local OCR language package."
     },
+    "OCRUploadDialogTitle": {
+        "message": "Upload OCR Language Package",
+        "description": "OCR upload dialog title."
+    },
+    "OCRUploadDialogDescription": {
+        "message": "If the built-in download fails, open the default download link below and upload the language package manually. Use the traineddata file for this language; mismatched file names will be rejected.",
+        "description": "OCR upload dialog description."
+    },
+    "OCRUploadDialogSourceLabel": {
+        "message": "Default download link",
+        "description": "OCR upload dialog default download link label."
+    },
+    "OCRUploadDialogSourceUnavailable": {
+        "message": "No default download link is available.",
+        "description": "OCR upload dialog unavailable default download link."
+    },
+    "OCRUploadDialogCancel": {
+        "message": "Cancel",
+        "description": "OCR upload dialog cancel button."
+    },
+    "OCRUploadDialogChooseFile": {
+        "message": "Choose File",
+        "description": "OCR upload dialog choose file button."
+    },
     "OCREnableButton": {
         "message": "Enable",
         "description": "Enable OCR language."

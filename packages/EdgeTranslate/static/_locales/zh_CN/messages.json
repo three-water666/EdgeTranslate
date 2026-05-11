@@ -223,6 +223,30 @@
         "message": "上传",
         "description": "上传本地 OCR 语言包"
     },
+    "OCRUploadDialogTitle": {
+        "message": "上传 OCR 语言包",
+        "description": "OCR 上传弹窗标题"
+    },
+    "OCRUploadDialogDescription": {
+        "message": "如果直接下载失败，可以打开下方默认下载地址手动获取语言包后上传。请使用对应语言的 traineddata 文件，文件名不匹配会被拦截。",
+        "description": "OCR 上传弹窗说明"
+    },
+    "OCRUploadDialogSourceLabel": {
+        "message": "默认下载地址",
+        "description": "OCR 上传弹窗默认下载地址标签"
+    },
+    "OCRUploadDialogSourceUnavailable": {
+        "message": "暂时没有默认下载地址",
+        "description": "OCR 上传弹窗默认下载地址不可用"
+    },
+    "OCRUploadDialogCancel": {
+        "message": "取消",
+        "description": "OCR 上传弹窗取消按钮"
+    },
+    "OCRUploadDialogChooseFile": {
+        "message": "选择文件",
+        "description": "OCR 上传弹窗选择文件按钮"
+    },
     "OCREnableButton": {
         "message": "启用",
         "description": "启用 OCR 语言"

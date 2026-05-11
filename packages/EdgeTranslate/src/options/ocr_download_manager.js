@@ -1,11 +1,11 @@
 import { OCR_LANGUAGES } from "common/scripts/ocr_languages.js";
 import {
-    appendOcrSourceMeta,
     applyEnabledLanguages,
     createDefaultOcrLanguageState,
     formatOcrError,
     getErrorText,
     getMessageOrFallback,
+    getOcrEnabledStateText,
     getOcrLanguageDisplayName,
     getOcrStatusText,
     getOrderedOcrLanguages,
@@ -122,9 +122,9 @@ function buildOcrFilterBar(channel) {
 function buildOcrLanguageCard(channel, language) {
     const state = ocrLanguageStates[language.code] || createDefaultOcrLanguageState();
     return createOcrLanguageCard({
-        appendOcrSourceMeta,
         formatOcrError,
         getDisplayName: getOcrLanguageDisplayName,
+        getEnabledStateText: getOcrEnabledStateText,
         getStatusText: getOcrStatusText,
         language,
         onActions: {
@@ -142,10 +142,16 @@ function buildOcrLanguageCard(channel, language) {
 function createPrimaryOcrActionButton(channel, language, state) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "ocr-action-button";
+    button.className = `ocr-action-button ${getPrimaryOcrActionClass(state)}`;
     button.textContent = getPrimaryOcrActionText(state);
     button.onclick = () => handlePrimaryOcrAction(channel, language.code, state);
     return button;
+}
+
+function getPrimaryOcrActionClass(state) {
+    if (state.downloading) return "danger";
+    if (!state.downloaded) return "download";
+    return state.enabled ? "secondary" : "enable";
 }
 
 function getPrimaryOcrActionText(state) {
@@ -185,7 +191,7 @@ function createUploadOcrActionButton(channel, language, state) {
 function createDeleteOcrActionButton(channel, language, state) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "ocr-action-button secondary";
+    button.className = "ocr-action-button danger";
     button.textContent = getMessageOrFallback("OCRDeleteButton", "删除");
     button.disabled = state.downloading || !state.downloaded;
     button.onclick = () => handleOcrLanguageAction(channel, language, "delete");
@@ -277,6 +283,7 @@ async function importOcrLanguageFile(channel, language) {
         channel,
         getErrorText,
         getStoredOcrSettings,
+        getMessageOrFallback,
         language,
         ocrLanguageStates,
         refreshLanguageState: refreshOcrLanguageState,

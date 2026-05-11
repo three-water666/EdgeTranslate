@@ -223,6 +223,30 @@
         "message": "上傳",
         "description": "上傳本機 OCR 語言包"
     },
+    "OCRUploadDialogTitle": {
+        "message": "上傳 OCR 語言包",
+        "description": "OCR 上傳彈窗標題"
+    },
+    "OCRUploadDialogDescription": {
+        "message": "如果直接下載失敗，可以開啟下方預設下載地址手動取得語言包後上傳。請使用對應語言的 traineddata 檔案，檔名不符會被攔截。",
+        "description": "OCR 上傳彈窗說明"
+    },
+    "OCRUploadDialogSourceLabel": {
+        "message": "預設下載地址",
+        "description": "OCR 上傳彈窗預設下載地址標籤"
+    },
+    "OCRUploadDialogSourceUnavailable": {
+        "message": "暫時沒有預設下載地址",
+        "description": "OCR 上傳彈窗預設下載地址不可用"
+    },
+    "OCRUploadDialogCancel": {
+        "message": "取消",
+        "description": "OCR 上傳彈窗取消按鈕"
+    },
+    "OCRUploadDialogChooseFile": {
+        "message": "選擇檔案",
+        "description": "OCR 上傳彈窗選擇檔案按鈕"
+    },
     "OCREnableButton": {
         "message": "啟用",
         "description": "啟用 OCR 語言"

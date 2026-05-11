@@ -131,9 +131,26 @@ header {
 .ocr-download-card {
     background: #fafafa;
     border: 1px solid #ececec;
+    border-left: 4px solid #d8d8d8;
     border-radius: 10px;
     padding: 12px 14px;
     margin-bottom: 12px;
+}
+
+.ocr-download-card.enabled {
+    border-left-color: #2e9d57;
+}
+
+.ocr-download-card.downloaded {
+    border-left-color: color-primary;
+}
+
+.ocr-download-card.downloading {
+    border-left-color: #2f80ed;
+}
+
+.ocr-download-card.error {
+    border-left-color: #c0392b;
 }
 
 .ocr-download-row {
@@ -144,13 +161,72 @@ header {
 }
 
 .ocr-download-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ocr-download-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .ocr-download-status {
-    color: #666;
-    min-width: 60px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    min-width: 150px;
     text-align: right;
+    white-space: nowrap;
+}
+
+.ocr-status-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    box-sizing: border-box;
+    border: 1px solid #d8d8d8;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #555;
+    background: #f2f2f2;
+}
+
+.ocr-status-badge.downloaded {
+    border-color: rgba(74, 140, 247, 0.35);
+    background: rgba(74, 140, 247, 0.1);
+    color: #2f6fd0;
+}
+
+.ocr-status-badge.downloading {
+    border-color: rgba(47, 128, 237, 0.4);
+    background: rgba(47, 128, 237, 0.12);
+    color: #1f67c1;
+}
+
+.ocr-status-badge.enabled {
+    border-color: rgba(46, 157, 87, 0.4);
+    background: rgba(46, 157, 87, 0.12);
+    color: #237843;
+}
+
+.ocr-status-badge.error {
+    border-color: rgba(192, 57, 43, 0.35);
+    background: rgba(192, 57, 43, 0.1);
+    color: #a93226;
+}
+
+.ocr-status-separator {
+    color: #9a9a9a;
+    font-size: 13px;
 }
 
 .ocr-download-actions {
@@ -183,9 +259,19 @@ header {
     cursor: pointer;
 }
 
+.ocr-action-button.enable {
+    background: #2e9d57;
+}
+
 .ocr-action-button.secondary {
     background: #e8e8e8;
     color: #333;
+}
+
+.ocr-action-button.danger {
+    border: 1px solid rgba(192, 57, 43, 0.35);
+    background: rgba(192, 57, 43, 0.1);
+    color: #a93226;
 }
 
 .ocr-action-button:disabled {
@@ -204,13 +290,6 @@ header {
     margin-bottom: 0;
 }
 
-.ocr-download-meta {
-    margin: 10px 0 0;
-    color: #666;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
 .ocr-download-link {
     color: color-primary;
     text-decoration: none;
@@ -218,6 +297,69 @@ header {
 
 .ocr-download-link:hover {
     text-decoration: underline;
+}
+
+.ocr-upload-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.ocr-upload-dialog {
+    width: 520px;
+    max-width: calc(100vw - 48px);
+    box-sizing: border-box;
+    padding: 20px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.ocr-upload-dialog-title {
+    color: #222;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+.ocr-upload-dialog-description {
+    margin-top: 8px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.ocr-upload-dialog-source {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    background: #fafafa;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-all;
+}
+
+.ocr-upload-dialog-source-label {
+    color: #333;
+    font-weight: bold;
+}
+
+.ocr-upload-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 18px;
 }
 
 .space {

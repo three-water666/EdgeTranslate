@@ -223,6 +223,30 @@
         "message": "アップロード",
         "description": "ローカル OCR 言語データをアップロードする"
     },
+    "OCRUploadDialogTitle": {
+        "message": "OCR 言語データをアップロード",
+        "description": "OCR アップロードダイアログのタイトル"
+    },
+    "OCRUploadDialogDescription": {
+        "message": "内蔵ダウンロードに失敗した場合は、下の既定のダウンロードリンクから言語データを取得して手動でアップロードできます。この言語用の traineddata ファイルを使用してください。ファイル名が一致しない場合は拒否されます。",
+        "description": "OCR アップロードダイアログの説明"
+    },
+    "OCRUploadDialogSourceLabel": {
+        "message": "既定のダウンロードリンク",
+        "description": "OCR アップロードダイアログの既定ダウンロードリンクラベル"
+    },
+    "OCRUploadDialogSourceUnavailable": {
+        "message": "既定のダウンロードリンクはありません。",
+        "description": "OCR アップロードダイアログの既定ダウンロードリンクなし表示"
+    },
+    "OCRUploadDialogCancel": {
+        "message": "キャンセル",
+        "description": "OCR アップロードダイアログのキャンセルボタン"
+    },
+    "OCRUploadDialogChooseFile": {
+        "message": "ファイルを選択",
+        "description": "OCR アップロードダイアログのファイル選択ボタン"
+    },
     "OCREnableButton": {
         "message": "有効化",
         "description": "OCR 言語を有効化する"

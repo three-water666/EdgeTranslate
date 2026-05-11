@@ -93,28 +93,28 @@ function createOcrErrorNode(errorText) {
 }
 
 function createOcrLanguageCard({
-    appendOcrSourceMeta,
     formatOcrError,
     getDisplayName,
+    getEnabledStateText,
     getStatusText,
     language,
     onActions,
     state,
 }) {
     const card = document.createElement("div");
-    card.className = "ocr-download-card";
+    card.className = `ocr-download-card ${getOcrCardStateClass(state)}`;
     card.dataset.ocrLanguage = language.code;
 
     card.appendChild(
         createOcrLanguageCardHeader({
             getDisplayName,
+            getEnabledStateText,
             getStatusText,
             language,
             onActions,
             state,
         })
     );
-    card.appendChild(createOcrLanguageMeta(appendOcrSourceMeta, state));
 
     if (state.downloading) {
         card.appendChild(createOcrProgressNode(state.progress));
@@ -132,6 +132,7 @@ function createOcrLanguageCard({
 
 function createOcrLanguageCardHeader({
     getDisplayName,
+    getEnabledStateText,
     getStatusText,
     language,
     onActions,
@@ -142,16 +143,63 @@ function createOcrLanguageCardHeader({
 
     const title = document.createElement("span");
     title.className = "ocr-download-title";
-    title.textContent = getDisplayName(language);
+    title.appendChild(createOcrLanguageName(getDisplayName(language)));
     row.appendChild(title);
 
-    const status = document.createElement("span");
-    status.className = "ocr-download-status";
-    status.textContent = getStatusText(state);
-    row.appendChild(status);
+    row.appendChild(createOcrStatusBadges({ getEnabledStateText, getStatusText, state }));
 
     row.appendChild(createOcrActionButtons(language.code, state, onActions));
     return row;
+}
+
+function createOcrLanguageName(displayName) {
+    const name = document.createElement("span");
+    name.className = "ocr-download-name";
+    name.textContent = displayName;
+    return name;
+}
+
+function createOcrStatusBadges({ getEnabledStateText, getStatusText, state }) {
+    const status = document.createElement("span");
+    status.className = "ocr-download-status";
+    status.appendChild(createOcrStatusBadge(getDownloadStateClass(state), getStatusText(state)));
+
+    if (state.downloaded && !state.downloading) {
+        status.appendChild(createOcrStatusSeparator());
+        status.appendChild(
+            createOcrStatusBadge(state.enabled ? "enabled" : "disabled", getEnabledStateText(state))
+        );
+    }
+
+    return status;
+}
+
+function createOcrStatusBadge(type, text) {
+    const badge = document.createElement("span");
+    badge.className = `ocr-status-badge ${type}`;
+    badge.textContent = text;
+    return badge;
+}
+
+function createOcrStatusSeparator() {
+    const separator = document.createElement("span");
+    separator.className = "ocr-status-separator";
+    separator.textContent = "·";
+    return separator;
+}
+
+function getDownloadStateClass(state) {
+    if (state.downloading) return "downloading";
+    if (state.error && !state.downloaded) return "error";
+    return state.downloaded ? "downloaded" : "not-downloaded";
+}
+
+function getOcrCardStateClass(state) {
+    if (state.error && !state.downloaded) return "error";
+    if (state.downloading) return "downloading";
+    if (state.enabled) return "enabled";
+    if (state.downloaded) return "downloaded";
+    return "not-downloaded";
 }
 
 function createOcrActionButtons(languageCode, state, onActions) {
@@ -166,13 +214,6 @@ function createOcrActionButtons(languageCode, state, onActions) {
 function withOcrAction(button, action) {
     button.dataset.ocrAction = action;
     return button;
-}
-
-function createOcrLanguageMeta(appendOcrSourceMeta, state) {
-    const meta = document.createElement("div");
-    meta.className = "ocr-download-meta";
-    appendOcrSourceMeta(meta, state);
-    return meta;
 }
 
 function createOcrProgressNode(progressValue) {
