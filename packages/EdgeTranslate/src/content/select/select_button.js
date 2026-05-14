@@ -29,6 +29,7 @@ export function initializeButtonContainer(state, onMouseDown) {
     document.documentElement.removeChild(iframeContainer);
     state.translationButtonContainer.id = BUTTON_ID;
     state.translationButtonContainer.style.backgroundColor = "white";
+    state.translationButtonContainer.style.pointerEvents = "auto";
     state.translationButtonHost = createButtonHost(state);
     state.translationButtonContainer.addEventListener("load", () =>
         renderButton(state, onMouseDown)
@@ -37,7 +38,7 @@ export function initializeButtonContainer(state, onMouseDown) {
 
 export function showButton(state, event) {
     state.buttonSelection = getSelection();
-    showButtonHost(state);
+    showButtonLayer(state);
     const position = getButtonPosition(
         state.buttonPositionSetting,
         state.translationButtonContainer,
@@ -63,6 +64,9 @@ export function scrollHandler(state) {
 export function disappearButton(state) {
     if (!state.hasButtonShown) return;
     closeButtonHost(state.translationButtonHost);
+    if (document.documentElement.contains(state.translationButtonContainer)) {
+        document.documentElement.removeChild(state.translationButtonContainer);
+    }
     state.hasButtonShown = false;
     state.buttonSelection = null;
 }
@@ -93,6 +97,7 @@ function createButtonHost(state) {
     host.dataset.edgeTranslateLayerMode = LayerMode.Normal;
     Object.assign(host.style, {
         position: "fixed",
+        display: "block",
         inset: 0,
         zIndex: 2147483647,
         border: "none",
@@ -115,6 +120,23 @@ function createButtonHost(state) {
     return host;
 }
 
+function showButtonLayer(state) {
+    const host = state.translationButtonHost;
+    if (hasModalTopLayerBlocker(host) || hasOpenPopover(host)) {
+        showButtonHost(state);
+        return;
+    }
+
+    showNormalButton(state);
+}
+
+function showNormalButton(state) {
+    closeButtonHost(state.translationButtonHost);
+    if (!document.documentElement.contains(state.translationButtonContainer)) {
+        document.documentElement.appendChild(state.translationButtonContainer);
+    }
+}
+
 function showButtonHost(state) {
     const host = state.translationButtonHost;
     if (!host.contains(state.translationButtonContainer)) {
@@ -125,26 +147,20 @@ function showButtonHost(state) {
     }
 
     if (hasModalTopLayerBlocker(host)) {
-        showModalButtonHost(host);
+        showModalButtonHost(state);
         return;
     }
     if (hasOpenPopover(host)) {
-        showPopoverButtonHost(host);
+        showPopoverButtonHost(state);
         return;
     }
-    showNormalButtonHost(host);
+    showNormalButton(state);
 }
 
-function showNormalButtonHost(host) {
-    if (getLayerMode(host) === LayerMode.Popover) hidePopover(host);
-    if (getLayerMode(host) === LayerMode.Modal) closeDialog(host);
-    if (!host.open) openDialog(host);
-    setLayerMode(host, LayerMode.Normal);
-}
-
-function showModalButtonHost(host) {
+function showModalButtonHost(state) {
+    const host = state.translationButtonHost;
     if (typeof host.showModal !== "function") {
-        showNormalButtonHost(host);
+        showNormalButton(state);
         return;
     }
 
@@ -154,13 +170,14 @@ function showModalButtonHost(host) {
         host.showModal();
         setLayerMode(host, LayerMode.Modal);
     } catch {
-        showNormalButtonHost(host);
+        showNormalButton(state);
     }
 }
 
-function showPopoverButtonHost(host) {
+function showPopoverButtonHost(state) {
+    const host = state.translationButtonHost;
     if (typeof host.showPopover !== "function") {
-        showNormalButtonHost(host);
+        showNormalButton(state);
         return;
     }
 
@@ -169,7 +186,7 @@ function showPopoverButtonHost(host) {
         host.showPopover();
         setLayerMode(host, LayerMode.Popover);
     } catch {
-        showNormalButtonHost(host);
+        showNormalButton(state);
     }
 }
 
@@ -221,19 +238,6 @@ function isExtensionLayer(element, host) {
         element.id === PANEL_ROOT_ID ||
         element.id === SCREENSHOT_OVERLAY_ID
     );
-}
-
-function openDialog(host) {
-    if (typeof host.show === "function") {
-        try {
-            host.show();
-            return;
-        } catch {
-            // Fall back to the open attribute below.
-        }
-    }
-
-    host.setAttribute("open", "");
 }
 
 function closeDialog(host) {

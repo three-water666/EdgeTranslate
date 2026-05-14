@@ -28,19 +28,19 @@ describe("selection button top layer host", () => {
         restoreDialogMethod("showPopover", originalShowPopover);
     });
 
-    it("shows the button in a normal host without blocking the page", () => {
-        const { show, showModal } = mockDialogMethods();
+    it("shows the button directly on normal pages", () => {
+        const { showModal } = mockDialogMethods();
         const state = createButtonState();
 
         initializeButtonContainer(state, jest.fn());
         prepareButtonDimensions(state);
         showButton(state, createSelectionEvent());
 
-        expect(show).toHaveBeenCalledTimes(1);
         expect(showModal).not.toHaveBeenCalled();
-        expect(state.translationButtonHost.dataset.edgeTranslateLayerMode).toBe("normal");
-        expect(state.translationButtonHost.style.pointerEvents).toBe("none");
-        expect(state.translationButtonHost.contains(state.translationButtonContainer)).toBe(true);
+        expect(document.documentElement.contains(state.translationButtonHost)).toBe(false);
+        expect(document.documentElement.contains(state.translationButtonContainer)).toBe(true);
+        expect(state.translationButtonHost.contains(state.translationButtonContainer)).toBe(false);
+        expect(state.translationButtonContainer.style.pointerEvents).toBe("auto");
     });
 
     it("promotes the button host above page modal dialogs and keeps a selection snapshot", () => {
@@ -69,9 +69,10 @@ describe("selection button top layer host", () => {
         showButton(state, createSelectionEvent());
         disappearButton(state);
 
-        expect(close).toHaveBeenCalledTimes(1);
+        expect(close).not.toHaveBeenCalled();
         expect(state.hasButtonShown).toBe(false);
         expect(state.buttonSelection).toBeNull();
+        expect(document.documentElement.contains(state.translationButtonContainer)).toBe(false);
         expect(document.getElementById("edge-translate-button-host")).toBeNull();
     });
 });

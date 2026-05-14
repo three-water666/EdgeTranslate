@@ -16,6 +16,7 @@ function createPanelRoot() {
     root.dataset.edgeTranslateLayerMode = LayerMode.Normal;
     Object.assign(root.style, {
         position: "fixed",
+        display: "block",
         inset: 0,
         zIndex: 2147483647,
         border: "none",
@@ -59,7 +60,6 @@ function syncPanelRootTopLayer(open) {
 function showPanelRootNormally(root) {
     if (getLayerMode(root) === LayerMode.Popover) hidePopover(root);
     if (getLayerMode(root) === LayerMode.Modal) closeDialog(root);
-    if (!root.open) openDialog(root);
     setLayerMode(root, LayerMode.Normal);
 }
 
@@ -92,7 +92,6 @@ function showPopoverPanelRoot(root) {
     }
 
     if (getLayerMode(root) === LayerMode.Modal) closeDialog(root);
-    if (!root.open) openDialog(root);
     try {
         root.showPopover();
         setLayerMode(root, LayerMode.Popover);
@@ -138,19 +137,6 @@ function isExtensionLayer(element, root) {
         element.id === BUTTON_HOST_ID ||
         element.id === SCREENSHOT_OVERLAY_ID
     );
-}
-
-function openDialog(root) {
-    if (typeof root.show === "function") {
-        try {
-            root.show();
-            return;
-        } catch {
-            // Fall back to the open attribute below.
-        }
-    }
-
-    root.setAttribute("open", "");
 }
 
 function closeDialog(root) {

@@ -29,16 +29,16 @@ describe("panel top layer host", () => {
     });
 
     it("keeps the panel host available as a normal non-modal dialog", () => {
-        const { show } = mockDialogMethods();
         const root = mountPanelRoot();
 
         showPanelRootNormally(root);
 
         expect(root.tagName).toBe("DIALOG");
         expect(root.popover).toBe("manual");
+        expect(root.open).toBe(false);
+        expect(root.style.display).toBe("block");
         expect(root.dataset.edgeTranslateLayerMode).toBe("normal");
         expect(root.style.pointerEvents).toBe("none");
-        expect(show).toHaveBeenCalledTimes(1);
         expect(document.getElementById("edge-translate-root-backdrop-style")).not.toBeNull();
     });
 
@@ -50,7 +50,7 @@ describe("panel top layer host", () => {
 
         syncPanelRootTopLayer(true);
 
-        expect(close).toHaveBeenCalledTimes(1);
+        expect(close).not.toHaveBeenCalled();
         expect(showModal).toHaveBeenCalledTimes(1);
         expect(showModal.mock.contexts[0]).toBe(root);
         expect(root.dataset.edgeTranslateLayerMode).toBe("modal");
@@ -69,7 +69,7 @@ describe("panel top layer host", () => {
     });
 
     it("returns a modal panel host to normal when the panel closes", () => {
-        const { close, show, showModal } = mockDialogMethods();
+        const { close, showModal } = mockDialogMethods();
         const root = mountPanelRoot();
         showPanelRootNormally(root);
         document.body.appendChild(createOpenDialog("page-dialog"));
@@ -78,8 +78,7 @@ describe("panel top layer host", () => {
         syncPanelRootTopLayer(false);
 
         expect(showModal).toHaveBeenCalledTimes(1);
-        expect(close).toHaveBeenCalledTimes(2);
-        expect(show).toHaveBeenCalledTimes(1);
+        expect(close).toHaveBeenCalledTimes(1);
         expect(root.open).toBe(false);
         expect(root.dataset.edgeTranslateLayerMode).toBe("normal");
     });
