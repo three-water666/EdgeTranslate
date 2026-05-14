@@ -2,14 +2,14 @@
 import { h, render } from "preact";
 import { isNativePDFViewer } from "../common.js";
 import Panel from "./Panel.jsx";
+import { createPanelRoot } from "./panel/panel_top_layer.js";
 
 (async function initialize() {
     if (isNativePDFViewer()) {
         return;
     }
 
-    const mountNode = document.createElement("div");
-    mountNode.id = "edge-translate-root";
+    const mountNode = createPanelRoot();
     (document.body || document.documentElement).appendChild(mountNode);
 
     render(<Panel />, mountNode);

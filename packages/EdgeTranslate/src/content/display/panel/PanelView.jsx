@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h, Fragment } from "preact";
+import { useLayoutEffect } from "preact/hooks";
 import { StyleSheetManager } from "styled-components";
 import root from "react-shadow/styled-components";
 import SimpleBar from "simplebar-react";
@@ -21,8 +22,16 @@ import {
     SourceOption,
     Highlight,
 } from "./panel_styles.js";
+import { syncPanelRootTopLayer } from "./panel_top_layer.js";
 
 export default function PanelView(props) {
+    useLayoutEffect(() => {
+        syncPanelRootTopLayer(props.open);
+        return () => {
+            if (props.open) syncPanelRootTopLayer(false);
+        };
+    }, [props.open]);
+
     if (!props.open) return null;
 
     return (
