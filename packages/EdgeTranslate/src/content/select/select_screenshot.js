@@ -7,6 +7,7 @@ const CLICK_SUPPRESSION_FALLBACK_DELAY = 80;
 
 function createSession(updateSession) {
     const view = createOverlayView();
+    showOverlay(view.overlay);
     const pointerState = { startPoint: null, currentRect: null, finished: false };
     const session = { promise: null, resolve: null };
     const handlers = createSessionHandlers(view, pointerState, session, () => updateSession(null));
@@ -25,6 +26,7 @@ function createOverlayView() {
     const selectionBox = document.createElement("div");
     const hint = document.createElement("div");
 
+    overlay.popover = "manual";
     overlay.id = "edge-translate-screenshot-overlay";
     Object.assign(overlay.style, {
         position: "fixed",
@@ -32,6 +34,14 @@ function createOverlayView() {
         zIndex: 2147483647,
         cursor: "crosshair",
         userSelect: "none",
+        border: "none",
+        padding: 0,
+        margin: 0,
+        background: "transparent",
+        width: "100%",
+        height: "100%",
+        maxWidth: "none",
+        maxHeight: "none",
     });
     Object.assign(mask.style, {
         position: "absolute",
@@ -65,8 +75,16 @@ function createOverlayView() {
     overlay.appendChild(mask);
     overlay.appendChild(selectionBox);
     overlay.appendChild(hint);
-    document.documentElement.appendChild(overlay);
     return { overlay, selectionBox };
+}
+
+function showOverlay(overlay) {
+    document.documentElement.appendChild(overlay);
+    try {
+        overlay.showPopover();
+    } catch (e) {
+        // Fallback for browsers that don't support popover
+    }
 }
 
 function createSessionHandlers(view, pointerState, session, clearSession) {
