@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h, Fragment } from "preact";
+import { useEffect } from "preact/hooks";
 import { StyleSheetManager } from "styled-components";
 import root from "react-shadow/styled-components";
 import SimpleBar from "simplebar-react";
@@ -23,6 +24,20 @@ import {
 } from "./panel_styles.js";
 
 export default function PanelView(props) {
+    useEffect(() => {
+        if (props.open) {
+            const rootNode = document.getElementById("edge-translate-root");
+            if (rootNode && rootNode.showPopover) {
+                try {
+                    rootNode.hidePopover();
+                    rootNode.showPopover();
+                } catch (e) {
+                    // Ignore if already in correct state
+                }
+            }
+        }
+    }, [props.open]);
+
     if (!props.open) return null;
 
     return (

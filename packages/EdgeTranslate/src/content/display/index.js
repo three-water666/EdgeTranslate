@@ -10,7 +10,29 @@ import Panel from "./Panel.jsx";
 
     const mountNode = document.createElement("div");
     mountNode.id = "edge-translate-root";
+    mountNode.popover = "manual";
+    Object.assign(mountNode.style, {
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147483647,
+        border: "none",
+        padding: 0,
+        margin: 0,
+        background: "transparent",
+        width: "100%",
+        height: "100%",
+        maxWidth: "none",
+        maxHeight: "none",
+        pointerEvents: "none",
+        overflow: "visible",
+    });
     (document.body || document.documentElement).appendChild(mountNode);
+
+    try {
+        mountNode.showPopover();
+    } catch (e) {
+        // Fallback
+    }
 
     render(<Panel />, mountNode);
     // Prepare this polyfill for the useMeasure hook of "react-use".
