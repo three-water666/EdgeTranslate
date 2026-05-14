@@ -4,7 +4,20 @@ import {
     applyButtonStyle,
     getButtonPosition,
     getInnerParent,
+    getSelection,
 } from "./select_helpers.js";
+
+const BUTTON_HOST_ID = "edge-translate-button-host";
+const BUTTON_ID = "edge-translate-button";
+const PANEL_ROOT_ID = "edge-translate-root";
+const SCREENSHOT_OVERLAY_ID = "edge-translate-screenshot-overlay";
+const BACKDROP_STYLE_ID = "edge-translate-button-host-backdrop-style";
+
+const LayerMode = {
+    Modal: "modal",
+    Normal: "normal",
+    Popover: "popover",
+};
 
 export function initializeButtonContainer(state, onMouseDown) {
     const iframeContainer = state.translationButtonContainer;
@@ -14,15 +27,17 @@ export function initializeButtonContainer(state, onMouseDown) {
         renderButton(state, onMouseDown);
     }
     document.documentElement.removeChild(iframeContainer);
-    state.translationButtonContainer.id = "edge-translate-button";
+    state.translationButtonContainer.id = BUTTON_ID;
     state.translationButtonContainer.style.backgroundColor = "white";
+    state.translationButtonHost = createButtonHost(state);
     state.translationButtonContainer.addEventListener("load", () =>
         renderButton(state, onMouseDown)
     );
 }
 
 export function showButton(state, event) {
-    document.documentElement.appendChild(state.translationButtonContainer);
+    state.buttonSelection = getSelection();
+    showButtonHost(state);
     const position = getButtonPosition(
         state.buttonPositionSetting,
         state.translationButtonContainer,
@@ -47,8 +62,9 @@ export function scrollHandler(state) {
 
 export function disappearButton(state) {
     if (!state.hasButtonShown) return;
-    document.documentElement.removeChild(state.translationButtonContainer);
+    closeButtonHost(state.translationButtonHost);
     state.hasButtonShown = false;
+    state.buttonSelection = null;
 }
 
 function renderButton(state, onMouseDown) {
@@ -68,4 +84,204 @@ function renderButton(state, onMouseDown) {
     Object.assign(state.translationButtonContainer.contentDocument?.body.style || {}, cleanStyle);
     translationButton.addEventListener("mousedown", onMouseDown);
     translationButton.addEventListener("contextmenu", (event) => event.preventDefault());
+}
+
+function createButtonHost(state) {
+    const host = document.createElement("dialog");
+    host.id = BUTTON_HOST_ID;
+    host.popover = "manual";
+    host.dataset.edgeTranslateLayerMode = LayerMode.Normal;
+    Object.assign(host.style, {
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147483647,
+        border: "none",
+        padding: 0,
+        margin: 0,
+        background: "transparent",
+        width: "100vw",
+        height: "100vh",
+        maxWidth: "none",
+        maxHeight: "none",
+        pointerEvents: "none",
+        overflow: "visible",
+    });
+    host.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        disappearButton(state);
+    });
+    host.addEventListener("mousedown", (event) => dismissFromHost(event, state), true);
+    ensureTransparentBackdropStyle();
+    return host;
+}
+
+function showButtonHost(state) {
+    const host = state.translationButtonHost;
+    if (!host.contains(state.translationButtonContainer)) {
+        host.appendChild(state.translationButtonContainer);
+    }
+    if (!document.documentElement.contains(host)) {
+        document.documentElement.appendChild(host);
+    }
+
+    if (hasModalTopLayerBlocker(host)) {
+        showModalButtonHost(host);
+        return;
+    }
+    if (hasOpenPopover(host)) {
+        showPopoverButtonHost(host);
+        return;
+    }
+    showNormalButtonHost(host);
+}
+
+function showNormalButtonHost(host) {
+    if (getLayerMode(host) === LayerMode.Popover) hidePopover(host);
+    if (getLayerMode(host) === LayerMode.Modal) closeDialog(host);
+    if (!host.open) openDialog(host);
+    setLayerMode(host, LayerMode.Normal);
+}
+
+function showModalButtonHost(host) {
+    if (typeof host.showModal !== "function") {
+        showNormalButtonHost(host);
+        return;
+    }
+
+    if (getLayerMode(host) === LayerMode.Popover) hidePopover(host);
+    if (host.open) closeDialog(host);
+    try {
+        host.showModal();
+        setLayerMode(host, LayerMode.Modal);
+    } catch {
+        showNormalButtonHost(host);
+    }
+}
+
+function showPopoverButtonHost(host) {
+    if (typeof host.showPopover !== "function") {
+        showNormalButtonHost(host);
+        return;
+    }
+
+    if (getLayerMode(host) === LayerMode.Modal) closeDialog(host);
+    try {
+        host.showPopover();
+        setLayerMode(host, LayerMode.Popover);
+    } catch {
+        showNormalButtonHost(host);
+    }
+}
+
+function closeButtonHost(host) {
+    if (!host) return;
+    if (getLayerMode(host) === LayerMode.Popover) hidePopover(host);
+    if (host.open) closeDialog(host);
+    setLayerMode(host, LayerMode.Normal);
+    if (document.documentElement.contains(host)) {
+        document.documentElement.removeChild(host);
+    }
+}
+
+function hasModalTopLayerBlocker(host) {
+    if (document.fullscreenElement) return true;
+
+    return Array.from(document.querySelectorAll("dialog")).some(
+        (dialog) => !isExtensionLayer(dialog, host) && isModalDialog(dialog)
+    );
+}
+
+function hasOpenPopover(host) {
+    return Array.from(document.querySelectorAll("[popover]")).some(
+        (element) => !isExtensionLayer(element, host) && isPopoverOpen(element)
+    );
+}
+
+function isModalDialog(dialog) {
+    try {
+        return dialog.matches(":modal");
+    } catch {
+        return dialog.open;
+    }
+}
+
+function isPopoverOpen(element) {
+    try {
+        return element.matches(":popover-open");
+    } catch {
+        return false;
+    }
+}
+
+function isExtensionLayer(element, host) {
+    return (
+        element === host ||
+        element.id === BUTTON_HOST_ID ||
+        element.id === BUTTON_ID ||
+        element.id === PANEL_ROOT_ID ||
+        element.id === SCREENSHOT_OVERLAY_ID
+    );
+}
+
+function openDialog(host) {
+    if (typeof host.show === "function") {
+        try {
+            host.show();
+            return;
+        } catch {
+            // Fall back to the open attribute below.
+        }
+    }
+
+    host.setAttribute("open", "");
+}
+
+function closeDialog(host) {
+    if (typeof host.close === "function") {
+        try {
+            host.close();
+            return;
+        } catch {
+            // Fall back to removing the open attribute below.
+        }
+    }
+
+    host.removeAttribute("open");
+}
+
+function hidePopover(host) {
+    if (typeof host.hidePopover !== "function") return;
+
+    try {
+        host.hidePopover();
+    } catch {
+        // The host may already be hidden or the browser may not support popovers.
+    }
+}
+
+function getLayerMode(host) {
+    return host.dataset.edgeTranslateLayerMode || LayerMode.Normal;
+}
+
+function setLayerMode(host, mode) {
+    host.dataset.edgeTranslateLayerMode = mode;
+    host.style.pointerEvents = mode === LayerMode.Normal ? "none" : "auto";
+}
+
+function dismissFromHost(event, state) {
+    if (event.target !== state.translationButtonHost) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    disappearButton(state);
+}
+
+function ensureTransparentBackdropStyle() {
+    if (document.getElementById(BACKDROP_STYLE_ID)) return;
+
+    const style = document.createElement("style");
+    style.id = BACKDROP_STYLE_ID;
+    style.textContent = `#${BUTTON_HOST_ID}::backdrop { background: transparent; }`;
+    (document.head || document.documentElement).appendChild(style);
 }

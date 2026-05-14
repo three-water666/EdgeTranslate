@@ -1,4 +1,5 @@
 const PANEL_ROOT_ID = "edge-translate-root";
+const BUTTON_HOST_ID = "edge-translate-button-host";
 const SCREENSHOT_OVERLAY_ID = "edge-translate-screenshot-overlay";
 const BACKDROP_STYLE_ID = "edge-translate-root-backdrop-style";
 
@@ -103,8 +104,8 @@ function showPopoverPanelRoot(root) {
 function hasModalTopLayerBlocker(root) {
     if (document.fullscreenElement) return true;
 
-    return Array.from(document.querySelectorAll("dialog[open]")).some(
-        (dialog) => !isExtensionLayer(dialog, root)
+    return Array.from(document.querySelectorAll("dialog")).some(
+        (dialog) => !isExtensionLayer(dialog, root) && isModalDialog(dialog)
     );
 }
 
@@ -122,8 +123,21 @@ function isPopoverOpen(element) {
     }
 }
 
+function isModalDialog(dialog) {
+    try {
+        return dialog.matches(":modal");
+    } catch {
+        return dialog.open;
+    }
+}
+
 function isExtensionLayer(element, root) {
-    return element === root || element.id === PANEL_ROOT_ID || element.id === SCREENSHOT_OVERLAY_ID;
+    return (
+        element === root ||
+        element.id === PANEL_ROOT_ID ||
+        element.id === BUTTON_HOST_ID ||
+        element.id === SCREENSHOT_OVERLAY_ID
+    );
 }
 
 function openDialog(root) {

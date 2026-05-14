@@ -105,6 +105,7 @@ function createOpenDialog(id) {
     const dialog = document.createElement("dialog");
     dialog.id = id;
     dialog.setAttribute("open", "");
+    dialog.matches = (selector) => selector === ":modal";
     return dialog;
 }
 

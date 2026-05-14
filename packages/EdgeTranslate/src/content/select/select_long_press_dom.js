@@ -5,7 +5,7 @@ export function shouldIgnoreTarget(target) {
     if (!(target instanceof Element)) return true;
     if (
         target.closest(
-            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true'], [role='slider'], [role='progressbar'], [role='scrollbar'], [role='tab']"
+            "#edge-translate-button, #edge-translate-button-host, #edge-translate-root, #edge-translate-screenshot-overlay, input, textarea, select, button, [contenteditable=''], [contenteditable='true'], [role='slider'], [role='progressbar'], [role='scrollbar'], [role='tab']"
         )
     ) {
         return true;
