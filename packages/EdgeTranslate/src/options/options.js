@@ -115,6 +115,7 @@ window.onload = () => {
                     break;
             }
         }
+        setUpPDFFileAccessStatus();
     });
 };
 
@@ -125,6 +126,57 @@ function scrollToHashTarget() {
         const target = document.querySelector(window.location.hash);
         if (!target) return;
         target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+}
+
+function setUpPDFFileAccessStatus() {
+    const status = document.getElementById("pdf-file-access-status");
+    const statusText = document.getElementById("pdf-file-access-status-text");
+    const openSettingsButton = document.getElementById("open-pdf-file-access-settings");
+    const usePDFjsSwitch = document.getElementById("use-pdf-js");
+    if (!status || !statusText || !openSettingsButton || !usePDFjsSwitch) return;
+
+    openSettingsButton.addEventListener("click", openExtensionSettingsPage);
+    usePDFjsSwitch.addEventListener("change", updatePDFFileAccessStatus);
+    updatePDFFileAccessStatus();
+}
+
+function updatePDFFileAccessStatus() {
+    const status = document.getElementById("pdf-file-access-status");
+    const statusText = document.getElementById("pdf-file-access-status-text");
+    const openSettingsButton = document.getElementById("open-pdf-file-access-settings");
+    const usePDFjsSwitch = document.getElementById("use-pdf-js");
+    if (!status || !statusText || !openSettingsButton || !usePDFjsSwitch) return;
+
+    if (!usePDFjsSwitch.checked) {
+        status.hidden = true;
+        return;
+    }
+
+    isFileSchemeAccessAllowed((allowed) => {
+        status.hidden = false;
+        status.classList.toggle("allowed", allowed);
+        status.classList.toggle("missing", !allowed);
+        statusText.textContent = chrome.i18n.getMessage(
+            allowed ? "PDFFileAccessAllowed" : "PDFFileAccessMissing"
+        );
+        openSettingsButton.hidden = allowed;
+    });
+}
+
+function isFileSchemeAccessAllowed(callback) {
+    if (!chrome.extension?.isAllowedFileSchemeAccess) {
+        callback(true);
+        return;
+    }
+
+    chrome.extension.isAllowedFileSchemeAccess(callback);
+}
+
+function openExtensionSettingsPage(event) {
+    if (event) event.preventDefault();
+    chrome.tabs.create({
+        url: `chrome://extensions/?id=${chrome.runtime.id}`,
     });
 }
 

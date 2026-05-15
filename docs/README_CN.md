@@ -20,6 +20,17 @@
 
 ![screenshot_translate](./images/screenshot_translate.gif)
 
+### PDF 翻译权限设置
+
+如果要翻译浏览器打开的本地 PDF 文件，请按以下步骤开启权限：
+
+-   在侧边翻译设置页开启`使用内置的 PDF 查看器`。
+-   打开浏览器扩展详情页：
+    -   Chrome：`chrome://extensions/?id=dpdpboiiginghjjmndfdjeackcibfcnb`
+    -   Microsoft Edge：`edge://extensions`
+-   为侧边翻译开启`允许访问文件网址`。
+-   刷新已打开的 PDF 标签页。
+
 ## 从商店安装
 
 推荐从 [Chrome 网上应用店](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb) 安装侧边翻译。Chrome 可以直接安装，Microsoft Edge 也支持从 Chrome 网上应用店安装。

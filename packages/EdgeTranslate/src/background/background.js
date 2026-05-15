@@ -17,6 +17,7 @@ import {
     setDefaultSettings,
 } from "common/scripts/settings.js";
 import { resolveContextMenuSelection } from "./library/context_menu.js";
+import "./library/pdf_file_access.js";
 
 if (typeof BUILD_ENV !== "undefined" && BUILD_ENV === "development") {
     hotReload();
@@ -121,9 +122,7 @@ async function resetDynamicRules() {
 }
 
 async function handleProductionInstallOrUpdate(details) {
-    if (process.env.NODE_ENV !== "production") {
-        return;
-    }
+    if (process.env.NODE_ENV !== "production") return;
 
     if (details.reason === "install") {
         openProjectPage();
