@@ -20,24 +20,60 @@ function createSession(updateSession) {
 }
 
 function createOverlayView() {
-    const overlay = document.createElement("div");
-    const mask = document.createElement("div");
-    const selectionBox = document.createElement("div");
-    const hint = document.createElement("div");
+    const overlay = createOverlayElement();
+    const backdropStyle = createBackdropStyle();
+    const mask = createMaskElement();
+    const selectionBox = createSelectionBoxElement();
+    const hint = createHintElement();
 
+    document.head.appendChild(backdropStyle);
+    appendOverlayChildren(overlay, mask, selectionBox, hint);
+    document.documentElement.appendChild(overlay);
+    showOverlay(overlay);
+    return { backdropStyle, overlay, selectionBox };
+}
+
+function createOverlayElement() {
+    const overlay = document.createElement("dialog");
     overlay.id = "edge-translate-screenshot-overlay";
     Object.assign(overlay.style, {
-        position: "fixed",
-        inset: 0,
-        zIndex: 2147483647,
+        background: "transparent",
+        border: "none",
         cursor: "crosshair",
+        height: "100vh",
+        inset: 0,
+        margin: 0,
+        maxHeight: "none",
+        maxWidth: "none",
+        overflow: "hidden",
+        padding: 0,
+        position: "fixed",
         userSelect: "none",
+        width: "100vw",
+        zIndex: 2147483647,
     });
+    return overlay;
+}
+
+function createBackdropStyle() {
+    const backdropStyle = document.createElement("style");
+    backdropStyle.textContent =
+        "#edge-translate-screenshot-overlay::backdrop { background: transparent; }";
+    return backdropStyle;
+}
+
+function createMaskElement() {
+    const mask = document.createElement("div");
     Object.assign(mask.style, {
         position: "absolute",
         inset: 0,
         background: "rgba(0, 0, 0, 0.18)",
     });
+    return mask;
+}
+
+function createSelectionBoxElement() {
+    const selectionBox = document.createElement("div");
     Object.assign(selectionBox.style, {
         position: "absolute",
         border: "2px solid #4a8cf7",
@@ -45,6 +81,11 @@ function createOverlayView() {
         display: "none",
         boxSizing: "border-box",
     });
+    return selectionBox;
+}
+
+function createHintElement() {
+    const hint = document.createElement("div");
     hint.textContent = chrome.i18n.getMessage("ScreenshotTranslateHint");
     Object.assign(hint.style, {
         position: "absolute",
@@ -61,12 +102,26 @@ function createOverlayView() {
         whiteSpace: "nowrap",
         boxShadow: "0 6px 18px rgba(0, 0, 0, 0.2)",
     });
+    return hint;
+}
 
+function appendOverlayChildren(overlay, mask, selectionBox, hint) {
     overlay.appendChild(mask);
     overlay.appendChild(selectionBox);
     overlay.appendChild(hint);
-    document.documentElement.appendChild(overlay);
-    return { overlay, selectionBox };
+}
+
+function showOverlay(overlay) {
+    if (typeof overlay.showModal !== "function") {
+        overlay.setAttribute("open", "");
+        return;
+    }
+
+    try {
+        overlay.showModal();
+    } catch {
+        overlay.setAttribute("open", "");
+    }
 }
 
 function createSessionHandlers(view, pointerState, session, clearSession) {
@@ -82,6 +137,10 @@ function createSessionHandlers(view, pointerState, session, clearSession) {
     handlers = {
         keydownHandler(event) {
             if (event.key !== "Escape") return;
+            consumeEvent(event);
+            resolver.resolveSelection(null);
+        },
+        cancelHandler(event) {
             consumeEvent(event);
             resolver.resolveSelection(null);
         },
@@ -151,6 +210,10 @@ function createSelectionResolver({ view, pointerState, session, clearSession, ge
             clickFallbackTimer = null;
         }
         removeSessionHandlers(view.overlay, getHandlers());
+        closeOverlay(view.overlay);
+        if (document.head.contains(view.backdropStyle)) {
+            document.head.removeChild(view.backdropStyle);
+        }
         if (document.documentElement.contains(view.overlay)) {
             document.documentElement.removeChild(view.overlay);
         }
@@ -183,6 +246,7 @@ function createSelectionResolver({ view, pointerState, session, clearSession, ge
 }
 
 function registerSessionHandlers(overlay, handlers) {
+    overlay.addEventListener("cancel", handlers.cancelHandler, true);
     overlay.addEventListener("mousedown", handlers.mousedownHandler, true);
     overlay.addEventListener("mousemove", handlers.mousemoveHandler, true);
     overlay.addEventListener("mouseup", handlers.mouseupHandler, true);
@@ -192,10 +256,25 @@ function registerSessionHandlers(overlay, handlers) {
 
 function removeSessionHandlers(overlay, handlers) {
     window.removeEventListener("keydown", handlers.keydownHandler, true);
+    overlay.removeEventListener("cancel", handlers.cancelHandler, true);
     overlay.removeEventListener("mousedown", handlers.mousedownHandler, true);
     overlay.removeEventListener("mousemove", handlers.mousemoveHandler, true);
     overlay.removeEventListener("mouseup", handlers.mouseupHandler, true);
     overlay.removeEventListener("click", handlers.clickHandler, true);
+}
+
+function closeOverlay(overlay) {
+    if (!overlay.open) return;
+    if (typeof overlay.close !== "function") {
+        overlay.removeAttribute("open");
+        return;
+    }
+
+    try {
+        overlay.close();
+    } catch {
+        overlay.removeAttribute("open");
+    }
 }
 
 function consumeEvent(event) {

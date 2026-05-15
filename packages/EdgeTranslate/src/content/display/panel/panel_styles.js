@@ -85,6 +85,7 @@ export const Panel = styled.div`
     box-sizing: border-box;
     -moz-tab-size: 4;
     tab-size: 4;
+    pointer-events: auto;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
         "Apple Color Emoji", "Segoe UI Emoji";
 

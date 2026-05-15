@@ -39,6 +39,7 @@ function initSelectTranslate() {
 function createSelectState() {
     return {
         buttonPositionSetting: "TopRight",
+        buttonSelection: null,
         channel: new Channel(),
         hasButtonShown: false,
         longPressEnabled: false,
@@ -55,6 +56,7 @@ function createSelectState() {
         scrollingElement: window,
         tools: createLongPressTools(),
         translationButtonContainer: document.createElement("iframe"),
+        translationButtonHost: null,
     };
 }
 
@@ -179,7 +181,7 @@ function handleCommand(state, detail) {
 }
 
 function translateSubmit(state, options = {}) {
-    const selection = getSelection();
+    const selection = getSelectionForButtonAction(state);
     if (!selection.text?.length) return;
     state.channel.request("translate", selection).then(() => {
         getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
@@ -194,8 +196,15 @@ function translateSubmit(state, options = {}) {
     });
 }
 
-function pronounceSubmit(state) {
+function getSelectionForButtonAction(state) {
     const selection = getSelection();
+    if (selection.text?.length) return selection;
+    if (state.buttonSelection?.text?.length) return state.buttonSelection;
+    return selection;
+}
+
+function pronounceSubmit(state) {
+    const selection = getSelectionForButtonAction(state);
     if (!selection.text?.length) return;
     state.channel.request("pronounce", { text: selection.text, language: "auto" });
 }

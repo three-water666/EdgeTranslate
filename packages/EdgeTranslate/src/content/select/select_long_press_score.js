@@ -45,7 +45,7 @@ function isValidBlockContainer({ element, x, y, textLength, containsPoint }) {
 function isIgnoredElement(element) {
     return Boolean(
         element.closest?.(
-            "#edge-translate-button, #edge-translate-root, #edge-translate-screenshot-overlay"
+            "#edge-translate-button, #edge-translate-button-host, #edge-translate-root, #edge-translate-screenshot-overlay"
         )
     );
 }
