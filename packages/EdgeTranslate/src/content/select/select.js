@@ -181,7 +181,7 @@ function handleCommand(state, detail) {
 }
 
 function translateSubmit(state, options = {}) {
-    const selection = getSelectionForTranslate(state);
+    const selection = getSelectionForButtonAction(state);
     if (!selection.text?.length) return;
     state.channel.request("translate", selection).then(() => {
         getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
@@ -196,7 +196,7 @@ function translateSubmit(state, options = {}) {
     });
 }
 
-function getSelectionForTranslate(state) {
+function getSelectionForButtonAction(state) {
     const selection = getSelection();
     if (selection.text?.length) return selection;
     if (state.buttonSelection?.text?.length) return state.buttonSelection;
@@ -204,7 +204,7 @@ function getSelectionForTranslate(state) {
 }
 
 function pronounceSubmit(state) {
-    const selection = getSelection();
+    const selection = getSelectionForButtonAction(state);
     if (!selection.text?.length) return;
     state.channel.request("pronounce", { text: selection.text, language: "auto" });
 }
