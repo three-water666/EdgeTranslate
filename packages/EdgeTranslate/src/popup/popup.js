@@ -26,6 +26,7 @@ window.onload = function () {
     bindMutualTranslateChangeHandler();
     exchangeButton.onclick = exchangeLanguage;
     loadInitialSettings();
+    setUpPDFFileAccessNotice();
     // 统一添加事件监听
     addEventListener();
 };
@@ -188,6 +189,9 @@ function addEventListener() {
         .getElementById("screenshot-translate")
         .addEventListener("click", handleScreenshotTranslateClick);
     document.getElementById("open-options").addEventListener("click", openOptionsPage);
+    document
+        .getElementById("open-pdf-file-access-settings")
+        .addEventListener("click", openExtensionSettingsPage);
 }
 
 /**
@@ -323,6 +327,43 @@ function showSourceTarget() {
 function openOptionsPage(event) {
     if (event) event.preventDefault();
     chrome.runtime.openOptionsPage();
+}
+
+function setUpPDFFileAccessNotice() {
+    const notice = document.getElementById("pdf-file-access-notice");
+    if (!notice) return;
+
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        if (!isLocalPDFUrl(tab?.url)) {
+            notice.hidden = true;
+            return;
+        }
+
+        isFileSchemeAccessAllowed((allowed) => {
+            notice.hidden = allowed;
+        });
+    });
+}
+
+function isLocalPDFUrl(url) {
+    return typeof url === "string" && /^file:\/\//i.test(url) && /\.pdf(?:[?#].*)?$/i.test(url);
+}
+
+function isFileSchemeAccessAllowed(callback) {
+    if (!chrome.extension?.isAllowedFileSchemeAccess) {
+        callback(true);
+        return;
+    }
+
+    chrome.extension.isAllowedFileSchemeAccess(callback);
+}
+
+function openExtensionSettingsPage(event) {
+    if (event) event.preventDefault();
+    chrome.tabs.create({
+        url: `chrome://extensions/?id=${chrome.runtime.id}`,
+    });
+    window.close();
 }
 
 /**

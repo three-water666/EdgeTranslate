@@ -20,6 +20,17 @@
 
 ![screenshot_translate](./images/screenshot_translate.gif)
 
+### PDF 翻譯權限設定
+
+如果要翻譯瀏覽器開啟的本機 PDF 檔案，請按以下步驟開啟權限：
+
+-   在側邊翻譯設定頁開啟`使用內建的 PDF 檢視器`。
+-   開啟瀏覽器擴充功能詳細資料頁：
+    -   Chrome：`chrome://extensions/?id=dpdpboiiginghjjmndfdjeackcibfcnb`
+    -   Microsoft Edge：`edge://extensions`
+-   為側邊翻譯開啟`允許存取檔案網址`。
+-   重新整理已開啟的 PDF 分頁。
+
 ## 從商店安裝
 
 建議從 [Chrome 線上應用程式商店](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb) 安裝側邊翻譯。Chrome 可以直接安裝，Microsoft Edge 也支援從 Chrome 線上應用程式商店安裝。

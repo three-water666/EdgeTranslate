@@ -20,6 +20,17 @@
 
 ![screenshot_translate](./images/screenshot_translate.gif)
 
+### Настройка перевода PDF
+
+Чтобы переводить локальные PDF-файлы, открытые в браузере:
+
+-   Включите `Use Built-in PDF Viewer` в настройках Edge Translate.
+-   Откройте страницу сведений о расширении:
+    -   Chrome: `chrome://extensions/?id=dpdpboiiginghjjmndfdjeackcibfcnb`
+    -   Microsoft Edge: `edge://extensions`
+-   Включите `Allow access to file URLs` для Edge Translate.
+-   Обновите открытую вкладку PDF.
+
 ## Установка из магазина
 
 Рекомендуемый способ установки Edge Translate - через [Chrome Web Store](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb). Chrome может установить расширение напрямую, а Microsoft Edge также поддерживает установку из Chrome Web Store.

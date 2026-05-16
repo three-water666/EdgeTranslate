@@ -175,6 +175,30 @@
         "message": "このページでEdgeTranslateを使うには、拡張機能の管理を開き、「ファイルの URL へのアクセスを許可する」をオンにしてください",
         "description": "ファイルの URL へのアクセスの権限に関するユーザへのヒント"
     },
+    "PDFFileAccessPopupNotice": {
+        "message": "ローカル PDF 翻訳にはファイル URL へのアクセス許可が必要です。",
+        "description": "ファイル URL へのアクセスが無効なローカル PDF タブで popup に表示する通知。"
+    },
+    "PDFFileAccessMissing": {
+        "message": "ローカル PDF 翻訳には「ファイルの URL へのアクセスを許可する」が必要です。拡張機能の詳細ページで有効にしてから PDF タブを再読み込みしてください。",
+        "description": "ファイル URL へのアクセスが無効なときの設定ページの状態。"
+    },
+    "PDFFileAccessAllowed": {
+        "message": "ローカル PDF へのアクセス許可は有効です。開いている PDF タブを再読み込みすると内蔵 PDF ビューアを使用できます。",
+        "description": "ファイル URL へのアクセスが有効なときの設定ページの状態。"
+    },
+    "PDFFileAccessNotificationTitle": {
+        "message": "ローカル PDF 翻訳を有効にする",
+        "description": "ローカル PDF のファイル URL アクセス通知タイトル。"
+    },
+    "PDFFileAccessNotificationMessage": {
+        "message": "拡張機能の詳細ページで「ファイルの URL へのアクセスを許可する」を有効にし、この PDF タブを再読み込みしてください。",
+        "description": "ローカル PDF のファイル URL アクセス通知本文。"
+    },
+    "OpenExtensionSettings": {
+        "message": "拡張機能の設定を開く",
+        "description": "ブラウザの拡張機能詳細ページを開くボタンテキスト。"
+    },
     "ContentSettings": {
         "message": "コンテンツの設定",
         "description": "翻訳結果に表示する内容を選択する。"

@@ -175,6 +175,30 @@
         "message": "To use EdgeTranslate on this page, you need to turn on the 'Allow access to file URLs' switch in the extension management page.",
         "description": "a hint to the user about the access to file url permission"
     },
+    "PDFFileAccessPopupNotice": {
+        "message": "Local PDF translation needs file URL access.",
+        "description": "Popup notice shown on local PDF tabs when file URL access is disabled."
+    },
+    "PDFFileAccessMissing": {
+        "message": "Local PDF translation needs the 'Allow access to file URLs' permission. Open the extension details page, enable it, then refresh the PDF tab.",
+        "description": "Options page status when file URL access is disabled."
+    },
+    "PDFFileAccessAllowed": {
+        "message": "Local PDF file access is enabled. Refresh open PDF tabs to use the built-in PDF viewer.",
+        "description": "Options page status when file URL access is enabled."
+    },
+    "PDFFileAccessNotificationTitle": {
+        "message": "Enable local PDF translation",
+        "description": "Notification title for local PDF file access."
+    },
+    "PDFFileAccessNotificationMessage": {
+        "message": "Open the extension details page, enable 'Allow access to file URLs', then refresh this PDF tab.",
+        "description": "Notification message for local PDF file access."
+    },
+    "OpenExtensionSettings": {
+        "message": "Open settings",
+        "description": "Button text for opening the browser extension details page."
+    },
     "ContentSettings": {
         "message": "Content Settings",
         "description": "Choose what to display in the translating results."

@@ -175,6 +175,30 @@
         "message": "如果想在此頁面使用側邊翻譯，請在擴展程序管理頁面中開啟：'允許訪問文件網址' 的開關。",
         "description": "在用戶的 '允許訪問文件網址'的權限未打開時，給用戶合理的提醒"
     },
+    "PDFFileAccessPopupNotice": {
+        "message": "本機 PDF 翻譯需要開啟檔案網址存取權限。",
+        "description": "在本機 PDF 分頁且檔案網址權限未開啟時顯示在 popup 中的提示。"
+    },
+    "PDFFileAccessMissing": {
+        "message": "本機 PDF 翻譯需要開啟「允許存取檔案網址」。請開啟擴充功能詳細資料頁，啟用該權限後重新整理 PDF 分頁。",
+        "description": "設定頁中檔案網址權限未開啟時的狀態提示。"
+    },
+    "PDFFileAccessAllowed": {
+        "message": "本機 PDF 檔案存取權限已開啟。重新整理已開啟的 PDF 分頁後即可使用內建 PDF 檢視器。",
+        "description": "設定頁中檔案網址權限已開啟時的狀態提示。"
+    },
+    "PDFFileAccessNotificationTitle": {
+        "message": "開啟本機 PDF 翻譯",
+        "description": "本機 PDF 檔案網址權限通知標題。"
+    },
+    "PDFFileAccessNotificationMessage": {
+        "message": "請開啟擴充功能詳細資料頁，啟用「允許存取檔案網址」，然後重新整理目前的 PDF 分頁。",
+        "description": "本機 PDF 檔案網址權限通知內容。"
+    },
+    "OpenExtensionSettings": {
+        "message": "開啟擴充功能設定",
+        "description": "開啟瀏覽器擴充功能詳細資料頁的按鈕文字。"
+    },
     "ContentSettings": {
         "message": "翻譯結果設定",
         "description": "選則需要在翻譯結果中展示的内容。"

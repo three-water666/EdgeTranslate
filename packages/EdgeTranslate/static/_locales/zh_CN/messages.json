@@ -175,6 +175,30 @@
         "message": "如果想在此页面使用侧边翻译，请在扩展程序管理页面中开启：'允许访问文件网址' 的开关。",
         "description": "在用户的 '允许访问文件网址'的权限未打开时，给用户合理的提醒"
     },
+    "PDFFileAccessPopupNotice": {
+        "message": "本地 PDF 翻译需要开启文件网址访问权限。",
+        "description": "在本地 PDF 标签页且文件网址权限未开启时显示在 popup 中的提示。"
+    },
+    "PDFFileAccessMissing": {
+        "message": "本地 PDF 翻译需要开启“允许访问文件网址”。请打开扩展详情页，开启该权限后刷新 PDF 标签页。",
+        "description": "设置页中文件网址权限未开启时的状态提示。"
+    },
+    "PDFFileAccessAllowed": {
+        "message": "本地 PDF 文件访问权限已开启。刷新已打开的 PDF 标签页后即可使用内置 PDF 查看器。",
+        "description": "设置页中文件网址权限已开启时的状态提示。"
+    },
+    "PDFFileAccessNotificationTitle": {
+        "message": "开启本地 PDF 翻译",
+        "description": "本地 PDF 文件网址权限通知标题。"
+    },
+    "PDFFileAccessNotificationMessage": {
+        "message": "请打开扩展详情页，开启“允许访问文件网址”，然后刷新当前 PDF 标签页。",
+        "description": "本地 PDF 文件网址权限通知内容。"
+    },
+    "OpenExtensionSettings": {
+        "message": "打开扩展设置",
+        "description": "打开浏览器扩展详情页的按钮文本。"
+    },
     "ContentSettings": {
         "message": "翻译结果设置",
         "description": "选择需要在翻译结果中展示的内容。"

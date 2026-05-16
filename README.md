@@ -20,6 +20,17 @@ Read this page in other languages:
 
 ![screenshot_translate](./docs/images/screenshot_translate.gif)
 
+### PDF Translation Setup
+
+To translate text in local PDF files opened by the browser:
+
+-   Enable `Use Built-in PDF Viewer` in Edge Translate settings.
+-   Open the browser extension details page:
+    -   Chrome: `chrome://extensions/?id=dpdpboiiginghjjmndfdjeackcibfcnb`
+    -   Microsoft Edge: `edge://extensions`
+-   Turn on `Allow access to file URLs` for Edge Translate.
+-   Refresh the open PDF tab.
+
 ## Install from the Store
 
 The recommended way to install Edge Translate is from the [Chrome Web Store](https://chromewebstore.google.com/detail/edge-translate-browser-tr/dpdpboiiginghjjmndfdjeackcibfcnb). Chrome can install it directly, and Microsoft Edge also supports installing it from the Chrome Web Store.
