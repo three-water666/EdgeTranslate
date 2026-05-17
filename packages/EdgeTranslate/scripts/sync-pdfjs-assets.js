@@ -3,17 +3,22 @@ const fs = require("fs");
 const path = require("path");
 
 const EDGE_TRANSLATE_DIR = path.resolve(__dirname, "..");
-const PDFJS_VERSION = "5.7.284";
-const PDFJS_VENDOR_DIR = path.join(EDGE_TRANSLATE_DIR, "vendor", "pdfjs", PDFJS_VERSION);
+const PDFJS_VENDOR_ROOT = path.join(EDGE_TRANSLATE_DIR, "vendor", "pdfjs");
 const PDF_OUTPUT_DIR = "pdf";
 
-const OMITTED_VENDOR_FILES = new Set([
-    "build/pdf.mjs.map",
-    "build/pdf.sandbox.mjs.map",
-    "build/pdf.worker.mjs.map",
-    "web/compressed.tracemonkey-pldi-09.pdf",
-    "web/viewer.mjs.map",
-]);
+const PDFJS_DIST_BUILD_FILES = ["pdf.mjs", "pdf.sandbox.mjs", "pdf.worker.mjs"];
+
+const PDFJS_DIST_WEB_DIRECTORIES = ["cmaps", "iccs", "images", "standard_fonts", "wasm"];
+
+const PDFJS_VIEWER_APP_PATHS = [
+    "LICENSE",
+    "web/debugger.css",
+    "web/debugger.mjs",
+    "web/locale",
+    "web/viewer.css",
+    "web/viewer.html",
+    "web/viewer.mjs",
+];
 
 const EDGE_TRANSLATE_STYLES = [
     '<link rel="stylesheet" href="../../content/select/select.css" />',
@@ -108,8 +113,15 @@ const PDFJS_RUNTIME_PATCH_FILES = [
 function syncPdfjsAssets({ outputDir }) {
     const absoluteOutputDir = path.resolve(EDGE_TRANSLATE_DIR, outputDir);
     const pdfOutputDir = path.join(absoluteOutputDir, PDF_OUTPUT_DIR);
+    const pdfjsDistDir = resolvePackageRoot("pdfjs-dist");
+    const pdfjsVersion = getPackageVersion(pdfjsDistDir);
+    const pdfjsViewerAppDir = path.join(PDFJS_VENDOR_ROOT, pdfjsVersion);
 
-    copyDirectory(PDFJS_VENDOR_DIR, pdfOutputDir);
+    assertPdfjsDistComplete(pdfjsDistDir);
+    assertViewerAppComplete(pdfjsViewerAppDir);
+    fs.rmSync(pdfOutputDir, { recursive: true, force: true });
+    copyViewerAppFiles(pdfjsViewerAppDir, pdfOutputDir);
+    copyPdfjsDistRuntimeFiles(pdfjsDistDir, pdfOutputDir);
     patchRuntimeCompatibility(pdfOutputDir);
     patchViewerHtml(path.join(pdfOutputDir, "web", "viewer.html"));
     patchViewerMjs(path.join(pdfOutputDir, "web", "viewer.mjs"));
@@ -120,13 +132,8 @@ function copyFile(source, target) {
     fs.copyFileSync(source, target);
 }
 
-function copyDirectory(source, target, root = source) {
+function copyDirectory(source, target) {
     if (!fs.existsSync(source)) {
-        return;
-    }
-
-    const relativePath = toPosixPath(path.relative(root, source));
-    if (OMITTED_VENDOR_FILES.has(relativePath)) {
         return;
     }
 
@@ -138,8 +145,69 @@ function copyDirectory(source, target, root = source) {
 
     fs.mkdirSync(target, { recursive: true });
     for (const item of fs.readdirSync(source)) {
-        copyDirectory(path.join(source, item), path.join(target, item), root);
+        copyDirectory(path.join(source, item), path.join(target, item));
     }
+}
+
+function copyViewerAppFiles(pdfjsViewerAppDir, pdfOutputDir) {
+    for (const relativePath of PDFJS_VIEWER_APP_PATHS) {
+        copyDirectory(
+            path.join(pdfjsViewerAppDir, relativePath),
+            path.join(pdfOutputDir, relativePath)
+        );
+    }
+}
+
+function copyPdfjsDistRuntimeFiles(pdfjsDistDir, pdfOutputDir) {
+    for (const fileName of PDFJS_DIST_BUILD_FILES) {
+        copyFile(
+            path.join(pdfjsDistDir, "build", fileName),
+            path.join(pdfOutputDir, "build", fileName)
+        );
+    }
+
+    for (const directoryName of PDFJS_DIST_WEB_DIRECTORIES) {
+        copyDirectory(
+            path.join(pdfjsDistDir, directoryName === "images" ? "web" : "", directoryName),
+            path.join(pdfOutputDir, "web", directoryName)
+        );
+    }
+}
+
+function assertPdfjsDistComplete(pdfjsDistDir) {
+    const requiredPaths = [
+        ...PDFJS_DIST_BUILD_FILES.map((fileName) => path.join("build", fileName)),
+        ...PDFJS_DIST_WEB_DIRECTORIES.map((directoryName) =>
+            path.join(directoryName === "images" ? "web" : "", directoryName)
+        ),
+    ];
+
+    assertPathsExist(pdfjsDistDir, requiredPaths, "pdfjs-dist package");
+}
+
+function assertViewerAppComplete(pdfjsViewerAppDir) {
+    assertPathsExist(pdfjsViewerAppDir, PDFJS_VIEWER_APP_PATHS, "PDF.js viewer app vendor");
+}
+
+function assertPathsExist(rootDir, relativePaths, label) {
+    for (const relativePath of relativePaths) {
+        const fullPath = path.join(rootDir, relativePath);
+        if (!fs.existsSync(fullPath)) {
+            throw new Error(`${label} is missing ${toPosixPath(relativePath)}.`);
+        }
+    }
+}
+
+function resolvePackageRoot(packageName) {
+    const packageJsonPath = require.resolve(`${packageName}/package.json`, {
+        paths: [EDGE_TRANSLATE_DIR],
+    });
+    return path.dirname(packageJsonPath);
+}
+
+function getPackageVersion(packageRoot) {
+    const packageJson = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"));
+    return packageJson.version;
 }
 
 function patchViewerHtml(viewerHtmlPath) {
