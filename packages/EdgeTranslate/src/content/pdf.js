@@ -68,7 +68,9 @@ function redirect(pdfSrc) {
         let OtherSettings = result.OtherSettings;
         if (OtherSettings && OtherSettings["UsePDFjs"]) {
             channel.emit("redirect", {
-                url: chrome.runtime.getURL(`pdf/viewer.html?file=${encodeURIComponent(pdfSrc)}`),
+                url: chrome.runtime.getURL(
+                    `pdf/web/viewer.html?file=${encodeURIComponent(pdfSrc)}`
+                ),
             });
         }
     });

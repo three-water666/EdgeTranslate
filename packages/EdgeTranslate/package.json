@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "test": "jest",
-        "lint": "node ../../scripts/run-eslint.js packages/EdgeTranslate .eslintrc.js gulpfile.js \"src/**/*.{js,jsx}\" \"config/**/*.js\" \"utils/**/*.js\" \"test/**/*.{js,jsx}\"",
+        "lint": "node ../../scripts/run-eslint.js packages/EdgeTranslate .eslintrc.js gulpfile.js \"scripts/**/*.js\" \"src/**/*.{js,jsx}\" \"config/**/*.js\" \"utils/**/*.js\" \"test/**/*.{js,jsx}\"",
         "lint:fix": "pnpm lint --fix",
         "format": "node ../../scripts/run-eslint.js packages/EdgeTranslate \"src/**/*.js\" \"config/**/*.js\" --fix",
         "dev": "pnpm --dir ../translators dev:prepare && gulp dev --browser chrome",
