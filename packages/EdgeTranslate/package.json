@@ -26,14 +26,13 @@
         "@babel/preset-env": "^7.16.11",
         "@svgr/webpack": "^5.5.0",
         "adm-zip": "^0.5.9",
-        "axios": "^1.15.0",
+        "axios": "^1.16.1",
         "babel-loader": "^8.2.3",
         "chromedriver": "^147.0.4",
         "css": "^3.0.0",
         "del": "^6.0.0",
         "edgedriver": "^6.3.0",
         "gulp": "^4.0.2",
-        "gulp-stylus": "^2.7.1",
         "gulp-terser": "^2.1.0",
         "gulp-zip": "^5.1.0",
         "jest-image-snapshot": "^6.5.2",
@@ -42,10 +41,11 @@
         "mockttp": "^1.2.2",
         "selenium-webdriver": "^4.43.0",
         "socks-proxy-agent": "^10.0.0",
+        "stylus": "^0.64.0",
         "through2": "^4.0.2",
         "webpack": "^5.70.0",
         "webpack-merge": "^5.8.0",
-        "webpack-stream": "^6.1.2"
+        "webpack-stream": "^7.0.0"
     },
     "dependencies": {
         "@edge_translate/translators": "workspace:^",

@@ -51,6 +51,7 @@ module.exports = {
             path: false,
             fs: false,
             stream: false,
+            url: false,
         },
     },
     performance: {

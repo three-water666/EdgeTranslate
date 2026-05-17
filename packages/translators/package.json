@@ -24,9 +24,9 @@
     "devDependencies": {
         "@types/chrome": "^0.0.190",
         "typescript": "^5.9.3",
-        "vite": "^2.9.13"
+        "vite": "^8.0.13"
     },
     "peerDependencies": {
-        "axios": "^1.15.0"
+        "axios": "^1.16.1"
     }
 }
