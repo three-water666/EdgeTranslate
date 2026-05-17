@@ -85,14 +85,21 @@ function scheduleAssetTask(schedule, filePath) {
 
 function createTaskScheduler(context) {
     const runningTasks = new Map();
+    const pendingTasks = new Set();
 
-    return (taskName, task) => {
+    return function schedule(taskName, task) {
         if (runningTasks.has(taskName)) {
+            pendingTasks.add(taskName);
             return;
         }
 
         const taskPromise = runWatchedTask(taskName, task, context).finally(() => {
             runningTasks.delete(taskName);
+            if (pendingTasks.has(taskName)) {
+                pendingTasks.delete(taskName);
+                // 延迟或直接重新调度执行最新更改
+                schedule(taskName, task);
+            }
         });
         runningTasks.set(taskName, taskPromise);
     };
