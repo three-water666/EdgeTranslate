@@ -29,7 +29,7 @@ function isNativePDFViewer() {
 function isPDFjsPDFViewer() {
     return (
         window.location.origin + window.location.pathname ===
-        chrome.runtime.getURL("pdf/viewer.html")
+        chrome.runtime.getURL("pdf/web/viewer.html")
     );
 }
 

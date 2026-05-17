@@ -15,6 +15,8 @@ const EXCLUDED_STAGED_FILE_PATHS = [
     "packages/EdgeTranslate/static/google/injection.js",
 ];
 
+const PDFJS_VERSIONED_VENDOR_PATH_PATTERN = /^packages\/EdgeTranslate\/vendor\/pdfjs\/[0-9][^/]*\//;
+
 function normalizeFilePath(filePath) {
     return filePath.split(path.sep).join("/");
 }
@@ -23,7 +25,8 @@ function isExcludedStagedFile(filePath) {
     const normalizedPath = normalizeFilePath(filePath);
     return (
         EXCLUDED_STAGED_PATH_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix)) ||
-        EXCLUDED_STAGED_FILE_PATHS.includes(normalizedPath)
+        EXCLUDED_STAGED_FILE_PATHS.includes(normalizedPath) ||
+        PDFJS_VERSIONED_VENDOR_PATH_PATTERN.test(normalizedPath)
     );
 }
 

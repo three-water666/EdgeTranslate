@@ -1,6 +1,7 @@
 const del = require("del");
 const fs = require("fs");
 const gulp = require("gulp");
+const { syncPdfjsAssets } = require("./scripts/sync-pdfjs-assets");
 const stylus = require("gulp-stylus");
 const through = require("through2");
 const webpack = require("webpack");
@@ -36,7 +37,7 @@ exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
     ensureOutputDirectory,
-    gulp.parallel(buildJSDev, copyManifest, html, styl, packStatic, touchHotReloadStamp),
+    gulp.parallel(buildJSDev, copyManifest, html, styl, packStatic, pdfViewer, touchHotReloadStamp),
     watcher
 );
 
@@ -47,7 +48,7 @@ exports.build = gulp.series(
     setProductEnvironment,
     clean,
     ensureOutputDirectory,
-    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic)
+    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic, pdfViewer)
 );
 
 /**
@@ -122,6 +123,11 @@ function watcher(done) {
         gulp.series(copyManifest, touchHotReloadStamp)
     );
     gulp.watch("./src/**/*.html").on("change", gulp.series(html, touchHotReloadStamp));
+    gulp.watch("./vendor/pdfjs/**/*").on("change", gulp.series(pdfViewer, touchHotReloadStamp));
+    gulp.watch("./scripts/sync-pdfjs-assets.js").on(
+        "change",
+        gulp.series(pdfViewer, touchHotReloadStamp)
+    );
     gulp.watch("./static/**/*").on("change", gulp.series(packStatic, touchHotReloadStamp));
     gulp.watch("./src/**/*.styl").on("change", gulp.series(styl, touchHotReloadStamp));
     done();
@@ -138,6 +144,7 @@ function eslintJS(done) {
             "packages/EdgeTranslate",
             ".eslintrc.js",
             "gulpfile.js",
+            "scripts/**/*.js",
             "src/**/*.{js,jsx}",
             "config/**/*.js",
             "utils/**/*.js",
@@ -275,6 +282,11 @@ function styl() {
         .pipe(gulp.dest(output_dir));
 }
 
+function pdfViewer(done) {
+    syncPdfjsAssets({ outputDir: getOutputDir() });
+    done();
+}
+
 /**
  * A private task to pack static files under "./static/"
  */
@@ -288,6 +300,7 @@ function packStatic() {
                 "./static/**/*.js",
                 "!./static/google/element_main.js",
                 "!./static/google/elms/**/*.js",
+                "!./static/pdf/**/*.js",
                 "!./static/pdf/lib/**/*.js",
                 "!./static/pdf/viewer.js",
             ],
@@ -300,23 +313,17 @@ function packStatic() {
         .pipe(gulp.dest(output_dir));
 
     let vendoredJSFiles = gulp
-        .src(
-            [
-                "./static/google/element_main.js",
-                "./static/google/elms/**/*.js",
-                "./static/pdf/lib/**/*.js",
-                "./static/pdf/viewer.js",
-            ],
-            {
-                base: "static",
-                since: gulp.lastRun(packStatic),
-            }
-        )
+        .src(["./static/google/element_main.js", "./static/google/elms/**/*.js"], {
+            base: "static",
+            since: gulp.lastRun(packStatic),
+        })
         .pipe(gulp.dest(output_dir));
 
     // non-js static files
     let staticOtherFiles = gulp
-        .src(["./static/**/!(*.js)", "!./static/ocr/lang/**/*"], { base: "static" })
+        .src(["./static/**/!(*.js)", "!./static/ocr/lang/**/*", "!./static/pdf/**/*"], {
+            base: "static",
+        })
         .pipe(gulp.dest(output_dir));
 
     return mergeStream([staticJSFiles, vendoredJSFiles, staticOtherFiles]);
