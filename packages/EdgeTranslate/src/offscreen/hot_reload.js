@@ -1,5 +1,6 @@
 let hotReloadTimer = null;
 let hotReloadStamp = null;
+const HOT_RELOAD_DETECTED_EVENT = "hot_reload_detected";
 
 async function fetchHotReloadStamp(stampUrl) {
     const response = await fetch(`${stampUrl}?t=${Date.now()}`, { cache: "no-store" });
@@ -9,16 +10,16 @@ async function fetchHotReloadStamp(stampUrl) {
     return response.text();
 }
 
-function reloadExtension() {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-            chrome.tabs.reload(tabs[0].id);
-        }
-        setTimeout(() => chrome.runtime.reload(), 150);
-    });
+function notifyHotReloadDetected(channel) {
+    if (channel) {
+        channel.emit(HOT_RELOAD_DETECTED_EVENT);
+        return;
+    }
+
+    chrome.runtime.reload();
 }
 
-export async function startHotReload({ stampUrl }) {
+export async function startHotReload({ stampUrl }, channel) {
     if (!stampUrl || hotReloadTimer) {
         return;
     }
@@ -30,7 +31,7 @@ export async function startHotReload({ stampUrl }) {
             if (nextStamp !== hotReloadStamp) {
                 clearInterval(hotReloadTimer);
                 hotReloadTimer = null;
-                reloadExtension();
+                notifyHotReloadDetected(channel);
                 return;
             }
             hotReloadStamp = nextStamp;

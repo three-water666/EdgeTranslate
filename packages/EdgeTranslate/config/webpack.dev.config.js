@@ -10,7 +10,7 @@ module.exports = merge(baseWebpackConfig, {
         alias: {
             "@edge_translate/translators": path.resolve(
                 __dirname,
-                "../../translators/dev/translators.es.js"
+                "../../translators/dev/translators.mjs"
             ),
         },
     },

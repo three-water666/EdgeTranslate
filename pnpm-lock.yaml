@@ -161,30 +161,12 @@ importers:
             css:
                 specifier: ^3.0.0
                 version: 3.0.0
-            del:
-                specifier: ^6.0.0
-                version: 6.1.1
             edgedriver:
                 specifier: ^6.3.0
                 version: 6.3.0
-            gulp:
-                specifier: ^4.0.2
-                version: 4.0.2
-            gulp-terser:
-                specifier: ^2.1.0
-                version: 2.1.0
-            gulp-zip:
-                specifier: ^5.1.0
-                version: 5.1.0(gulp@4.0.2)
             jest-image-snapshot:
                 specifier: ^6.5.2
                 version: 6.5.2(jest@29.7.0(@types/node@25.5.2)(ts-node@9.1.1(typescript@5.9.3)))
-            merge-stream:
-                specifier: ^2.0.0
-                version: 2.0.0
-            minimist:
-                specifier: ^1.2.6
-                version: 1.2.8
             mockttp:
                 specifier: ^1.2.2
                 version: 1.2.2
@@ -197,18 +179,15 @@ importers:
             stylus:
                 specifier: ^0.64.0
                 version: 0.64.0
-            through2:
-                specifier: ^4.0.2
-                version: 4.0.2
+            terser:
+                specifier: ^5.46.1
+                version: 5.46.1
             webpack:
                 specifier: ^5.70.0
                 version: 5.105.4
             webpack-merge:
                 specifier: ^5.8.0
                 version: 5.10.0
-            webpack-stream:
-                specifier: ^7.0.0
-                version: 7.0.0(webpack@5.105.4)
 
     packages/translators:
         dependencies:

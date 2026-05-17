@@ -27,7 +27,7 @@ Translate Element / Translate API widget 资源快照。
 
 ## 构建流程
 
-`scripts/sync-google-translate-assets.js` 会在 `gulp dev` 和 `gulp build` 中执行：
+`scripts/sync-google-translate-assets.js` 会在扩展的 `dev` 和 `build` 脚本中执行：
 
 1. 读取 `vendor/google-translate-element/current-version.txt`，找到当前快照目录。
 2. 复制当前快照目录到输出目录的 `google/`。
@@ -36,7 +36,7 @@ Translate Element / Translate API widget 资源快照。
     - `google/element_main.js`
     - `google/lans/lan_*.js`
 
-`packStatic` 会把 `src/content/page_translate/google/*.js` 输出到扩展产物的 `google/` 下。
+构建脚本会把 `src/content/page_translate/google/*.js` 输出到扩展产物的 `google/` 下。
 这样 `static/google` 不再混放第三方大文件和自有入口脚本，打包入口也能清楚区分
 自有代码和第三方快照。
 
