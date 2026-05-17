@@ -13,7 +13,7 @@ import {
 const channel = new Channel();
 
 channel.on("hot_reload_start", (detail) => {
-    startHotReload(detail).catch((error) => {
+    startHotReload(detail, channel).catch((error) => {
         console.error("Offscreen: Failed to start hot reload.", error);
     });
 });
