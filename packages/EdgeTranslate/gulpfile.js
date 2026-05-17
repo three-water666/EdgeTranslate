@@ -1,6 +1,7 @@
 const del = require("del");
 const fs = require("fs");
 const gulp = require("gulp");
+const { syncGoogleTranslateAssets } = require("./scripts/sync-google-translate-assets");
 const { syncPdfjsAssets } = require("./scripts/sync-pdfjs-assets");
 const stylus = require("gulp-stylus");
 const through = require("through2");
@@ -17,6 +18,7 @@ let args = minimist(process.argv.slice(2));
 let browser = args.browser || "chrome";
 let environment; // store the type of environment: enum{production,development}
 const PACKAGE_OUTPUT_DIR = "./artifacts";
+const GOOGLE_PAGE_TRANSLATE_SOURCE_DIR = "./src/content/page_translate/google";
 
 /**
  * Define public tasks of gulp
@@ -37,7 +39,16 @@ exports.dev = gulp.series(
     setDevelopEnvironment,
     clean,
     ensureOutputDirectory,
-    gulp.parallel(buildJSDev, copyManifest, html, styl, packStatic, pdfViewer, touchHotReloadStamp),
+    gulp.parallel(
+        buildJSDev,
+        copyManifest,
+        html,
+        styl,
+        packStatic,
+        googleTranslateAssets,
+        pdfViewer,
+        touchHotReloadStamp
+    ),
     watcher
 );
 
@@ -48,7 +59,16 @@ exports.build = gulp.series(
     setProductEnvironment,
     clean,
     ensureOutputDirectory,
-    gulp.parallel(eslintJS, buildJS, copyManifest, html, styl, packStatic, pdfViewer)
+    gulp.parallel(
+        eslintJS,
+        buildJS,
+        copyManifest,
+        html,
+        styl,
+        packStatic,
+        googleTranslateAssets,
+        pdfViewer
+    )
 );
 
 /**
@@ -128,7 +148,19 @@ function watcher(done) {
         "change",
         gulp.series(pdfViewer, touchHotReloadStamp)
     );
+    gulp.watch("./vendor/google-translate-element/**/*").on(
+        "change",
+        gulp.series(googleTranslateAssets, touchHotReloadStamp)
+    );
+    gulp.watch("./scripts/sync-google-translate-assets.js").on(
+        "change",
+        gulp.series(googleTranslateAssets, touchHotReloadStamp)
+    );
     gulp.watch("./static/**/*").on("change", gulp.series(packStatic, touchHotReloadStamp));
+    gulp.watch(`${GOOGLE_PAGE_TRANSLATE_SOURCE_DIR}/**/*.js`).on(
+        "change",
+        gulp.series(packStatic, touchHotReloadStamp)
+    );
     gulp.watch("./src/**/*.styl").on("change", gulp.series(styl, touchHotReloadStamp));
     done();
 }
@@ -287,19 +319,22 @@ function pdfViewer(done) {
     done();
 }
 
+function googleTranslateAssets(done) {
+    syncGoogleTranslateAssets({ outputDir: getOutputDir() });
+    done();
+}
+
 /**
  * A private task to pack static files under "./static/"
  */
 function packStatic() {
     let output_dir = getOutputDir();
 
-    // Minify project-owned static JS, but copy vendored third-party bundles as-is.
+    // Minify project-owned static JS. Vendored Google/PDF assets are generated separately.
     let staticJSFiles = gulp
         .src(
             [
                 "./static/**/*.js",
-                "!./static/google/element_main.js",
-                "!./static/google/elms/**/*.js",
                 "!./static/pdf/**/*.js",
                 "!./static/pdf/lib/**/*.js",
                 "!./static/pdf/viewer.js",
@@ -312,12 +347,15 @@ function packStatic() {
         .pipe(minifyStaticJS())
         .pipe(gulp.dest(output_dir));
 
-    let vendoredJSFiles = gulp
-        .src(["./static/google/element_main.js", "./static/google/elms/**/*.js"], {
-            base: "static",
+    // Google page-translation bridge scripts are source code, but must be served
+    // from /google so the page-context runtime can load them by extension URL.
+    let googlePageTranslateScripts = gulp
+        .src(`${GOOGLE_PAGE_TRANSLATE_SOURCE_DIR}/*.js`, {
+            base: GOOGLE_PAGE_TRANSLATE_SOURCE_DIR,
             since: gulp.lastRun(packStatic),
         })
-        .pipe(gulp.dest(output_dir));
+        .pipe(minifyStaticJS())
+        .pipe(gulp.dest(`${output_dir}/google`));
 
     // non-js static files
     let staticOtherFiles = gulp
@@ -326,7 +364,7 @@ function packStatic() {
         })
         .pipe(gulp.dest(output_dir));
 
-    return mergeStream([staticJSFiles, vendoredJSFiles, staticOtherFiles]);
+    return mergeStream([staticJSFiles, staticOtherFiles, googlePageTranslateScripts]);
 }
 /**
  * End private tasks' definition
