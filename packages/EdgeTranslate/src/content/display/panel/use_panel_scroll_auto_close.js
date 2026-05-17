@@ -17,6 +17,7 @@ export function usePanelScrollAutoClose(model, updateBounds) {
             shouldClosePanelOnPageScroll({
                 enabled: model.autoClosePanelOnPageScrollRef.current,
                 open: model.open,
+                fixed: model.panelFix,
                 contentType: model.contentTypeRef.current,
                 startScrollTop: model.panelScrollStartTopRef.current,
                 currentScrollTop: getPageScrollTop(),

@@ -30,6 +30,20 @@ describe("panel page scroll auto close", () => {
         ).toBe(false);
     });
 
+    it("does not close when the panel is fixed", () => {
+        expect(
+            shouldClosePanelOnPageScroll({
+                enabled: true,
+                open: true,
+                fixed: true,
+                contentType: "RESULT",
+                startScrollTop: 100,
+                currentScrollTop: 900,
+                viewportHeight: 800,
+            })
+        ).toBe(false);
+    });
+
     it("does not close when disabled or while the result is still loading", () => {
         const args = {
             open: true,

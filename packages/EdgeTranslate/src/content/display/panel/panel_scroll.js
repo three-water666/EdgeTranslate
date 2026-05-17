@@ -25,6 +25,7 @@ export function isAutoClosePanelOnPageScrollEnabled(layoutSettings) {
 export function shouldClosePanelOnPageScroll({
     enabled,
     open,
+    fixed,
     contentType,
     startScrollTop,
     currentScrollTop,
@@ -33,6 +34,7 @@ export function shouldClosePanelOnPageScroll({
     return (
         enabled &&
         open &&
+        !fixed &&
         isPanelResultContentVisible(contentType) &&
         Number.isFinite(startScrollTop) &&
         Number.isFinite(currentScrollTop) &&
