@@ -19,6 +19,7 @@ const textExtensions = new Set([
     ".yaml",
 ]);
 const textBasenames = new Set([".babelrc", ".editorconfig", ".gitattributes", ".prettierrc"]);
+const generatedFormatExclusions = new Set(["pnpm-lock.yaml"]);
 
 function getBin(name) {
     const ext = process.platform === "win32" ? ".cmd" : "";
@@ -51,6 +52,10 @@ function getStagedFiles() {
 }
 
 function shouldFormat(filePath) {
+    if (generatedFormatExclusions.has(filePath)) {
+        return false;
+    }
+
     const ext = path.extname(filePath).toLowerCase();
     const base = path.basename(filePath);
     return textExtensions.has(ext) || textBasenames.has(base);
