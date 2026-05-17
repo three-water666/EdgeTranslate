@@ -4,7 +4,7 @@ const gulp = require("gulp");
 const { syncGoogleTranslateAssets } = require("./scripts/sync-google-translate-assets");
 const { syncOcrAssets } = require("./scripts/sync-ocr-assets");
 const { syncPdfjsAssets } = require("./scripts/sync-pdfjs-assets");
-const stylus = require("gulp-stylus");
+const stylusCompiler = require("stylus");
 const through = require("through2");
 const webpack = require("webpack");
 const webpack_stream = require("webpack-stream");
@@ -314,9 +314,20 @@ function styl() {
     return gulp
         .src("./src/!(common)/**/*.styl", { base: "src" })
         .pipe(
-            stylus({
-                compress: true, // Minify the generated CSS.
-            }).on("error", (error) => log(error))
+            through
+                .obj((file, enc, callback) => {
+                    if (file.isNull()) return callback(null, file);
+                    stylusCompiler(file.contents.toString(enc))
+                        .set("filename", file.path)
+                        .set("compress", true)
+                        .render((error, css) => {
+                            if (error) return callback(error);
+                            file.contents = Buffer.from(css);
+                            file.extname = ".css";
+                            callback(null, file);
+                        });
+                })
+                .on("error", (error) => log(error))
         )
         .pipe(gulp.dest(output_dir));
 }
