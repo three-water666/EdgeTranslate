@@ -71,7 +71,7 @@
     },
     "web_accessible_resources": [
         {
-            "resources": ["**/*.css", "**/*.png", "google/*"],
+            "resources": ["**/*.css", "**/*.png", "google/*", "google/elms/*", "google/lans/*"],
             "matches": ["<all_urls>"]
         }
     ],

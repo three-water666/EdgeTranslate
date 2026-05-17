@@ -12,6 +12,7 @@ const GOOGLE_TRANSLATE_CURRENT_VERSION_FILE = path.join(
     "current-version.txt"
 );
 const GOOGLE_OUTPUT_DIR = "google";
+const REQUIRED_SNAPSHOT_PATHS = ["element_main.css", "element_main.js", "elms", "lans"];
 
 function syncGoogleTranslateAssets({ outputDir }) {
     const absoluteOutputDir = path.resolve(EDGE_TRANSLATE_DIR, outputDir);
@@ -21,8 +22,10 @@ function syncGoogleTranslateAssets({ outputDir }) {
         getGoogleTranslateElementSnapshot()
     );
 
+    assertSnapshotComplete(googleTranslateVendorDir);
     copyDirectory(googleTranslateVendorDir, googleOutputDir);
     patchElementBootstrapFiles(path.join(googleOutputDir, "elms"));
+    patchElementMainFile(path.join(googleOutputDir, "element_main.js"));
 }
 
 function getGoogleTranslateElementSnapshot() {
@@ -48,6 +51,15 @@ function copyDirectory(source, target) {
     fs.mkdirSync(target, { recursive: true });
     for (const item of fs.readdirSync(source)) {
         copyDirectory(path.join(source, item), path.join(target, item));
+    }
+}
+
+function assertSnapshotComplete(snapshotDir) {
+    for (const relativePath of REQUIRED_SNAPSHOT_PATHS) {
+        const fullPath = path.join(snapshotDir, relativePath);
+        if (!fs.existsSync(fullPath)) {
+            throw new Error(`Google Translate Element snapshot is missing ${relativePath}.`);
+        }
     }
 }
 
@@ -80,6 +92,34 @@ function patchElementBootstrapFiles(elmsOutputDir) {
 
         fs.writeFileSync(filePath, script);
     }
+}
+
+function patchElementMainFile(filePath) {
+    let script = fs.readFileSync(filePath, "utf8");
+    const patches = [
+        {
+            search: /\bb\s*=\s*cw\s*\+\s*fw\s*;/,
+            replacement: "b=fw;",
+        },
+        {
+            search: /\bb\s*=\s*eq\s*\+\s*hq\s*;/,
+            replacement: "b=hq;",
+        },
+    ];
+
+    for (const patch of patches) {
+        const nextScript = script.replace(patch.search, patch.replacement);
+        if (nextScript !== script) {
+            fs.writeFileSync(filePath, nextScript);
+            return;
+        }
+    }
+
+    if (/\bb\s*=\s*(?:fw|hq)\s*;/.test(script)) {
+        return;
+    }
+
+    throw new Error("Unable to patch Google Translate Element language-list URL.");
 }
 
 function parseArgs(argv) {

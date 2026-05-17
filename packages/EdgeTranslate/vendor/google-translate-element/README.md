@@ -5,11 +5,11 @@
 ## 当前结构
 
 -   `current-version.txt`: 当前构建使用的快照名。
--   `TE_20230726/`: 当前使用的 Google Translate Element 快照。
--   `TE_20230726/element_main.js`: Google Translate Element 主运行时代码。
--   `TE_20230726/element_main.css`: Google Translate Element 样式。
--   `TE_20230726/elms/`: 每个界面语言对应的 Element bootstrap 脚本。
--   `TE_20230726/lans/`: 每个界面语言对应的语言名数据。
+-   `TE_20260513/`: 当前使用的 Google Translate Element 快照。
+-   `<snapshot>/element_main.js`: Google Translate Element 主运行时代码。
+-   `<snapshot>/element_main.css`: Google Translate Element 样式。
+-   `<snapshot>/elms/`: 每个界面语言对应的 Element bootstrap 脚本。
+-   `<snapshot>/lans/`: 每个界面语言对应的语言名数据。
 
 扩展自己写的 Google 全页翻译入口脚本放在 `src/content/page_translate/google/`：
 
@@ -45,11 +45,13 @@ Translate Element / Translate API widget 资源快照。
 1. 确认 Google 当前是否仍没有合适的官方包或 SDK。如果出现官方包，优先迁移到官方包。
 2. 在 `packages/EdgeTranslate` 目录下运行 `node utils/get_google_page_translator.js`。
    如果需要代理，可以先设置 `ALL_PROXY`。
-3. 脚本会先请求 `element.js`，从 `_exportVersion(...)` 中解析快照名，写入对应的
+3. 脚本会先请求 `element.js`，从 `_exportVersion(...)` 中解析快照名，并从同一份脚本中
+   解析当前的主运行时 JS/CSS 地址。
+4. 脚本会写入对应的
+   `vendor/google-translate-element/<snapshot>/element_main.js`、
+   `vendor/google-translate-element/<snapshot>/element_main.css`、
    `vendor/google-translate-element/<snapshot>/elms` 和
    `vendor/google-translate-element/<snapshot>/lans`，并更新 `current-version.txt`。
-4. 如 Google 更新了 `element_main.js` 或 `element_main.css`，从当前 Element 资源链路中
-   重新获取这两个文件，并放入新的快照目录。
 5. 保留 `src/content/page_translate/google/init.js` 和
    `src/content/page_translate/google/injection.js` 作为自有源码，不要移入快照目录。
 6. 运行 `pnpm --dir packages\EdgeTranslate run build`，检查输出目录中是否生成

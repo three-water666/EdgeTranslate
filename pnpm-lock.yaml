@@ -167,6 +167,9 @@ importers:
             selenium-webdriver:
                 specifier: ^4.43.0
                 version: 4.43.0
+            socks-proxy-agent:
+                specifier: ^10.0.0
+                version: 10.0.0
             through2:
                 specifier: ^4.0.2
                 version: 4.0.2
