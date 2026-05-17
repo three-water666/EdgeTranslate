@@ -2,6 +2,11 @@ const fs = require("fs");
 import { LANGUAGES } from "@edge_translate/translators";
 import { BROWSER_LANGUAGES_MAP } from "common/scripts/languages.js";
 
+const GOOGLE_TRANSLATE_ELEMENT_VERSION = fs
+    .readFileSync("vendor/google-translate-element/current-version.txt", "utf8")
+    .trim();
+const GOOGLE_TRANSLATE_ELEMENT_DIR = `vendor/google-translate-element/${GOOGLE_TRANSLATE_ELEMENT_VERSION}`;
+
 describe("All languages supported by Google web page translate should be in BROWSER_LANGUAGES_MAP.", () => {
     it("check languages for Google page translate", () => {
         const langSet = new Set();
@@ -10,14 +15,14 @@ describe("All languages supported by Google web page translate should be in BROW
         }
 
         const langInLans = fs
-            .readdirSync("static/google/lans/")
+            .readdirSync(`${GOOGLE_TRANSLATE_ELEMENT_DIR}/lans/`)
             .map((file) => file.split("_")[1].split(".")[0]);
         langInLans.forEach((lang) => {
             expect(langSet).toContain(lang);
         });
 
         const langInMain = fs
-            .readdirSync("static/google/elms/")
+            .readdirSync(`${GOOGLE_TRANSLATE_ELEMENT_DIR}/elms/`)
             .map((file) => file.split("_")[1].split(".")[0]);
         langInMain.forEach((lang) => {
             expect(langSet).toContain(lang);

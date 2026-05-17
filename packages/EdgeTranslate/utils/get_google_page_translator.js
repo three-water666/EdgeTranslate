@@ -1,9 +1,13 @@
 const fs = require("fs");
+const path = require("path");
 const axios = require("axios");
 const socks = require("socks-proxy-agent").SocksProxyAgent;
 
-const ELEMENT_JS_DIR = "static/google/elms";
-const LANGUAGE_NAMES_DIR = "static/google/lans";
+const GOOGLE_TRANSLATE_VENDOR_ROOT = path.join("vendor", "google-translate-element");
+const GOOGLE_TRANSLATE_CURRENT_VERSION_FILE = path.join(
+    GOOGLE_TRANSLATE_VENDOR_ROOT,
+    "current-version.txt"
+);
 
 const LANGUAGES = [
     "af",
@@ -113,8 +117,9 @@ const LANGUAGES = [
 
 const TECB = "TECB_1E07F158C6FA4460B352973E9693B329";
 const API_KEY = "AIzaSyBWDj0QJvVIx8XOhRegXX5_SrRWxhT5Hs4";
+const VERSION_PROBE_LANGUAGE = "en";
 
-async function get_element_js(language, httpsAgent) {
+async function fetch_element_js(language, httpsAgent) {
     let config = httpsAgent !== null ? { httpsAgent } : {};
     const response = await axios.get(
         `https://translate.google.com/translate_a/element.js?cb=${TECB}&client=tee&hl=${language}&nsc=1`,
@@ -126,27 +131,19 @@ async function get_element_js(language, httpsAgent) {
         return;
     }
 
-    let content = response.data;
-
-    content = content.replace(
-        /c\._ps\s*=\s*['"][^'";]+['"]\s*;/g,
-        "c._ps = this.EDGE_TRANSLATE_URL + 'google/element_main.css';"
-    );
-
-    content = content.replace(
-        /c\._plla\s*=\s*\w+\s*\+\s*['"][^'";]+['"]\s*;/g,
-        `c._plla = this.EDGE_TRANSLATE_URL + 'google/lans/lan_${language}.js';`
-    );
-
-    content = content.replace(
-        /_loadCss\(c\._ps\);[\s\n\r\t]*_loadJs\(['"][^'";]+['"]\);/g,
-        "_loadCss(c._ps); _loadJs(this.EDGE_TRANSLATE_URL + 'google/element_main.js');"
-    );
-
-    fs.writeFileSync(`${ELEMENT_JS_DIR}/elm_${language}.js`, content);
+    return response.data;
 }
 
-async function get_language_names(language, httpsAgent) {
+async function get_element_js(language, elementJsDir, httpsAgent, content) {
+    const script = content || (await fetch_element_js(language, httpsAgent));
+    if (!script) {
+        return;
+    }
+
+    fs.writeFileSync(path.join(elementJsDir, `elm_${language}.js`), script);
+}
+
+async function get_language_names(language, languageNamesDir, httpsAgent) {
     let config = httpsAgent !== null ? { httpsAgent } : {};
     const response = await axios.get(
         `https://translate-pa.googleapis.com/v1/supportedLanguages?client=tee&display_language=${language}&key=${API_KEY}&callback=callback`,
@@ -158,21 +155,48 @@ async function get_language_names(language, httpsAgent) {
         return;
     }
 
-    fs.writeFileSync(`${LANGUAGE_NAMES_DIR}/lan_${language}.js`, response.data);
+    fs.writeFileSync(path.join(languageNamesDir, `lan_${language}.js`), response.data);
 }
 
-fs.mkdirSync(ELEMENT_JS_DIR, { recursive: true });
-fs.mkdirSync(LANGUAGE_NAMES_DIR, { recursive: true });
+function get_element_snapshot(content) {
+    const match = content.match(/_exportVersion\(['"]([^'"]+)['"]\)/);
+    if (!match) {
+        throw new Error("Unable to detect Google Translate Element version.");
+    }
+
+    return match[1];
+}
 
 /**
  * Enable proxy if the ALL_PROXY env is set.
  */
-let httpsAgent = null;
-if (process.env["ALL_PROXY"]) {
-    httpsAgent = new socks(process.env["ALL_PROXY"]);
+async function main() {
+    let httpsAgent = null;
+    if (process.env["ALL_PROXY"]) {
+        httpsAgent = new socks(process.env["ALL_PROXY"]);
+    }
+
+    const versionProbeScript = await fetch_element_js(VERSION_PROBE_LANGUAGE, httpsAgent);
+    const snapshot = get_element_snapshot(versionProbeScript);
+    const googleTranslateVendorDir = path.join(GOOGLE_TRANSLATE_VENDOR_ROOT, snapshot);
+    const elementJsDir = path.join(googleTranslateVendorDir, "elms");
+    const languageNamesDir = path.join(googleTranslateVendorDir, "lans");
+
+    fs.mkdirSync(elementJsDir, { recursive: true });
+    fs.mkdirSync(languageNamesDir, { recursive: true });
+
+    await Promise.all([
+        get_element_js(VERSION_PROBE_LANGUAGE, elementJsDir, httpsAgent, versionProbeScript),
+        ...LANGUAGES.filter((language) => language !== VERSION_PROBE_LANGUAGE).map((language) =>
+            get_element_js(language, elementJsDir, httpsAgent)
+        ),
+        ...LANGUAGES.map((language) => get_language_names(language, languageNamesDir, httpsAgent)),
+    ]);
+
+    fs.writeFileSync(GOOGLE_TRANSLATE_CURRENT_VERSION_FILE, `${snapshot}\n`);
 }
 
-for (let language of LANGUAGES) {
-    get_element_js(language, httpsAgent).catch((error) => console.log(error));
-    get_language_names(language, httpsAgent).catch((error) => console.log(error));
-}
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});
