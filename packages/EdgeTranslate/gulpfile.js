@@ -2,6 +2,7 @@ const del = require("del");
 const fs = require("fs");
 const gulp = require("gulp");
 const { syncGoogleTranslateAssets } = require("./scripts/sync-google-translate-assets");
+const { syncOcrAssets } = require("./scripts/sync-ocr-assets");
 const { syncPdfjsAssets } = require("./scripts/sync-pdfjs-assets");
 const stylus = require("gulp-stylus");
 const through = require("through2");
@@ -46,6 +47,7 @@ exports.dev = gulp.series(
         styl,
         packStatic,
         googleTranslateAssets,
+        ocrAssets,
         pdfViewer,
         touchHotReloadStamp
     ),
@@ -67,6 +69,7 @@ exports.build = gulp.series(
         styl,
         packStatic,
         googleTranslateAssets,
+        ocrAssets,
         pdfViewer
     )
 );
@@ -155,6 +158,10 @@ function watcher(done) {
     gulp.watch("./scripts/sync-google-translate-assets.js").on(
         "change",
         gulp.series(googleTranslateAssets, touchHotReloadStamp)
+    );
+    gulp.watch("./scripts/sync-ocr-assets.js").on(
+        "change",
+        gulp.series(ocrAssets, touchHotReloadStamp)
     );
     gulp.watch("./static/**/*").on("change", gulp.series(packStatic, touchHotReloadStamp));
     gulp.watch(`${GOOGLE_PAGE_TRANSLATE_SOURCE_DIR}/**/*.js`).on(
@@ -324,17 +331,23 @@ function googleTranslateAssets(done) {
     done();
 }
 
+function ocrAssets(done) {
+    syncOcrAssets({ outputDir: getOutputDir() });
+    done();
+}
+
 /**
  * A private task to pack static files under "./static/"
  */
 function packStatic() {
     let output_dir = getOutputDir();
 
-    // Minify project-owned static JS. Vendored Google/PDF assets are generated separately.
+    // Minify project-owned static JS. Vendored Google/PDF/OCR assets are generated separately.
     let staticJSFiles = gulp
         .src(
             [
                 "./static/**/*.js",
+                "!./static/ocr/**/*.js",
                 "!./static/pdf/**/*.js",
                 "!./static/pdf/lib/**/*.js",
                 "!./static/pdf/viewer.js",
@@ -359,7 +372,7 @@ function packStatic() {
 
     // non-js static files
     let staticOtherFiles = gulp
-        .src(["./static/**/!(*.js)", "!./static/ocr/lang/**/*", "!./static/pdf/**/*"], {
+        .src(["./static/**/!(*.js)", "!./static/ocr/**/*", "!./static/pdf/**/*"], {
             base: "static",
         })
         .pipe(gulp.dest(output_dir));
