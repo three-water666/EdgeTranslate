@@ -9,7 +9,7 @@ import {
 const SelectionButtonId = "edge-translate-button";
 const WaitTranslationResultTime = 200; // Delayed time for waiting the response of translation result.
 const WaitButtonTime = 350; // Delayed time for waiting the animation of button to finish.
-const WaitLongPressPreviewTime = 200;
+const WaitLongPressPreviewTime = 450;
 const WaitLongPressTranslateTime = 550;
 const LongPressTextId = "edge-long-press";
 const LongPressLinkId = "edge-long-press-link";

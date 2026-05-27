@@ -1,5 +1,5 @@
 export const LONG_PRESS_DURATION = 450;
-export const LONG_PRESS_PREVIEW_DELAY = 140;
+export const LONG_PRESS_PREVIEW_DELAY = 350;
 export const LONG_PRESS_MOVE_THRESHOLD = 8;
 export const LONG_PRESS_HIGHLIGHT_ID = "edge-translate-long-press-highlight";
 export const SENTENCE_BOUNDARY_REGEXP = /[.!?。！？；;\n]/;
