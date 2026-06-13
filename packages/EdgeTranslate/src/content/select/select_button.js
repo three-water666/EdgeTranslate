@@ -98,14 +98,17 @@ function createButtonHost(state) {
     Object.assign(host.style, {
         position: "fixed",
         display: "block",
-        inset: 0,
+        top: 0,
+        left: 0,
         zIndex: 2147483647,
         border: "none",
         padding: 0,
         margin: 0,
         background: "transparent",
-        width: "100vw",
-        height: "100vh",
+        width: 0,
+        height: 0,
+        minWidth: 0,
+        minHeight: 0,
         maxWidth: "none",
         maxHeight: "none",
         pointerEvents: "none",
@@ -147,7 +150,7 @@ function showButtonHost(state) {
     }
 
     if (hasModalTopLayerBlocker(host)) {
-        showModalButtonHost(state);
+        showPopoverButtonHost(state);
         return;
     }
     if (hasOpenPopover(host)) {
@@ -155,23 +158,6 @@ function showButtonHost(state) {
         return;
     }
     showNormalButton(state);
-}
-
-function showModalButtonHost(state) {
-    const host = state.translationButtonHost;
-    if (typeof host.showModal !== "function") {
-        showNormalButton(state);
-        return;
-    }
-
-    if (getLayerMode(host) === LayerMode.Popover) hidePopover(host);
-    if (host.open) closeDialog(host);
-    try {
-        host.showModal();
-        setLayerMode(host, LayerMode.Modal);
-    } catch {
-        showNormalButton(state);
-    }
 }
 
 function showPopoverButtonHost(state) {
@@ -269,7 +255,7 @@ function getLayerMode(host) {
 
 function setLayerMode(host, mode) {
     host.dataset.edgeTranslateLayerMode = mode;
-    host.style.pointerEvents = mode === LayerMode.Normal ? "none" : "auto";
+    host.style.pointerEvents = "none";
 }
 
 function dismissFromHost(event, state) {

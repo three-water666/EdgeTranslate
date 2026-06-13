@@ -17,14 +17,17 @@ function createPanelRoot() {
     Object.assign(root.style, {
         position: "fixed",
         display: "block",
-        inset: 0,
+        top: 0,
+        left: 0,
         zIndex: 2147483647,
         border: "none",
         padding: 0,
         margin: 0,
         background: "transparent",
-        width: "100vw",
-        height: "100vh",
+        width: 0,
+        height: 0,
+        minWidth: 0,
+        minHeight: 0,
         maxWidth: "none",
         maxHeight: "none",
         pointerEvents: "none",
@@ -45,7 +48,7 @@ function syncPanelRootTopLayer(open) {
     }
 
     if (hasModalTopLayerBlocker(root)) {
-        showModalPanelRoot(root);
+        showPopoverPanelRoot(root);
         return;
     }
 
@@ -67,22 +70,6 @@ function hidePanelRoot(root) {
     if (getLayerMode(root) === LayerMode.Popover) hidePopover(root);
     if (root.open) closeDialog(root);
     setLayerMode(root, LayerMode.Normal);
-}
-
-function showModalPanelRoot(root) {
-    if (typeof root.showModal !== "function") {
-        showPanelRootNormally(root);
-        return;
-    }
-
-    if (getLayerMode(root) === LayerMode.Popover) hidePopover(root);
-    if (root.open) closeDialog(root);
-    try {
-        root.showModal();
-        setLayerMode(root, LayerMode.Modal);
-    } catch {
-        showPanelRootNormally(root);
-    }
 }
 
 function showPopoverPanelRoot(root) {
@@ -168,7 +155,7 @@ function getLayerMode(root) {
 
 function setLayerMode(root, mode) {
     root.dataset.edgeTranslateLayerMode = mode;
-    root.style.pointerEvents = mode === LayerMode.Normal ? "none" : "auto";
+    root.style.pointerEvents = "none";
 }
 
 function preventDialogDefaultClose(event) {

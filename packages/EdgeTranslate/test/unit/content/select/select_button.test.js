@@ -43,8 +43,8 @@ describe("selection button top layer host", () => {
         expect(state.translationButtonContainer.style.pointerEvents).toBe("auto");
     });
 
-    it("promotes the button host above page modal dialogs and keeps a selection snapshot", () => {
-        const { showModal } = mockDialogMethods({ clearSelectionOnModal: true });
+    it("promotes the button host as a popover and keeps a selection snapshot", () => {
+        const { showModal, showPopover } = mockDialogMethods({ clearSelectionOnModal: true });
         const state = createButtonState();
         selectText("hello world");
         document.body.appendChild(createModalDialog());
@@ -53,10 +53,13 @@ describe("selection button top layer host", () => {
         prepareButtonDimensions(state);
         showButton(state, createSelectionEvent());
 
-        expect(showModal).toHaveBeenCalledTimes(1);
-        expect(state.translationButtonHost.dataset.edgeTranslateLayerMode).toBe("modal");
-        expect(state.translationButtonHost.style.pointerEvents).toBe("auto");
-        expect(window.getSelection().toString()).toBe("");
+        expect(showModal).not.toHaveBeenCalled();
+        expect(showPopover).toHaveBeenCalledTimes(1);
+        expect(state.translationButtonHost.dataset.edgeTranslateLayerMode).toBe("popover");
+        expect(state.translationButtonHost.style.width).toBe("0px");
+        expect(state.translationButtonHost.style.height).toBe("0px");
+        expect(state.translationButtonHost.style.pointerEvents).toBe("none");
+        expect(window.getSelection().toString()).toBe("hello world");
         expect(state.buttonSelection).toMatchObject({ text: "hello world" });
     });
 

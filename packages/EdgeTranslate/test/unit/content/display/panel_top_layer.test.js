@@ -37,13 +37,15 @@ describe("panel top layer host", () => {
         expect(root.popover).toBe("manual");
         expect(root.open).toBe(false);
         expect(root.style.display).toBe("block");
+        expect(root.style.width).toBe("0px");
+        expect(root.style.height).toBe("0px");
         expect(root.dataset.edgeTranslateLayerMode).toBe("normal");
         expect(root.style.pointerEvents).toBe("none");
         expect(document.getElementById("edge-translate-root-backdrop-style")).not.toBeNull();
     });
 
-    it("promotes the panel host to modal when another dialog is open", () => {
-        const { close, showModal } = mockDialogMethods();
+    it("promotes the panel host as a popover when another dialog is open", () => {
+        const { close, showModal, showPopover } = mockDialogMethods();
         const root = mountPanelRoot();
         showPanelRootNormally(root);
         document.body.appendChild(createOpenDialog("page-dialog"));
@@ -51,10 +53,11 @@ describe("panel top layer host", () => {
         syncPanelRootTopLayer(true);
 
         expect(close).not.toHaveBeenCalled();
-        expect(showModal).toHaveBeenCalledTimes(1);
-        expect(showModal.mock.contexts[0]).toBe(root);
-        expect(root.dataset.edgeTranslateLayerMode).toBe("modal");
-        expect(root.style.pointerEvents).toBe("auto");
+        expect(showModal).not.toHaveBeenCalled();
+        expect(showPopover).toHaveBeenCalledTimes(1);
+        expect(showPopover.mock.contexts[0]).toBe(root);
+        expect(root.dataset.edgeTranslateLayerMode).toBe("popover");
+        expect(root.style.pointerEvents).toBe("none");
     });
 
     it("uses a popover layer for page popovers without making the page modal", () => {
@@ -68,8 +71,8 @@ describe("panel top layer host", () => {
         expect(showModal).not.toHaveBeenCalled();
     });
 
-    it("returns a modal panel host to normal when the panel closes", () => {
-        const { close, showModal } = mockDialogMethods();
+    it("returns a popover panel host to normal when the panel closes", () => {
+        const { close, hidePopover, showPopover } = mockDialogMethods();
         const root = mountPanelRoot();
         showPanelRootNormally(root);
         document.body.appendChild(createOpenDialog("page-dialog"));
@@ -77,9 +80,9 @@ describe("panel top layer host", () => {
 
         syncPanelRootTopLayer(false);
 
-        expect(showModal).toHaveBeenCalledTimes(1);
-        expect(close).toHaveBeenCalledTimes(1);
-        expect(root.open).toBe(false);
+        expect(showPopover).toHaveBeenCalledTimes(1);
+        expect(hidePopover).toHaveBeenCalledTimes(1);
+        expect(close).not.toHaveBeenCalled();
         expect(root.dataset.edgeTranslateLayerMode).toBe("normal");
     });
 
