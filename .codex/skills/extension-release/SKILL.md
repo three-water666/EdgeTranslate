@@ -29,6 +29,9 @@ Update the EdgeTranslate extension version, write release changelogs, and publis
 
 -   Base the changelog only on changes between the previous release tag and the commit that is current before the release bump.
 -   Write user-facing release notes. Group entries into concise sections such as features, improvements, fixes, and maintenance when those sections are relevant.
+-   Summarize the final user-visible or maintainer-visible outcome from the commits, not the intermediate work history. Use commit messages and diffs as source material, then merge related commits into the result users actually receive.
+-   Do not list temporary regressions, follow-up fixes, failed attempts, implementation detours, or other intermediate artifacts when they were introduced and resolved within the same unreleased range.
+-   When a commit message describes implementation steps, translate it into the shipped behavior or release outcome. Prefer "Fixed Chrome Web Store review false positives for bundled OCR and PDF resources" over separate bullets for worker generation, wasm paths, PDF sandbox removal, or runtime fallback patches.
 -   Do not include raw commit hashes, internal-only noise, dependency churn, or release bump/tag mechanics unless they materially affect users or maintainers.
 -   Preserve meaningful issue and PR references found in the commit subject/body, such as `#123`, `PR #123`, `Fixes #123`, or `Closes #123`, and attach them to the relevant changelog bullet.
 -   Do not invent changes. If a commit is ambiguous, inspect the diff before summarizing it.
