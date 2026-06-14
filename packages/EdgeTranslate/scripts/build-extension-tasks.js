@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
@@ -46,6 +47,7 @@ async function buildExtension({ browser }) {
 
     cleanOutput(context);
     await Promise.all([runEslint(), runWebpack(context), runAssetBuild(context)]);
+    patchGeneratedGlobalFallbacks(context);
 }
 
 async function devExtension({ browser }) {
@@ -63,6 +65,7 @@ async function packageExtension({ browser }) {
 
     fs.mkdirSync(context.packageOutputDir, { recursive: true });
     fs.rmSync(context.packagePath, { force: true });
+    patchGeneratedGlobalFallbacks(context);
     addDirectoryToZip(zip, context.outputDir, context.outputDir);
     zip.writeZip(context.packagePath);
 }
@@ -244,6 +247,30 @@ function addDirectoryToZip(zip, sourceDir, baseDir) {
         const relativePath = toPosixPath(path.relative(baseDir, filePath));
         zip.addFile(relativePath, fs.readFileSync(filePath));
     }
+}
+
+function patchGeneratedGlobalFallbacks(context) {
+    for (const filePath of listFiles(context.outputDir).filter(isGeneratedScript)) {
+        let source = fs.readFileSync(filePath, "utf8");
+        let patched = source
+            .replaceAll('new Function("return this")()', "globalThis")
+            .replaceAll("new Function('return this')()", "globalThis")
+            .replaceAll('Function("return this")()', "globalThis")
+            .replaceAll("Function('return this')()", "globalThis")
+            .replaceAll("worker.min.js", "worker.js")
+            .replace(
+                /Function\("r",\s*"regeneratorRuntime = r"\)\(([^)\n;]+)\)/g,
+                "globalThis.regeneratorRuntime=$1"
+            );
+
+        if (patched !== source) {
+            fs.writeFileSync(filePath, patched);
+        }
+    }
+}
+
+function isGeneratedScript(filePath) {
+    return filePath.endsWith(".js") || filePath.endsWith(".mjs");
 }
 
 module.exports = {

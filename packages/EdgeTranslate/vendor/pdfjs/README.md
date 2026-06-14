@@ -11,10 +11,14 @@ Sources:
 -   PDF.js generic viewer release:
     `https://github.com/mozilla/pdf.js/releases/download/v5.7.284/pdfjs-5.7.284-dist.zip`
 
-`pdfjs-dist` contains the library runtime, worker, cmaps, fonts, wasm decoders,
-and viewer images. It does not contain the complete generic viewer application
-files such as `web/viewer.html`, `web/viewer.mjs`, `web/viewer.css`, or the
-viewer locale directory. Those files stay in `vendor/pdfjs/<version>`.
+`pdfjs-dist` contains the library runtime, worker, sandbox bundle, cmaps, fonts,
+wasm decoders, and viewer images. Edge Translate copies only the runtime files
+needed for PDF viewing and translation; the PDF.js scripting sandbox is not
+packaged because executing PDF-embedded JavaScript is not required by the
+extension. The npm package does not contain the complete generic viewer
+application files such as `web/viewer.html`, `web/viewer.mjs`,
+`web/viewer.css`, or the viewer locale directory. Those files stay in
+`vendor/pdfjs/<version>`.
 
 Do not edit files under a versioned directory directly. Edge Translate
 integration logic belongs in `scripts/sync-pdfjs-assets.js`, which combines the
@@ -33,13 +37,15 @@ output, then applies small output-only patches for extension use.
 The following runtime assets are generated from `pdfjs-dist` during build:
 
 -   `pdf/build/pdf.mjs`
--   `pdf/build/pdf.sandbox.mjs`
 -   `pdf/build/pdf.worker.mjs`
 -   `pdf/web/cmaps`
 -   `pdf/web/iccs`
 -   `pdf/web/images`
 -   `pdf/web/standard_fonts`
 -   `pdf/web/wasm`
+
+`pdf/build/pdf.sandbox.mjs` is intentionally omitted, and
+`web/viewer.mjs` is patched so PDF scripting stays disabled.
 
 ## Update Steps
 
@@ -61,7 +67,8 @@ The following runtime assets are generated from `pdfjs-dist` during build:
 5. Run `pnpm --dir packages\EdgeTranslate run build`.
 6. Check the generated `packages/EdgeTranslate/build/chrome/pdf` output:
     - `pdf/web/viewer.html` contains the Edge Translate script/style injection.
-    - `pdf/web/viewer.mjs` contains the extension-origin URL validation patch.
+    - `pdf/web/viewer.mjs` contains the extension-origin URL validation patch
+      and has PDF scripting disabled.
     - `pdf/build/pdf.worker.mjs` and runtime asset directories exist.
 7. If the new PDF.js release changed `viewer.html` or `viewer.mjs` enough that
    the string replacements fail, update `scripts/sync-pdfjs-assets.js`.

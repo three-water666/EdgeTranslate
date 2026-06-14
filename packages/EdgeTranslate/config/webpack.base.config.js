@@ -14,6 +14,7 @@ module.exports = {
     },
     output: {
         filename: "[name].js",
+        globalObject: "globalThis",
         path: path.resolve(__dirname, "../build"),
         publicPath: "./",
     },

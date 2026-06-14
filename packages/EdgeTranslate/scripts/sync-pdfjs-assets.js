@@ -6,7 +6,7 @@ const EDGE_TRANSLATE_DIR = path.resolve(__dirname, "..");
 const PDFJS_VENDOR_ROOT = path.join(EDGE_TRANSLATE_DIR, "vendor", "pdfjs");
 const PDF_OUTPUT_DIR = "pdf";
 
-const PDFJS_DIST_BUILD_FILES = ["pdf.mjs", "pdf.sandbox.mjs", "pdf.worker.mjs"];
+const PDFJS_DIST_BUILD_FILES = ["pdf.mjs", "pdf.worker.mjs"];
 
 const PDFJS_DIST_WEB_DIRECTORIES = ["cmaps", "iccs", "images", "standard_fonts", "wasm"];
 
@@ -104,7 +104,6 @@ const PDFJS_RUNTIME_COMPAT_PATCH = [
 
 const PDFJS_RUNTIME_PATCH_FILES = [
     "build/pdf.mjs",
-    "build/pdf.sandbox.mjs",
     "build/pdf.worker.mjs",
     "web/debugger.mjs",
     "web/viewer.mjs",
@@ -241,6 +240,15 @@ function patchRuntimeCompatibility(pdfOutputDir) {
 function patchViewerMjs(viewerMjsPath) {
     let script = fs.readFileSync(viewerMjsPath, "utf8");
     script = script.replace('value: "compressed.tracemonkey-pldi-09.pdf"', 'value: ""');
+    script = script.replace(
+        /enableScripting:\s*\{\s*value:\s*true,\s*kind:\s*OptionKind\.VIEWER\s*\+\s*OptionKind\.PREFERENCE\s*\}/,
+        "enableScripting: {\n    value: false,\n    kind: OptionKind.VIEWER\n  }"
+    );
+    script = script.replace('value: "../build/pdf.sandbox.mjs"', 'value: ""');
+    script = script.replace(
+        'scriptingManager: AppOptions.get("enableScripting") && pdfScriptingManager,',
+        "scriptingManager: null,"
+    );
     script = script.replace(
         "var validateFileURL = function (file) {",
         [

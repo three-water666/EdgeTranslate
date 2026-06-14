@@ -15,7 +15,6 @@ Edge Translate 支持用 PDF.js 打开本地 PDF，并在 PDF 页面里复用插
 `pdfjs-dist@5.7.284` 有这些运行时资产：
 
 -   `build/pdf.mjs`
--   `build/pdf.sandbox.mjs`
 -   `build/pdf.worker.mjs`
 -   `cmaps`
 -   `iccs`
@@ -38,6 +37,8 @@ Edge Translate 支持用 PDF.js 打开本地 PDF，并在 PDF 页面里复用插
 现在的来源被拆成两层：
 
 -   `pdfjs-dist` npm 包：提供库运行时、worker、字体、cmaps、wasm、图片等资产。
+    PDF.js scripting sandbox 会被刻意省略，因为 Edge Translate 不需要执行 PDF
+    文档内嵌 JavaScript。
 -   `vendor/pdfjs/<version>`：只保留 npm 包缺失的完整 viewer app 文件。
 
 构建流程是：
@@ -46,8 +47,8 @@ Edge Translate 支持用 PDF.js 打开本地 PDF，并在 PDF 页面里复用插
 2. 用这个版本号定位 `vendor/pdfjs/<version>`。
 3. 从 vendor 复制 `viewer.html`、`viewer.mjs`、`viewer.css`、`debugger.*` 和
    `locale`。
-4. 从 `pdfjs-dist` 复制 `build` 运行时、`cmaps`、`iccs`、`standard_fonts`、
-   `wasm` 和 `web/images`。
+4. 从 `pdfjs-dist` 复制需要的 `build` 运行时、`cmaps`、`iccs`、
+   `standard_fonts`、`wasm` 和 `web/images`。
 5. 对构建输出打 Edge Translate 需要的 patch。
 
 patch 仍然只发生在输出目录，不直接修改官方输入文件。
@@ -61,6 +62,7 @@ patch 仍然只发生在输出目录，不直接修改官方输入文件。
     `web/wasm`。
 -   保留 `viewer.html`、`viewer.mjs`、`viewer.css`、`debugger.*`、`locale` 和
     `LICENSE`。
+-   从扩展输出中省略 `pdf.sandbox.mjs`，并 patch viewer 让 PDF scripting 保持禁用。
 
 ## 后续更新步骤
 
@@ -79,7 +81,7 @@ patch 仍然只发生在输出目录，不直接修改官方输入文件。
 5. 运行 `pnpm --dir packages\EdgeTranslate run build`。
 6. 检查输出目录 `build/chrome/pdf`：
     - `web/viewer.html` 有插件脚本和样式注入。
-    - `web/viewer.mjs` 有扩展来源校验 patch。
+    - `web/viewer.mjs` 有扩展来源校验 patch，并禁用 PDF scripting。
     - `build/pdf.worker.mjs`、`web/cmaps`、`web/wasm` 等运行时资产存在。
 
 ## 总结

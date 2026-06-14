@@ -17,7 +17,6 @@ npm are no longer committed again under `vendor/pdfjs/<version>`.
 `pdfjs-dist@5.7.284` contains these runtime assets:
 
 -   `build/pdf.mjs`
--   `build/pdf.sandbox.mjs`
 -   `build/pdf.worker.mjs`
 -   `cmaps`
 -   `iccs`
@@ -41,7 +40,8 @@ custom viewer page, which has a larger maintenance cost and risk.
 The sources are now split into two layers:
 
 -   `pdfjs-dist` npm package: library runtime, worker, fonts, cmaps, wasm, and
-    image assets.
+    image assets. The PDF.js scripting sandbox is deliberately not copied
+    because Edge Translate does not need to execute PDF-embedded JavaScript.
 -   `vendor/pdfjs/<version>`: complete viewer app files missing from the npm
     package.
 
@@ -51,8 +51,8 @@ The build flow is:
 2. Use that version to locate `vendor/pdfjs/<version>`.
 3. Copy `viewer.html`, `viewer.mjs`, `viewer.css`, `debugger.*`, and `locale`
    from vendor.
-4. Copy the `build` runtime, `cmaps`, `iccs`, `standard_fonts`, `wasm`, and
-   `web/images` from `pdfjs-dist`.
+4. Copy the required `build` runtime, `cmaps`, `iccs`, `standard_fonts`,
+   `wasm`, and `web/images` from `pdfjs-dist`.
 5. Apply Edge Translate patches only to the build output.
 
 The patching remains output-only and does not modify official input files.
@@ -67,6 +67,8 @@ The patching remains output-only and does not modify official input files.
     `web/images`, `web/standard_fonts`, and `web/wasm`.
 -   Keep `viewer.html`, `viewer.mjs`, `viewer.css`, `debugger.*`, `locale`,
     and `LICENSE`.
+-   Omit `pdf.sandbox.mjs` from extension output and patch the viewer so PDF
+    scripting stays disabled.
 
 ## Future Update Steps
 
@@ -86,7 +88,8 @@ The patching remains output-only and does not modify official input files.
 5. Run `pnpm --dir packages\EdgeTranslate run build`.
 6. Check the generated `build/chrome/pdf` output:
     - `web/viewer.html` has the extension script and style injection.
-    - `web/viewer.mjs` has the extension-origin validation patch.
+    - `web/viewer.mjs` has the extension-origin validation patch and PDF
+      scripting disabled.
     - `build/pdf.worker.mjs`, `web/cmaps`, `web/wasm`, and other runtime
       assets exist.
 

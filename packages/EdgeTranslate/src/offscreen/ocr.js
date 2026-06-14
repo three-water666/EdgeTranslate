@@ -9,8 +9,8 @@ import {
 import { cropImage, normalizeOcrText } from "./ocr_image.js";
 import { createOcrCacheApi } from "./ocr_cache.js";
 
-const OCR_CORE_PATH = chrome.runtime.getURL("ocr/core/tesseract-core-lstm.wasm.js");
-const OCR_WORKER_PATH = chrome.runtime.getURL("ocr/worker.min.js");
+const OCR_CORE_PATH = chrome.runtime.getURL("ocr/core/tesseract-core-lstm.js");
+const OCR_WORKER_PATH = chrome.runtime.getURL("ocr/worker.js");
 const OCR_CACHE_DB_NAME = "keyval-store";
 const OCR_CACHE_STORE_NAME = "keyval";
 const OCR_CACHE_PATH = "edge_translate_ocr";
