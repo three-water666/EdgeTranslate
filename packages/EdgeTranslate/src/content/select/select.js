@@ -135,12 +135,13 @@ function buttonClickHandler(state, event) {
     else if (event.button === 2) pronounceSubmit(state);
 }
 
-function longPressStartHandler(state, event) {
+export function longPressStartHandler(state, event) {
     if (!canStartLongPress(state, event)) {
         cancelLongPressSession(state);
         return;
     }
-    if (window.getSelection().toString().trim()) cancelTextSelection();
+    // A normal click may target page UI that depends on the current selection.
+    // Replace it only after the long press is confirmed in selectTextAtPoint.
     state.longPressSession = createLongPressSession(state, event);
 }
 
@@ -218,11 +219,10 @@ function cancelLongPressSession(state) {
     state.longPressSession = null;
 }
 
-function triggerLongPressTranslate(state, session) {
+export function triggerLongPressTranslate(state, session) {
     if (!state.longPressEnabled || !session || session.moved) {
         return Promise.resolve();
     }
-    if (window.getSelection().toString().trim()) return Promise.resolve();
     return isInBlacklist().then((inBlacklist) => {
         if (inBlacklist) return;
         if (
