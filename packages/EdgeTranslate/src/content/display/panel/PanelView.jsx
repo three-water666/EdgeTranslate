@@ -13,6 +13,7 @@ import CloseIcon from "../icons/close.svg";
 import {
     MaxZIndex,
     GlobalStyle,
+    DragShield,
     Panel,
     Head,
     HeadIcons,
@@ -39,6 +40,7 @@ export default function PanelView(props) {
             <StyleSheetManager disableCSSOMInjection>
                 <Fragment>
                     <GlobalStyle />
+                    <DragShield ref={props.dragShieldElRef} aria-hidden="true" />
                     <Panel ref={props.onDisplayStatusChange} displayType={props.displayType}>
                         {props.moveableReady && <PanelContent {...props} />}
                     </Panel>

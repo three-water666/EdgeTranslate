@@ -17,6 +17,7 @@ import {
     setDefaultSettings,
 } from "common/scripts/settings.js";
 import { resolveContextMenuSelection } from "./library/context_menu.js";
+import { registerSubframePointerDownForwarder } from "./library/frame_events.js";
 import "./library/pdf_file_access.js";
 
 if (typeof BUILD_ENV !== "undefined" && BUILD_ENV === "development") {
@@ -183,7 +184,7 @@ function showUpdateNotification() {
 /**
  * Create communication channel.
  */
-const channel = new Channel();
+const channel = registerSubframePointerDownForwarder(new Channel());
 
 /**
  * Create translator manager and register event listeners and service providers.

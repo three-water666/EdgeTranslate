@@ -101,6 +101,19 @@ export const Panel = styled.div`
     }
 `;
 
+export const DragShield = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: ${MaxZIndex - 1};
+    background: transparent;
+    pointer-events: none;
+    user-select: none;
+    touch-action: none;
+`;
+
 export const Head = styled.div`
     padding: 4px;
     display: flex;

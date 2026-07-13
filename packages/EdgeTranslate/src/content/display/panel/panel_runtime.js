@@ -2,6 +2,7 @@ import Moveable from "../library/moveable/moveable.js";
 import { delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
 import { isChromePDFViewer } from "../../common.js";
+import { activatePanelDragShield, setPanelDragShield } from "./panel_drag_shield.js";
 
 const transitionDuration = 500;
 
@@ -34,6 +35,7 @@ export function createMoveablePanel(panelEl) {
 
 export function attachDragHandlers({
     moveablePanel,
+    dragShieldElRef,
     headElRef,
     displaySettingRef,
     setUsePDFMaskLayer,
@@ -55,6 +57,7 @@ export function attachDragHandlers({
             }
             startTranslate = getCurrentTranslate(moveablePanel.targetElement);
             set(startTranslate);
+            activatePanelDragShield(dragShieldElRef, inputEvent, "grabbing");
             if (isChromePDFViewer()) setUsePDFMaskLayer(true);
         })
         .on("drag", ({ target, translate }) => {
@@ -62,6 +65,7 @@ export function attachDragHandlers({
             target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
         })
         .on("dragEnd", ({ translate, inputEvent }) => {
+            setPanelDragShield(dragShieldElRef, false);
             startTranslate = translate;
             if (shouldFixPanel(inputEvent, displaySettingRef.current.type, floatingToFixed)) {
                 displaySettingRef.current.fixedData.position = fixedDirection;
@@ -94,6 +98,7 @@ export function attachDragHandlers({
 
 export function attachResizeHandlers({
     moveablePanel,
+    dragShieldElRef,
     displaySettingRef,
     resizePageFlag,
     setUsePDFMaskLayer,
@@ -102,9 +107,10 @@ export function attachResizeHandlers({
     let startTranslate = [0, 0];
 
     moveablePanel
-        .on("resizeStart", ({ set }) => {
+        .on("resizeStart", ({ set, inputEvent }) => {
             startTranslate = getCurrentTranslate(moveablePanel.targetElement);
             set(startTranslate);
+            activatePanelDragShield(dragShieldElRef, inputEvent);
             if (isChromePDFViewer()) setUsePDFMaskLayer(true);
         })
         .on("resize", ({ target, width, height, translate, inputEvent }) => {
@@ -117,6 +123,7 @@ export function attachResizeHandlers({
             }
         })
         .on("resizeEnd", ({ width, height, translate, inputEvent, target }) => {
+            setPanelDragShield(dragShieldElRef, false);
             startTranslate = translate;
             target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
             if (inputEvent) {

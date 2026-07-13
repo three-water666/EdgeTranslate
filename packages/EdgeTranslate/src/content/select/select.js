@@ -9,6 +9,7 @@ import {
 import { finishLongPressMouseUp } from "./select_long_press_events.js";
 import { createLongPressTools } from "./select_long_press.js";
 import { createScreenshotSelector } from "./select_screenshot.js";
+import { registerSubframePointerDownBridge } from "./frame_pointer_bridge.js";
 import {
     getSelection,
     shouldTranslate,
@@ -30,6 +31,7 @@ if (!isNativePDFViewer()) {
 
 function initSelectTranslate() {
     const state = createSelectState();
+    registerSubframePointerDownBridge(state.channel);
     initializeButtonContainer(state, (event) => buttonClickHandler(state, event));
     initializeSettings(state);
     registerDomEvents(state);

@@ -2,6 +2,7 @@ import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settin
 import { isChromePDFViewer } from "../../common.js";
 import { panelChannel, checkTimestamp } from "./panel_shared.js";
 import { createMoveablePanel, attachDragHandlers, attachResizeHandlers } from "./panel_runtime.js";
+import { setPanelDragShield } from "./panel_drag_shield.js";
 import { isAutoClosePanelOnPageScrollEnabled } from "./panel_scroll.js";
 
 export function createDefaultDisplaySetting() {
@@ -157,10 +158,17 @@ export function togglePin(model) {
     chrome.storage.sync.set({ fixSetting: !model.panelFix });
 }
 
+export function closeUnfixedPanel(model) {
+    if (!model.open || model.panelFix) return false;
+    model.setOpen(false);
+    return true;
+}
+
 export function createPanelViewModel(model) {
     return {
         open: model.open,
         containerElRef: model.containerElRef,
+        dragShieldElRef: model.dragShieldElRef,
         containerStyle: getContainerStyle(model.usePDFMaskLayer),
         onDisplayStatusChange: model.onDisplayStatusChange,
         displayType: model.displayType,
@@ -182,6 +190,7 @@ export function createPanelViewModel(model) {
 }
 
 export function handlePanelClosed(model, removeFixedPanel) {
+    setPanelDragShield(model.dragShieldElRef, false);
     model.moveablePanelRef.current = null;
     model.setMoveableReady(false);
     window.isDisplayingResult = false;
@@ -205,6 +214,7 @@ export function handlePanelOpened(args) {
     model.moveablePanelRef.current = createMoveablePanel(panelEl);
     attachDragHandlers({
         moveablePanel: model.moveablePanelRef.current,
+        dragShieldElRef: model.dragShieldElRef,
         headElRef: model.headElRef,
         displaySettingRef: model.displaySettingRef,
         setUsePDFMaskLayer: model.setUsePDFMaskLayer,
@@ -216,6 +226,7 @@ export function handlePanelOpened(args) {
     });
     attachResizeHandlers({
         moveablePanel: model.moveablePanelRef.current,
+        dragShieldElRef: model.dragShieldElRef,
         displaySettingRef: model.displaySettingRef,
         resizePageFlag: model.resizePageFlag,
         setUsePDFMaskLayer: model.setUsePDFMaskLayer,

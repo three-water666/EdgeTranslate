@@ -177,6 +177,7 @@ export default class resizable {
         /* call the drag start handler written by the user */
         this.handlers.resizeStart &&
             this.handlers.resizeStart({
+                inputEvent: e,
                 // set the start position
                 set: (position) => {
                     this.store.startTranslate = [position[0], position[1]]; // deep copy
