@@ -8,6 +8,7 @@ import {
 } from "./select_constants.js";
 import { finishLongPressMouseUp } from "./select_long_press_events.js";
 import { createLongPressTools } from "./select_long_press.js";
+import { selectionMatchesSnapshot, snapshotSelection } from "./select_long_press_utils.js";
 import { createScreenshotSelector } from "./select_screenshot.js";
 import {
     getSelection,
@@ -225,6 +226,14 @@ export function triggerLongPressTranslate(state, session) {
     }
     return isInBlacklist().then((inBlacklist) => {
         if (inBlacklist) return;
+        const selection = window.getSelection();
+        if (
+            selection?.toString().trim() &&
+            !selectionMatchesSnapshot(selection, session.initialSelection)
+        ) {
+            state.tools.clearHighlight();
+            return;
+        }
         if (
             !selectTextAtPoint(state, session.startX, session.startY, session.previewRange) ||
             !shouldTranslate()
@@ -269,6 +278,7 @@ function createLongPressSession(state, event) {
     return {
         startX: event.clientX,
         startY: event.clientY,
+        initialSelection: snapshotSelection(window.getSelection()),
         moved: false,
         triggered: false,
         target: state.tools.getActionTarget(event.target),

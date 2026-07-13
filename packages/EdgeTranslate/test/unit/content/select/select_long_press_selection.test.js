@@ -52,14 +52,9 @@ describe("long press selection lifecycle", () => {
         const targetRange = document.createRange();
         targetRange.selectNodeContents(target);
         const state = createLongPressState();
-        const session = {
-            moved: false,
-            previewRange: targetRange,
-            startX: 0,
-            startY: 0,
-            target,
-            triggered: false,
-        };
+        longPressStartHandler(state, createMouseDownEvent(target));
+        const session = state.longPressSession;
+        session.previewRange = targetRange;
 
         await triggerLongPressTranslate(state, session);
 
@@ -68,6 +63,25 @@ describe("long press selection lifecycle", () => {
         expect(state.channel.request).toHaveBeenCalledWith("translate", {
             text: "new long press text",
         });
+    });
+
+    it("preserves a selection created during the active mouse gesture", async () => {
+        const target = appendText("long press candidate");
+        const targetRange = document.createRange();
+        targetRange.selectNodeContents(target);
+        const selectedDuringDrag = appendText("short drag selection");
+        const state = createLongPressState();
+        longPressStartHandler(state, createMouseDownEvent(target));
+        const session = state.longPressSession;
+        session.previewRange = targetRange;
+
+        selectNode(selectedDuringDrag);
+        await triggerLongPressTranslate(state, session);
+
+        expect(window.getSelection().toString()).toBe("short drag selection");
+        expect(session.triggered).toBe(false);
+        expect(state.channel.request).not.toHaveBeenCalled();
+        expect(state.tools.clearHighlight).toHaveBeenCalled();
     });
 });
 

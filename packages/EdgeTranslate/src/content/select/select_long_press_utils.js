@@ -168,6 +168,50 @@ export function snapshotSelectionRanges(selection) {
 }
 
 /**
+ * 保存选区的静态边界，用于识别后续手势是否创建了新选区。
+ */
+export function snapshotSelection(selection) {
+    const ranges = [];
+    if (selection) {
+        for (let index = 0; index < selection.rangeCount; index++) {
+            const range = selection.getRangeAt(index);
+            ranges.push({
+                startContainer: range.startContainer,
+                startOffset: range.startOffset,
+                endContainer: range.endContainer,
+                endOffset: range.endOffset,
+            });
+        }
+    }
+    return {
+        ranges,
+        text: selection?.toString() || "",
+    };
+}
+
+/**
+ * 判断当前选区是否仍与之前保存的静态快照一致。
+ */
+export function selectionMatchesSnapshot(selection, snapshot) {
+    if (
+        !snapshot ||
+        selection.toString() !== snapshot.text ||
+        selection.rangeCount !== snapshot.ranges.length
+    ) {
+        return false;
+    }
+    return snapshot.ranges.every((savedRange, index) => {
+        const range = selection.getRangeAt(index);
+        return (
+            range.startContainer === savedRange.startContainer &&
+            range.startOffset === savedRange.startOffset &&
+            range.endContainer === savedRange.endContainer &&
+            range.endOffset === savedRange.endOffset
+        );
+    });
+}
+
+/**
  * 恢复之前保存的页面选区范围。
  */
 export function restoreSelectionRanges(selection, ranges) {
