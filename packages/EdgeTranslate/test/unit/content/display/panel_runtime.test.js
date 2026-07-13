@@ -142,6 +142,58 @@ describe("panel drag shield", () => {
         expect(shield.style.pointerEvents).toBe("none");
     });
 
+    it("preserves a drag-owned shield during programmatic resize", () => {
+        const moveablePanel = createMoveablePanelStub();
+        const shield = document.createElement("div");
+        const dragShieldElRef = { current: shield };
+        const head = document.createElement("div");
+        const displaySettingRef = {
+            current: {
+                type: "fixed",
+                floatingData: { width: 0.2, height: 0.6 },
+                fixedData: { width: 0.2, position: "right" },
+            },
+        };
+
+        attachDragHandlers({
+            moveablePanel,
+            dragShieldElRef,
+            headElRef: { current: head },
+            displaySettingRef,
+            setUsePDFMaskLayer: jest.fn(),
+            setHighlight: jest.fn(),
+            showFixedPanel: jest.fn(),
+            removeFixedPanel: jest.fn(),
+            showFloatingPanel: jest.fn(),
+            updateDisplaySetting: jest.fn(),
+        });
+        attachResizeHandlers({
+            moveablePanel,
+            dragShieldElRef,
+            displaySettingRef,
+            resizePageFlag: { current: false },
+            setUsePDFMaskLayer: jest.fn(),
+            updateDisplaySetting: jest.fn(),
+        });
+
+        moveablePanel.handlers.dragStart({
+            set: jest.fn(),
+            stop: jest.fn(),
+            inputEvent: { composedPath: () => [head] },
+        });
+        expect(shield.style.pointerEvents).toBe("auto");
+
+        moveablePanel.handlers.resizeStart({ set: jest.fn() });
+        moveablePanel.handlers.resizeEnd({
+            translate: [0, 0],
+            target: moveablePanel.targetElement,
+        });
+        expect(shield.style.pointerEvents).toBe("auto");
+
+        moveablePanel.handlers.dragEnd({ translate: [0, 0], inputEvent: {} });
+        expect(shield.style.pointerEvents).toBe("none");
+    });
+
     it("covers iframes for a header drag and releases on drag end", () => {
         const moveablePanel = createMoveablePanelStub();
         const shield = document.createElement("div");
@@ -174,6 +226,58 @@ describe("panel drag shield", () => {
         expect(shield.style.cursor).toBe("grabbing");
 
         moveablePanel.handlers.dragEnd({ translate: [0, 0], inputEvent: {} });
+        expect(shield.style.pointerEvents).toBe("none");
+    });
+
+    it("releases the shield when drag and resize interactions are canceled", () => {
+        const moveablePanel = createMoveablePanelStub();
+        const shield = document.createElement("div");
+        const dragShieldElRef = { current: shield };
+        const head = document.createElement("div");
+        const displaySettingRef = {
+            current: {
+                type: "floating",
+                floatingData: { width: 0.2, height: 0.6 },
+                fixedData: { width: 0.2, position: "right" },
+            },
+        };
+
+        attachDragHandlers({
+            moveablePanel,
+            dragShieldElRef,
+            headElRef: { current: head },
+            displaySettingRef,
+            setUsePDFMaskLayer: jest.fn(),
+            setHighlight: jest.fn(),
+            showFixedPanel: jest.fn(),
+            removeFixedPanel: jest.fn(),
+            showFloatingPanel: jest.fn(),
+            updateDisplaySetting: jest.fn(),
+        });
+        attachResizeHandlers({
+            moveablePanel,
+            dragShieldElRef,
+            displaySettingRef,
+            resizePageFlag: { current: false },
+            setUsePDFMaskLayer: jest.fn(),
+            updateDisplaySetting: jest.fn(),
+        });
+
+        moveablePanel.handlers.dragStart({
+            set: jest.fn(),
+            stop: jest.fn(),
+            inputEvent: { composedPath: () => [head] },
+        });
+        moveablePanel.handlers.dragEnd({ translate: [0, 0], canceled: true });
+        expect(shield.style.pointerEvents).toBe("none");
+
+        moveablePanel.handlers.resizeStart({ set: jest.fn(), inputEvent: {} });
+        expect(shield.style.pointerEvents).toBe("auto");
+        moveablePanel.handlers.resizeEnd({
+            translate: [0, 0],
+            target: moveablePanel.targetElement,
+            canceled: true,
+        });
         expect(shield.style.pointerEvents).toBe("none");
     });
 });

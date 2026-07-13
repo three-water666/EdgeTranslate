@@ -2,7 +2,7 @@ import Moveable from "../library/moveable/moveable.js";
 import { delayPromise } from "common/scripts/promise.js";
 import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
 import { isChromePDFViewer } from "../../common.js";
-import { activatePanelDragShield, setPanelDragShield } from "./panel_drag_shield.js";
+import { createPanelDragShieldController } from "./panel_drag_shield.js";
 
 const transitionDuration = 500;
 
@@ -48,6 +48,7 @@ export function attachDragHandlers({
     let startTranslate = [0, 0];
     let floatingToFixed = false;
     let fixedDirection = "";
+    const dragShield = createPanelDragShieldController(dragShieldElRef);
 
     moveablePanel
         .on("dragStart", ({ set, stop, inputEvent }) => {
@@ -57,16 +58,18 @@ export function attachDragHandlers({
             }
             startTranslate = getCurrentTranslate(moveablePanel.targetElement);
             set(startTranslate);
-            activatePanelDragShield(dragShieldElRef, inputEvent, "grabbing");
-            if (isChromePDFViewer()) setUsePDFMaskLayer(true);
+            const userDragStarted = dragShield.activate(inputEvent, "grabbing");
+            if (userDragStarted && isChromePDFViewer()) setUsePDFMaskLayer(true);
         })
         .on("drag", ({ target, translate }) => {
             startTranslate = translate;
             target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
         })
-        .on("dragEnd", ({ translate, inputEvent }) => {
-            setPanelDragShield(dragShieldElRef, false);
+        .on("dragEnd", ({ translate, inputEvent, canceled }) => {
+            if (dragShield.deactivate(inputEvent, canceled)) setUsePDFMaskLayer(false);
             startTranslate = translate;
+            if (canceled && floatingToFixed) resetHighlight(setHighlight);
+            if (canceled) floatingToFixed = false;
             if (shouldFixPanel(inputEvent, displaySettingRef.current.type, floatingToFixed)) {
                 displaySettingRef.current.fixedData.position = fixedDirection;
                 displaySettingRef.current.type = "fixed";
@@ -74,7 +77,6 @@ export function attachDragHandlers({
                 showFixedPanel();
                 updateDisplaySetting();
             }
-            setUsePDFMaskLayer(false);
         })
         .on("bound", ({ direction, distance }) => {
             if (!shouldShowFixedHighlight(displaySettingRef.current.type, direction, distance)) {
@@ -105,13 +107,14 @@ export function attachResizeHandlers({
     updateDisplaySetting,
 }) {
     let startTranslate = [0, 0];
+    const dragShield = createPanelDragShieldController(dragShieldElRef);
 
     moveablePanel
         .on("resizeStart", ({ set, inputEvent }) => {
             startTranslate = getCurrentTranslate(moveablePanel.targetElement);
             set(startTranslate);
-            activatePanelDragShield(dragShieldElRef, inputEvent);
-            if (isChromePDFViewer()) setUsePDFMaskLayer(true);
+            const userResizeStarted = dragShield.activate(inputEvent);
+            if (userResizeStarted && isChromePDFViewer()) setUsePDFMaskLayer(true);
         })
         .on("resize", ({ target, width, height, translate, inputEvent }) => {
             startTranslate = translate;
@@ -122,15 +125,14 @@ export function attachResizeHandlers({
                 document.body.style.width = `${(1 - width / window.innerWidth) * 100}%`;
             }
         })
-        .on("resizeEnd", ({ width, height, translate, inputEvent, target }) => {
-            setPanelDragShield(dragShieldElRef, false);
+        .on("resizeEnd", ({ width, height, translate, inputEvent, target, canceled }) => {
+            if (dragShield.deactivate(inputEvent, canceled)) setUsePDFMaskLayer(false);
             startTranslate = translate;
             target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
             if (inputEvent) {
                 updateResizedDisplayData(displaySettingRef.current, width, height);
                 updateDisplaySetting();
             }
-            setUsePDFMaskLayer(false);
         });
 }
 

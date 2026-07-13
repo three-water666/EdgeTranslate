@@ -1,3 +1,22 @@
+export function createPanelDragShieldController(dragShieldElRef) {
+    let active = false;
+
+    return {
+        activate(inputEvent, cursor) {
+            if (!inputEvent) return false;
+            active = true;
+            activatePanelDragShield(dragShieldElRef, inputEvent, cursor);
+            return true;
+        },
+        deactivate(inputEvent, canceled = false) {
+            if (!active || (!inputEvent && !canceled)) return false;
+            active = false;
+            setPanelDragShield(dragShieldElRef, false);
+            return true;
+        },
+    };
+}
+
 export function activatePanelDragShield(dragShieldElRef, inputEvent, cursor) {
     if (!inputEvent) return;
     setPanelDragShield(

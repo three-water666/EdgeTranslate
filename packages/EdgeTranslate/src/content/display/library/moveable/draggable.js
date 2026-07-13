@@ -28,6 +28,7 @@ export default class draggable {
      * 2. add mouse down event listener to the target draggable element
      */
     dragInitiate() {
+        this.dragCancelHandler = () => this.finishDrag(undefined, true);
         this.dragEnd();
         this.setBounds(this.options.bounds);
         // wrap a drag start event handler
@@ -112,6 +113,7 @@ export default class draggable {
         if (this.dragging) {
             e.preventDefault();
             this.options.container.addEventListener("mousemove", this.dragHandler);
+            window.addEventListener("blur", this.dragCancelHandler, { once: true });
         }
     }
 
@@ -203,16 +205,23 @@ export default class draggable {
      */
     dragEnd() {
         this.options.container.addEventListener("mouseup", (e) => {
-            if (this.dragging) {
-                this.dragging = false;
-                this.options.container.removeEventListener("mousemove", this.dragHandler);
-                if (this.handlers.dragEnd)
-                    this.handlers.dragEnd({
-                        inputEvent: e,
-                        translate: [this.store.currentTranslate[0], this.store.currentTranslate[1]],
-                    }); // deep copy
-            }
+            this.finishDrag(e);
         });
+    }
+
+    finishDrag(inputEvent, canceled = false) {
+        if (!this.dragging) return false;
+        this.dragging = false;
+        this.bounding = false;
+        this.options.container.removeEventListener("mousemove", this.dragHandler);
+        window.removeEventListener("blur", this.dragCancelHandler);
+        if (this.handlers.dragEnd)
+            this.handlers.dragEnd({
+                inputEvent,
+                canceled,
+                translate: [this.store.currentTranslate[0], this.store.currentTranslate[1]],
+            }); // deep copy
+        return true;
     }
 
     /**
