@@ -39,6 +39,7 @@ export default class resizable {
      * 3. add mouse down event listener to the resizable div element
      */
     resizeInitiate() {
+        this.resizeCancelHandler = () => this.finishResize(undefined, true);
         this.resizeEnd();
         // wrap a resize start event handler
         this.resizeStartHandler = (e) => {
@@ -177,6 +178,7 @@ export default class resizable {
         /* call the drag start handler written by the user */
         this.handlers.resizeStart &&
             this.handlers.resizeStart({
+                inputEvent: e,
                 // set the start position
                 set: (position) => {
                     this.store.startTranslate = [position[0], position[1]]; // deep copy
@@ -198,6 +200,7 @@ export default class resizable {
         if (this.resizing) {
             e.preventDefault();
             this.options.container.addEventListener("mousemove", this.resizeHandler);
+            window.addEventListener("blur", this.resizeCancelHandler, { once: true });
         }
     }
 
@@ -304,19 +307,25 @@ export default class resizable {
      */
     resizeEnd() {
         this.options.container.addEventListener("mouseup", (e) => {
-            if (this.resizing) {
-                this.resizing = false;
-                this.options.container.removeEventListener("mousemove", this.resizeHandler);
-                if (this.handlers.resizeEnd)
-                    this.handlers.resizeEnd({
-                        target: this.targetElement,
-                        inputEvent: e,
-                        translate: [this.store.currentTranslate[0], this.store.currentTranslate[1]], // deep copy
-                        width: this.store.currentSize[0],
-                        height: this.store.currentSize[1],
-                    });
-            }
+            this.finishResize(e);
         });
+    }
+
+    finishResize(inputEvent, canceled = false) {
+        if (!this.resizing) return false;
+        this.resizing = false;
+        this.options.container.removeEventListener("mousemove", this.resizeHandler);
+        window.removeEventListener("blur", this.resizeCancelHandler);
+        if (this.handlers.resizeEnd)
+            this.handlers.resizeEnd({
+                target: this.targetElement,
+                inputEvent,
+                canceled,
+                translate: [this.store.currentTranslate[0], this.store.currentTranslate[1]], // deep copy
+                width: this.store.currentSize[0],
+                height: this.store.currentSize[1],
+            });
+        return true;
     }
 
     /**

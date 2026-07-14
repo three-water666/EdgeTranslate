@@ -2,6 +2,7 @@ import {
     handleTranslated,
     handleTranslatorSelect,
     syncPanelChangedSettings,
+    closeUnfixedPanel,
 } from "content/display/panel/panel_handlers.js";
 import { panelChannel } from "content/display/panel/panel_shared.js";
 
@@ -75,6 +76,25 @@ describe("panel handlers", () => {
         );
 
         expect(model.autoClosePanelOnPageScrollRef.current).toBe(true);
+    });
+
+    it("only closes an open, unpinned panel for outside-frame input", () => {
+        const model = createModel();
+        model.open = true;
+        model.panelFix = false;
+
+        expect(closeUnfixedPanel(model)).toBe(true);
+        expect(model.setOpen).toHaveBeenCalledWith(false);
+
+        model.setOpen.mockClear();
+        model.panelFix = true;
+        expect(closeUnfixedPanel(model)).toBe(false);
+        expect(model.setOpen).not.toHaveBeenCalled();
+
+        model.panelFix = false;
+        model.open = false;
+        expect(closeUnfixedPanel(model)).toBe(false);
+        expect(model.setOpen).not.toHaveBeenCalled();
     });
 });
 

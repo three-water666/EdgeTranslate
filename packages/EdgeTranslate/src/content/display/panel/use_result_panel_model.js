@@ -11,6 +11,7 @@ import {
 } from "./panel_runtime.js";
 import { usePanelScrollAutoClose } from "./use_panel_scroll_auto_close.js";
 import { panelChannel } from "./panel_shared.js";
+import { TOP_FRAME_POINTER_DOWN_EVENT } from "common/scripts/frame_events.js";
 import {
     createDefaultDisplaySetting,
     normalizeDisplaySetting,
@@ -23,6 +24,7 @@ import {
     handlePanelClosed,
     handlePanelOpened,
     syncPanelChangedSettings,
+    closeUnfixedPanel,
 } from "./panel_handlers.js";
 
 const scrollbarWidth = getScrollbarWidth();
@@ -129,6 +131,7 @@ function usePanelStatusState() {
 function usePanelRefState() {
     return {
         containerElRef: useRef(),
+        dragShieldElRef: useRef(),
         panelElRef: useRef(),
         headElRef: useRef(),
         moveablePanelRef: useRef(null),
@@ -288,11 +291,12 @@ function usePanelLifecycle(args) {
     usePanelScrollAutoClose(model, updateBounds);
     useEvent("resize", windowResizeHandler, window);
     useClickAway(model.containerElRef, () => {
-        if (!model.panelFix) model.setOpen(false);
+        closeUnfixedPanel(model);
     });
 }
 
 function usePanelChannels(model) {
+    const modelRef = useLatest(model);
     useEffect(() => {
         initializePanelSettings(model);
         panelChannel.provide("check_availability", () => Promise.resolve());
@@ -307,10 +311,14 @@ function usePanelChannels(model) {
             }
         );
         panelChannel.on("command", (detail) => handlePanelCommand(model, detail));
+        const cancelFramePointerDown = panelChannel.on(TOP_FRAME_POINTER_DOWN_EVENT, () => {
+            closeUnfixedPanel(modelRef.current);
+        });
         const storageChangeHandler = (changes, area) =>
             syncPanelChangedSettings(model, changes, area);
         chrome.storage.onChanged.addListener(storageChangeHandler);
         return () => {
+            cancelFramePointerDown();
             chrome.storage.onChanged.removeListener(storageChangeHandler);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps

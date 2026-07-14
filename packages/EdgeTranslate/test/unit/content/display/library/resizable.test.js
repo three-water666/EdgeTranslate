@@ -121,4 +121,31 @@ describe("test resizable api in content module", () => {
             sw: thresholdValue,
         });
     });
+
+    it("cancels an active resize when the window loses focus", () => {
+        const target = document.createElement("div");
+        const resizeEnd = jest.fn();
+        document.body.appendChild(target);
+        const instance = new resizable(
+            target,
+            { container: document.documentElement, directions: ["e"] },
+            {
+                resizeStart: ({ set }) => set([0, 0]),
+                resizeEnd,
+            }
+        );
+
+        target
+            .querySelector(".resizable-div")
+            .dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        expect(instance.resizing).toBe(true);
+
+        window.dispatchEvent(new Event("blur"));
+
+        expect(instance.resizing).toBe(false);
+        expect(resizeEnd).toHaveBeenCalledWith(
+            expect.objectContaining({ canceled: true, inputEvent: undefined })
+        );
+        target.remove();
+    });
 });

@@ -37,4 +37,29 @@ describe("test draggable api in content module", () => {
             bottom: 100,
         });
     });
+
+    it("cancels an active drag when the window loses focus", () => {
+        const target = document.createElement("div");
+        const dragEnd = jest.fn();
+        document.body.appendChild(target);
+        const instance = new draggable(
+            target,
+            { container: document.documentElement },
+            {
+                dragStart: ({ set }) => set([0, 0]),
+                dragEnd,
+            }
+        );
+
+        target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        expect(instance.dragging).toBe(true);
+
+        window.dispatchEvent(new Event("blur"));
+
+        expect(instance.dragging).toBe(false);
+        expect(dragEnd).toHaveBeenCalledWith(
+            expect.objectContaining({ canceled: true, inputEvent: undefined })
+        );
+        target.remove();
+    });
 });
