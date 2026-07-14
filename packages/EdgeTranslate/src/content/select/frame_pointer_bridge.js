@@ -1,7 +1,8 @@
 import { SUBFRAME_POINTER_DOWN_EVENT } from "common/scripts/frame_events.js";
 
+const EXTENSION_BUTTON_FRAME_ID = "edge-translate-button";
 const EXTENSION_UI_IDS = new Set([
-    "edge-translate-button",
+    EXTENSION_BUTTON_FRAME_ID,
     "edge-translate-button-host",
     "edge-translate-root",
     "edge-translate-screenshot-overlay",
@@ -19,6 +20,10 @@ export function registerSubframePointerDownBridge(channel) {
         },
         true
     );
+}
+
+export function isExtensionOwnedFrame(frameElement = window.frameElement) {
+    return frameElement?.id === EXTENSION_BUTTON_FRAME_ID;
 }
 
 export function isExtensionOwnedPointerEvent(event) {

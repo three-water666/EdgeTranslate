@@ -43,6 +43,21 @@ describe("selection button top layer host", () => {
         expect(state.translationButtonContainer.style.pointerEvents).toBe("auto");
     });
 
+    it("marks the button iframe before attaching its about:blank document", () => {
+        const state = createButtonState();
+        const appendChild = jest.spyOn(document.documentElement, "appendChild");
+        let idWhenAttached;
+        appendChild.mockImplementation((node) => {
+            if (node === state.translationButtonContainer) idWhenAttached = node.id;
+            return Node.prototype.appendChild.call(document.documentElement, node);
+        });
+
+        initializeButtonContainer(state, jest.fn());
+
+        expect(idWhenAttached).toBe("edge-translate-button");
+        appendChild.mockRestore();
+    });
+
     it("promotes the button host as a popover and keeps a selection snapshot", () => {
         const { showModal, showPopover } = mockDialogMethods({ clearSelectionOnModal: true });
         const state = createButtonState();

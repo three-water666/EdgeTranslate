@@ -10,7 +10,10 @@ import { finishLongPressMouseUp } from "./select_long_press_events.js";
 import { createLongPressTools } from "./select_long_press.js";
 import { selectionMatchesSnapshot, snapshotSelection } from "./select_long_press_utils.js";
 import { createScreenshotSelector } from "./select_screenshot.js";
-import { registerSubframePointerDownBridge } from "./frame_pointer_bridge.js";
+import {
+    isExtensionOwnedFrame,
+    registerSubframePointerDownBridge,
+} from "./frame_pointer_bridge.js";
 import {
     getSelection,
     shouldTranslate,
@@ -26,7 +29,7 @@ import {
     disappearButton,
 } from "./select_button.js";
 
-if (!isNativePDFViewer()) {
+if (!isExtensionOwnedFrame() && !isNativePDFViewer()) {
     initSelectTranslate();
 }
 

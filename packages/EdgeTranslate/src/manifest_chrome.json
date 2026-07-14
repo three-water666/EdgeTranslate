@@ -111,7 +111,8 @@
             "run_at": "document_start",
             "js": ["./content/select/select.js"],
             "css": ["./content/select/select.css"],
-            "all_frames": true
+            "all_frames": true,
+            "match_about_blank": true
         },
         {
             "matches": ["<all_urls>"],

@@ -274,11 +274,65 @@ describe("panel drag shield", () => {
         moveablePanel.handlers.resizeStart({ set: jest.fn(), inputEvent: {} });
         expect(shield.style.pointerEvents).toBe("auto");
         moveablePanel.handlers.resizeEnd({
+            width: 300,
+            height: 400,
             translate: [0, 0],
             target: moveablePanel.targetElement,
             canceled: true,
         });
         expect(shield.style.pointerEvents).toBe("none");
+    });
+
+    it("persists the final fixed width when blur cancels a user resize", () => {
+        const moveablePanel = createMoveablePanelStub();
+        const displaySettingRef = {
+            current: {
+                type: "fixed",
+                floatingData: { width: 0.2, height: 0.6 },
+                fixedData: { width: 0.2, position: "right" },
+            },
+        };
+        const updateDisplaySetting = jest.fn();
+
+        attachResizeHandlers({
+            moveablePanel,
+            dragShieldElRef: { current: document.createElement("div") },
+            displaySettingRef,
+            resizePageFlag: { current: true },
+            setUsePDFMaskLayer: jest.fn(),
+            updateDisplaySetting,
+        });
+
+        moveablePanel.handlers.resizeStart({ set: jest.fn(), inputEvent: {} });
+        moveablePanel.handlers.resize({
+            target: moveablePanel.targetElement,
+            width: 320,
+            height: 500,
+            translate: [0, 0],
+            inputEvent: {},
+        });
+        moveablePanel.handlers.resizeEnd({
+            target: moveablePanel.targetElement,
+            width: 320,
+            height: 500,
+            translate: [0, 0],
+            canceled: true,
+        });
+
+        expect(displaySettingRef.current.fixedData.width).toBe(320 / window.innerWidth);
+        expect(document.body.style.width).toBe(`${(1 - 320 / window.innerWidth) * 100}%`);
+        expect(updateDisplaySetting).toHaveBeenCalledTimes(1);
+
+        moveablePanel.handlers.resizeStart({ set: jest.fn() });
+        moveablePanel.handlers.resizeEnd({
+            target: moveablePanel.targetElement,
+            width: 400,
+            height: 500,
+            translate: [0, 0],
+        });
+
+        expect(displaySettingRef.current.fixedData.width).toBe(320 / window.innerWidth);
+        expect(updateDisplaySetting).toHaveBeenCalledTimes(1);
     });
 });
 

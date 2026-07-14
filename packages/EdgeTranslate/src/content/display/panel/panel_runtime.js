@@ -129,7 +129,7 @@ export function attachResizeHandlers({
             if (dragShield.deactivate(inputEvent, canceled)) setUsePDFMaskLayer(false);
             startTranslate = translate;
             target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
-            if (inputEvent) {
+            if (inputEvent || canceled) {
                 updateResizedDisplayData(displaySettingRef.current, width, height);
                 updateDisplaySetting();
             }

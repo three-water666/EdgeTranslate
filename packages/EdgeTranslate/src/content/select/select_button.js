@@ -21,6 +21,7 @@ const LayerMode = {
 
 export function initializeButtonContainer(state, onMouseDown) {
     const iframeContainer = state.translationButtonContainer;
+    state.translationButtonContainer.id = BUTTON_ID;
     document.documentElement.appendChild(state.translationButtonContainer);
     if (state.translationButtonContainer.contentDocument === null) {
         state.translationButtonContainer = document.createElement("div");
