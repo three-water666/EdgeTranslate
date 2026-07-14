@@ -1,6 +1,6 @@
 ---
 name: extension-release
-description: Bump and publish the EdgeTranslate browser extension release from this repository. Use when the user wants to publish a new extension version, generate AI changelog files from commits since the previous `v*` tag, update the release version number, create the release commit, add a `vX.Y.Z` tag, and push `master` plus the tag so GitHub Actions creates a release artifact.
+description: Bump and publish the EdgeTranslate browser extension release from this repository. Use when the user wants to publish a new extension version, generate AI changelog files from commits since the previous `v*` tag, update the release version number, create the release commit, add a `vX.Y.Z` tag, and push `main` plus the tag so GitHub Actions creates a release artifact.
 ---
 
 # Extension Release
@@ -9,7 +9,7 @@ Update the EdgeTranslate extension version, write release changelogs, and publis
 
 ## Workflow
 
-1. Confirm the current branch is `master` and the worktree is clean unless the user explicitly wants to include staged changes.
+1. Confirm the current branch is `main` and the worktree is clean unless the user explicitly wants to include staged changes.
 2. Confirm the target release version `X.Y.Z` and verify the tag `vX.Y.Z` does not already exist.
 3. Find the previous release tag with `git tag --list "v*" --sort=-v:refname | head -n 1`.
 4. Review commits from the previous tag to current `HEAD` using `git log --reverse --format='%h %s%n%b' "${PREVIOUS_TAG}..HEAD"` and inspect details as needed with `git show --stat` or `git log --stat`. Do not drop merge commits by default because they may contain PR numbers or issue references.
@@ -22,7 +22,7 @@ Update the EdgeTranslate extension version, write release changelogs, and publis
 8. Do not edit `packages/EdgeTranslate/src/manifest_chrome.json` for the release number. The build copies `manifest_chrome.json` and injects `version` and `version_name` from `packages/EdgeTranslate/package.json` in `packages/EdgeTranslate/gulpfile.js`.
 9. Commit the changelog files and version bump with a clear release-oriented message such as `chore: release 3.0.3`.
 10. Create a lightweight tag named `vX.Y.Z`.
-11. Push `master` and then push the tag to `origin`.
+11. Push `main` and then push the tag to `origin`.
 12. Tell the user the commit hash, tag name, and that `.github/workflows/release.yml` should now run.
 
 ## Changelog Rules
@@ -62,7 +62,7 @@ git log --reverse --format="%h %s%n%b" vPREVIOUS..HEAD
 git add packages/EdgeTranslate/package.json docs/changelog/zh-CN/vX.Y.Z.md docs/changelog/en/vX.Y.Z.md docs/changelog/zh-TW/vX.Y.Z.md
 git commit -m "chore: release X.Y.Z"
 git tag vX.Y.Z
-git push origin master
+git push origin main
 git push origin vX.Y.Z
 ```
 
