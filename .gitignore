@@ -13,3 +13,5 @@ packages/translators/dev/
 **/.idea
 **/*.log
 .turbo/
+**/playwright-report/
+**/test-results/
