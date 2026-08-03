@@ -1,220 +1,252 @@
-import path from "path";
-import {
-    expectImageSnapshot,
+const { expect, test } = require("../playwright/fixtures");
+const {
     expectPanelContains,
-    expectVisibleElement,
+    expectVisualSnapshot,
+    getPanelText,
+    selectElementText,
     withOption,
-} from "../library/test_mode";
+} = require("../playwright/helpers");
 
 const SelectionButtonId = "edge-translate-button";
-const WaitTranslationResultTime = 200; // Delayed time for waiting the response of translation result.
-const WaitButtonTime = 350; // Delayed time for waiting the animation of button to finish.
-const WaitLongPressPreviewTime = 450;
+const WaitLongPressPreviewTimeout = 440;
 const WaitLongPressTranslateTime = 550;
 const LongPressTextId = "edge-long-press";
 const LongPressLinkId = "edge-long-press-link";
 const LongPressTweetTextId = "edge-long-press-tweet-text";
 const LongPressTweetTargetId = "edge-long-press-tweet-target";
 const LongPressHighlightId = "edge-translate-long-press-highlight";
-const PageName = "main.html";
 const Text = "edge";
 
-describe("selection button", () => {
-    test("Selection button shows once a text is selected.", async () => {
-        await openMainPage();
-        await selectText();
-        await expectSelectionButtonSnapshot();
+test.describe("selection button", () => {
+    test("Selection button shows once a text is selected.", async ({
+        mainPageUrl,
+        page,
+    }, testInfo) => {
+        await openMainPage(page, mainPageUrl);
+        await selectText(page);
+        const selectionButton = await expectSelectionButton(page);
+        await expectVisualSnapshot(
+            selectionButton,
+            testInfo,
+            "selection-button-after-selection.png"
+        );
     });
 
-    test("Double click text to show translation button.", async () => {
-        await openMainPage();
-        await doubleClickText();
-        await expectSelectionButtonSnapshot();
-    });
-});
-
-describe("selection translation", () => {
-    test("Start to translate once a text is selected.", async () => {
-        await withOption("#translate-after-select", true, async () => {
-            await openMainPage();
-            await selectText();
-            await expectTranslatedPanelSnapshot();
-            // The selected text shouldn't be canceled.
-            await expectSelectedText(Text);
-        });
-    });
-
-    test("Cancel text selection after translation.", async () => {
-        await withOption("#cancel-text-selection", true, async () => {
-            await openMainPage();
-            await selectText();
-            await clickSelectionButton();
-            await expectPanelContains(Text, "边缘");
-            // The selected text should be canceled.
-            await expectSelectedText("");
-        });
-    });
-
-    test("Double click text to translate directly.", async () => {
-        await withOption("#translate-after-dbl-click", true, async () => {
-            await openMainPage();
-            await doubleClickText();
-            await expectTranslatedPanelSnapshot();
-            // The selected text shouldn't be canceled.
-            await expectSelectedText(Text);
-        });
-    });
-
-    test("Long press text to translate directly.", async () => {
-        await withOption("#translate-after-long-press", true, async () => {
-            await openMainPage();
-            await addLongPressTarget();
-            const point = await startLongPress(`#${LongPressTextId}`);
-            await driver.delay(WaitLongPressPreviewTime);
-            await expectLongPressHighlight(true);
-            await finishLongPress(point);
-            await expectSelectedText(Text);
-            await expectLongPressHighlight(false);
-            await expectTranslatedPanelSnapshot();
-        });
-    });
-
-    test("Move cancels long press translation.", async () => {
-        await withOption("#translate-after-long-press", true, async () => {
-            await openMainPage();
-            await addLongPressTarget();
-            await moveDuringLongPress();
-            await expectSelectedText("");
-            await expectLongPressHighlight(false);
-            await expectPanelNotContaining("边缘");
-        });
-    });
-
-    test("Long press translation prevents the following page click.", async () => {
-        await withOption("#translate-after-long-press", true, async () => {
-            await openMainPage();
-            await addLongPressLinkTarget();
-            await longPressText(`#${LongPressLinkId}`);
-            await expectSelectedText(Text);
-            await expectPanelContains(Text, "边缘");
-            expect(await getLongPressLinkClickCount()).toBe(0);
-        });
-    });
-
-    test("Long press tweet-like body without selecting author or media.", async () => {
-        await withOption("#translate-after-long-press", true, async () => {
-            await openMainPage();
-            await addShortTweetTarget();
-            await longPressText(`#${LongPressTweetTextId}`);
-            await expectSelectedText(Text);
-            await expectPanelContains(Text, "边缘");
-            await expectSelectedTextNotContaining("Author Name");
-            await expectSelectedTextNotContaining("image caption");
-            await expectSelectedTextNotContaining("Reply");
-        });
-    });
-
-    test("Long press long tweet-like body selects the whole body without siblings.", async () => {
-        await withOption("#translate-after-long-press", true, async () => {
-            await openMainPage();
-            const fixture = await addLongTweetTarget();
-            await longPressText(`#${LongPressTweetTargetId}`);
-
-            await expectSelectedTextContaining(fixture.intro);
-            await expectSelectedTextContaining(fixture.targetSentence);
-            await expectSelectedTextContaining(fixture.fillerSentence);
-            await expectSelectedTextContaining(fixture.distantSentence);
-            await expectSelectedTextNotContaining(fixture.author);
-            await expectSelectedTextNotContaining(fixture.mediaCaption);
-            await expectSelectedTextNotContaining(fixture.actionText);
-        });
+    test("Double click text to show translation button.", async ({
+        mainPageUrl,
+        page,
+    }, testInfo) => {
+        await openMainPage(page, mainPageUrl);
+        await doubleClickText(page);
+        const selectionButton = await expectSelectionButton(page);
+        await expectVisualSnapshot(
+            selectionButton,
+            testInfo,
+            "selection-button-after-double-click.png"
+        );
     });
 });
 
-async function openMainPage() {
-    await driver.get(`file://${path.resolve(__dirname, "../pages", PageName)}`);
+test.describe("selection translation", () => {
+    test("Start to translate once a text is selected.", async ({
+        extension,
+        mainPageUrl,
+        page,
+    }, testInfo) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-select", async () => {
+            await openMainPage(page, mainPageUrl);
+            await selectText(page);
+            const panel = await expectTranslatedPanel(page);
+            await expectVisualSnapshot(panel, testInfo, "translation-panel-after-selection.png");
+            await expectSelectedText(page, Text);
+        });
+    });
+
+    test("Cancel text selection after translation.", async ({ extension, mainPageUrl, page }) => {
+        await withOption(page, extension.extensionUrl, "#cancel-text-selection", async () => {
+            await openMainPage(page, mainPageUrl);
+            await selectText(page);
+            await clickSelectionButton(page);
+            await expectPanelContains(page, Text, "边缘");
+            await expectSelectedText(page, "");
+        });
+    });
+
+    test("Double click text to translate directly.", async ({
+        extension,
+        mainPageUrl,
+        page,
+    }, testInfo) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-dbl-click", async () => {
+            await openMainPage(page, mainPageUrl);
+            await doubleClickText(page);
+            const panel = await expectTranslatedPanel(page);
+            await expectVisualSnapshot(panel, testInfo, "translation-panel-after-double-click.png");
+            await expectSelectedText(page, Text);
+        });
+    });
+
+    test("Long press text to translate directly.", async ({
+        extension,
+        mainPageUrl,
+        page,
+    }, testInfo) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-long-press", async () => {
+            await openMainPage(page, mainPageUrl);
+            await addLongPressTarget(page);
+            const point = await startLongPress(page, `#${LongPressTextId}`);
+            await expectLongPressHighlight(page, true);
+            await finishLongPress(page, point);
+            await expectSelectedText(page, Text);
+            await expectLongPressHighlight(page, false);
+            const panel = await expectTranslatedPanel(page);
+            await expectVisualSnapshot(panel, testInfo, "translation-panel-after-long-press.png");
+        });
+    });
+
+    test("Move cancels long press translation.", async ({ extension, mainPageUrl, page }) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-long-press", async () => {
+            await openMainPage(page, mainPageUrl);
+            await addLongPressTarget(page);
+            await moveDuringLongPress(page);
+            await expectSelectedText(page, "");
+            await expectLongPressHighlight(page, false);
+            await expectPanelNotContaining(page, "边缘");
+        });
+    });
+
+    test("Long press translation prevents the following page click.", async ({
+        extension,
+        mainPageUrl,
+        page,
+    }) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-long-press", async () => {
+            await openMainPage(page, mainPageUrl);
+            await addLongPressLinkTarget(page);
+            await longPressText(page, `#${LongPressLinkId}`);
+            await expectSelectedText(page, Text);
+            await expectPanelContains(page, Text, "边缘");
+            expect(await getLongPressLinkClickCount(page)).toBe(0);
+        });
+    });
+
+    test("Long press tweet-like body without selecting author or media.", async ({
+        extension,
+        mainPageUrl,
+        page,
+    }) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-long-press", async () => {
+            await openMainPage(page, mainPageUrl);
+            await addShortTweetTarget(page);
+            await longPressText(page, `#${LongPressTweetTextId}`);
+            await expectSelectedText(page, Text);
+            await expectPanelContains(page, Text, "边缘");
+            await expectSelectedTextNotContaining(page, "Author Name");
+            await expectSelectedTextNotContaining(page, "image caption");
+            await expectSelectedTextNotContaining(page, "Reply");
+        });
+    });
+
+    test("Long press long tweet-like body selects the whole body without siblings.", async ({
+        extension,
+        mainPageUrl,
+        page,
+    }) => {
+        await withOption(page, extension.extensionUrl, "#translate-after-long-press", async () => {
+            await openMainPage(page, mainPageUrl);
+            const fixture = await addLongTweetTarget(page);
+            await longPressText(page, `#${LongPressTweetTargetId}`);
+
+            await expectSelectedTextContaining(page, fixture.intro);
+            await expectSelectedTextContaining(page, fixture.targetSentence);
+            await expectSelectedTextContaining(page, fixture.fillerSentence);
+            await expectSelectedTextContaining(page, fixture.distantSentence);
+            await expectSelectedTextNotContaining(page, fixture.author);
+            await expectSelectedTextNotContaining(page, fixture.mediaCaption);
+            await expectSelectedTextNotContaining(page, fixture.actionText);
+        });
+    });
+});
+
+async function openMainPage(page, mainPageUrl) {
+    await page.goto(mainPageUrl);
 }
 
-async function selectText() {
-    const textEl = await driver.findElement(`#${Text}`);
-    expect(await textEl.getText()).toBe(Text);
-
-    await driver.selectElement(`#${Text}`);
-    await expectSelectedText(Text);
+async function selectText(page) {
+    const textElement = page.locator(`#${Text}`);
+    await expect(textElement).toHaveText(Text);
+    await selectElementText(page, `#${Text}`);
+    await expectSelectedText(page, Text);
 }
 
-async function doubleClickText() {
-    const textEl = await driver.findElement(`#${Text}`);
-    expect(await textEl.getText()).toBe(Text);
-
-    const actions = driver.actions({ async: true });
-    // Perform double-click action on the text.
-    await actions.doubleClick(textEl).perform();
-    await expectSelectedText(Text);
+async function doubleClickText(page) {
+    const textElement = page.locator(`#${Text}`);
+    await expect(textElement).toHaveText(Text);
+    await textElement.dblclick();
+    await expectSelectedText(page, Text);
 }
 
-async function longPressText(selector) {
-    const point = await startLongPress(selector);
-    await finishLongPress(point);
+async function longPressText(page, selector) {
+    const point = await startLongPress(page, selector);
+    await finishLongPress(page, point);
 }
 
-async function startLongPress(selector) {
-    const point = await getElementCenter(selector);
-    await dispatchMouseEvent("mousedown", point, { buttons: 1 });
+async function startLongPress(page, selector) {
+    const point = await getElementCenter(page, selector);
+    await dispatchMouseEvent(page, "mousedown", point, { buttons: 1 });
     return point;
 }
 
-async function finishLongPress(point) {
-    await driver.delay(WaitLongPressTranslateTime);
-    await dispatchMouseEvent("mouseup", point);
-    await dispatchMouseEvent("click", point);
-    await driver.delay(WaitTranslationResultTime);
+async function finishLongPress(page, point) {
+    await page.waitForTimeout(WaitLongPressTranslateTime);
+    await dispatchMouseEvent(page, "mouseup", point);
+    await dispatchMouseEvent(page, "click", point);
 }
 
-async function moveDuringLongPress() {
-    const startPoint = await startLongPress(`#${LongPressTextId}`);
-    await driver.delay(WaitLongPressPreviewTime);
-    await expectLongPressHighlight(true);
+async function moveDuringLongPress(page) {
+    const startPoint = await startLongPress(page, `#${LongPressTextId}`);
+    await expectLongPressHighlight(page, true);
 
     const movedPoint = { x: startPoint.x + 16, y: startPoint.y };
-    await dispatchMouseEvent("mousemove", movedPoint, { buttons: 1 });
-    await finishLongPress(movedPoint);
+    await dispatchMouseEvent(page, "mousemove", movedPoint, { buttons: 1 });
+    await finishLongPress(page, movedPoint);
 }
 
-async function getElementCenter(selector) {
-    return await driver.executeScript((selector) => {
-        const rect = document.querySelector(selector).getBoundingClientRect();
-        return {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-        };
-    }, selector);
+async function getElementCenter(page, selector) {
+    const boundingBox = await page.locator(selector).boundingBox();
+    if (!boundingBox) throw new Error(`Unable to find a bounding box for ${selector}`);
+
+    return {
+        x: boundingBox.x + boundingBox.width / 2,
+        y: boundingBox.y + boundingBox.height / 2,
+    };
 }
 
-async function dispatchMouseEvent(type, point, options = {}) {
-    await driver.executeScript(
-        (type, point, options) => {
-            const target = document.elementFromPoint(point.x, point.y);
-            const eventOptions = {
-                bubbles: true,
-                cancelable: true,
-                button: 0,
-                buttons: 0,
-                clientX: point.x,
-                clientY: point.y,
-            };
-            Object.assign(eventOptions, options);
-            target.dispatchEvent(new MouseEvent(type, eventOptions));
+async function dispatchMouseEvent(page, type, point, options = {}) {
+    await page.evaluate(
+        ({ eventOptions, eventType, eventPoint }) => {
+            const target = document.elementFromPoint(eventPoint.x, eventPoint.y);
+            if (!target) throw new Error(`No element found at ${eventPoint.x},${eventPoint.y}`);
+
+            target.dispatchEvent(
+                new MouseEvent(eventType, {
+                    bubbles: true,
+                    cancelable: true,
+                    button: 0,
+                    buttons: 0,
+                    clientX: eventPoint.x,
+                    clientY: eventPoint.y,
+                    ...eventOptions,
+                })
+            );
         },
-        type,
-        point,
-        options
+        { eventOptions: options, eventType: type, eventPoint: point }
     );
 }
 
-async function addLongPressTarget() {
-    await driver.executeScript(
-        (targetId, text) => {
+async function addLongPressTarget(page) {
+    await page.evaluate(
+        ({ targetId, text }) => {
             const list = document.createElement("ul");
             const item = document.createElement("li");
             item.id = targetId;
@@ -222,14 +254,13 @@ async function addLongPressTarget() {
             list.appendChild(item);
             document.body.appendChild(list);
         },
-        LongPressTextId,
-        Text
+        { targetId: LongPressTextId, text: Text }
     );
 }
 
-async function addLongPressLinkTarget() {
-    await driver.executeScript(
-        (targetId, text) => {
+async function addLongPressLinkTarget(page) {
+    await page.evaluate(
+        ({ targetId, text }) => {
             window.edgeTranslateLongPressClickCount = 0;
             const paragraph = document.createElement("p");
             const link = document.createElement("a");
@@ -242,14 +273,13 @@ async function addLongPressLinkTarget() {
             paragraph.appendChild(link);
             document.body.appendChild(paragraph);
         },
-        LongPressLinkId,
-        Text
+        { targetId: LongPressLinkId, text: Text }
     );
 }
 
-async function addShortTweetTarget() {
-    await driver.executeScript(
-        (ids, text) => {
+async function addShortTweetTarget(page) {
+    await page.evaluate(
+        ({ targetId, text }) => {
             function createTextElement(tagName, id, elementText = "") {
                 const element = document.createElement(tagName);
                 if (id) element.id = id;
@@ -257,43 +287,34 @@ async function addShortTweetTarget() {
                 return element;
             }
 
-            function createTweetLikeCard({ author, bodyNode, mediaCaption, actionText }) {
-                const tweet = document.createElement("article");
-                Object.assign(tweet.style, {
-                    display: "block",
-                    width: "520px",
-                    padding: "16px",
-                    margin: "24px",
-                    border: "1px solid #ddd",
-                });
-
-                const authorBlock = createTextElement("div", "", author);
-                const figure = document.createElement("figure");
-                const caption = createTextElement("figcaption", "", mediaCaption);
-                const actions = createTextElement("div", "", actionText);
-
-                Object.assign(bodyNode.style, { display: "block", margin: "8px 0" });
-                figure.appendChild(caption);
-                tweet.append(authorBlock, bodyNode, figure, actions);
-                return tweet;
-            }
-
-            const tweet = createTweetLikeCard({
-                author: "Author Name",
-                bodyNode: createTextElement("div", ids.tweetTextId, text),
-                mediaCaption: "image caption should not be selected",
-                actionText: "Reply",
+            const tweet = document.createElement("article");
+            Object.assign(tweet.style, {
+                display: "block",
+                width: "520px",
+                padding: "16px",
+                margin: "24px",
+                border: "1px solid #ddd",
             });
+
+            const body = createTextElement("div", targetId, text);
+            Object.assign(body.style, { display: "block", margin: "8px 0" });
+            const figure = document.createElement("figure");
+            figure.appendChild(
+                createTextElement("figcaption", "", "image caption should not be selected")
+            );
+            tweet.append(
+                createTextElement("div", "", "Author Name"),
+                body,
+                figure,
+                createTextElement("div", "", "Reply")
+            );
             document.body.appendChild(tweet);
         },
-        {
-            tweetTextId: LongPressTweetTextId,
-        },
-        Text
+        { targetId: LongPressTweetTextId, text: Text }
     );
 }
 
-async function addLongTweetTarget() {
+async function addLongTweetTarget(page) {
     const fixture = {
         author: "Author Name",
         intro: "Alpha sentence keeps the first context short.",
@@ -304,8 +325,9 @@ async function addLongTweetTarget() {
         actionText: "Reply",
         distantSentence: "Distant sentence still belongs to the same tweet body.",
     };
-    await driver.executeScript(
-        (ids, fixture) => {
+
+    await page.evaluate(
+        ({ ids, values }) => {
             function createTextElement(tagName, id, text = "") {
                 const element = document.createElement(tagName);
                 if (id) element.id = id;
@@ -313,117 +335,112 @@ async function addLongTweetTarget() {
                 return element;
             }
 
-            function createTweetLikeCard({ author, bodyNode, mediaCaption, actionText }) {
-                const tweet = document.createElement("article");
-                Object.assign(tweet.style, {
-                    display: "block",
-                    width: "520px",
-                    padding: "16px",
-                    margin: "24px",
-                    border: "1px solid #ddd",
-                });
-
-                const authorBlock = createTextElement("div", "", author);
-                const figure = document.createElement("figure");
-                const caption = createTextElement("figcaption", "", mediaCaption);
-                const actions = createTextElement("div", "", actionText);
-
-                Object.assign(bodyNode.style, { display: "block", margin: "8px 0" });
-                figure.appendChild(caption);
-                tweet.append(authorBlock, bodyNode, figure, actions);
-                return tweet;
-            }
-
             const body = createTextElement("div", ids.tweetTextId);
-            body.append(fixture.intro, " ");
+            Object.assign(body.style, { display: "block", margin: "8px 0" });
+            body.append(values.intro, " ");
 
             const target = document.createElement("span");
             target.id = ids.tweetTargetId;
-            target.textContent = fixture.targetSentence;
+            target.textContent = values.targetSentence;
             body.appendChild(target);
             body.append(
                 " ",
-                fixture.nearbySentence,
+                values.nearbySentence,
                 " ",
-                `${fixture.fillerSentence} `.repeat(12),
+                `${values.fillerSentence} `.repeat(12),
                 " ",
-                fixture.distantSentence
+                values.distantSentence
             );
 
-            const tweet = createTweetLikeCard({
-                author: fixture.author,
-                bodyNode: body,
-                mediaCaption: fixture.mediaCaption,
-                actionText: fixture.actionText,
+            const tweet = document.createElement("article");
+            Object.assign(tweet.style, {
+                display: "block",
+                width: "520px",
+                padding: "16px",
+                margin: "24px",
+                border: "1px solid #ddd",
             });
+            const figure = document.createElement("figure");
+            figure.appendChild(createTextElement("figcaption", "", values.mediaCaption));
+            tweet.append(
+                createTextElement("div", "", values.author),
+                body,
+                figure,
+                createTextElement("div", "", values.actionText)
+            );
             document.body.appendChild(tweet);
         },
         {
-            tweetTextId: LongPressTweetTextId,
-            tweetTargetId: LongPressTweetTargetId,
-        },
-        fixture
+            ids: {
+                tweetTextId: LongPressTweetTextId,
+                tweetTargetId: LongPressTweetTargetId,
+            },
+            values: fixture,
+        }
     );
+
     return fixture;
 }
 
-async function getLongPressLinkClickCount() {
-    return await driver.executeScript("return window.edgeTranslateLongPressClickCount || 0;");
+async function getLongPressLinkClickCount(page) {
+    return await page.evaluate(() => window.edgeTranslateLongPressClickCount || 0);
 }
 
-async function clickSelectionButton() {
-    await driver.delay(WaitButtonTime);
-    await driver.clickElement(`#${SelectionButtonId}`);
-    await driver.delay(WaitTranslationResultTime);
+async function clickSelectionButton(page) {
+    const selectionButton = page.locator(`#${SelectionButtonId}`);
+    await expect(selectionButton).toBeVisible();
+    await selectionButton.click();
 }
 
-async function expectSelectionButtonSnapshot() {
-    await driver.delay(WaitButtonTime);
-    const selectionButton = await expectVisibleElement(`#${SelectionButtonId}`);
-    await expectImageSnapshot(() => selectionButton.takeScreenshot(true));
+async function expectSelectionButton(page) {
+    const selectionButton = page.locator(`#${SelectionButtonId}`);
+    await expect(selectionButton).toBeVisible();
+    return selectionButton;
 }
 
-async function expectTranslatedPanelSnapshot() {
-    await driver.delay(WaitTranslationResultTime);
-    const panel = await expectPanelContains(Text, "边缘");
-    await expectImageSnapshot(() => panel.takeScreenshot(true));
+async function expectTranslatedPanel(page) {
+    return await expectPanelContains(page, Text, "边缘");
 }
 
-async function expectPanelNotContaining(text) {
-    await driver.delay(WaitTranslationResultTime);
-    expect(await getPanelText()).not.toContain(text);
+async function expectPanelNotContaining(page, text) {
+    await page.waitForTimeout(300);
+    expect(await getPanelText(page)).not.toContain(text);
 }
 
-async function expectSelectedTextContaining(text) {
-    expect(normalizeText(await getSelectedText())).toContain(text);
+async function expectSelectedTextContaining(page, text) {
+    await expect.poll(async () => normalizeText(await getSelectedText(page))).toContain(text);
 }
 
-async function expectSelectedTextNotContaining(text) {
-    expect(normalizeText(await getSelectedText())).not.toContain(text);
+async function expectSelectedTextNotContaining(page, text) {
+    await expect.poll(async () => normalizeText(await getSelectedText(page))).not.toContain(text);
 }
 
-async function getPanelText() {
-    return await driver.executeScript(() => {
-        const rootElement = document.querySelector("#edge-translate-root");
-        const panelContainer = rootElement?.querySelector("div");
-        return panelContainer?.shadowRoot?.textContent || "";
-    });
+async function expectLongPressHighlight(page, visible) {
+    const getRectCount = async () => {
+        return await page.evaluate(
+            (highlightId) => document.getElementById(highlightId)?.children.length || 0,
+            LongPressHighlightId
+        );
+    };
+
+    if (visible) {
+        await page.waitForFunction(
+            (highlightId) => document.getElementById(highlightId)?.children.length > 0,
+            LongPressHighlightId,
+            { polling: "raf", timeout: WaitLongPressPreviewTimeout }
+        );
+        return;
+    }
+
+    await expect.poll(getRectCount).toBe(0);
 }
 
-async function expectLongPressHighlight(visible) {
-    const rectCount = await driver.executeScript((highlightId) => {
-        return document.getElementById(highlightId)?.children.length || 0;
-    }, LongPressHighlightId);
-    if (visible) expect(rectCount).toBeGreaterThan(0);
-    else expect(rectCount).toBe(0);
+async function expectSelectedText(page, text) {
+    await expect.poll(async () => await getSelectedText(page)).toBe(text);
 }
 
-async function expectSelectedText(text) {
-    expect(await getSelectedText()).toBe(text);
-}
-
-async function getSelectedText() {
-    return await driver.executeScript("return window.getSelection().toString();");
+async function getSelectedText(page) {
+    return await page.evaluate(() => window.getSelection().toString());
 }
 
 function normalizeText(text) {
