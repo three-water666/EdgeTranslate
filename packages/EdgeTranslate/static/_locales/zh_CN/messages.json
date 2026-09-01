@@ -502,6 +502,10 @@
         "message": "翻译按钮位置",
         "description": "翻译按钮位置"
     },
+    "AutoAvoid": {
+        "message": "自动",
+        "description": "自动探测位置，避免与网页悬浮元素互相遮挡"
+    },
     "TopRight": {
         "message": "右上",
         "description": "右上"

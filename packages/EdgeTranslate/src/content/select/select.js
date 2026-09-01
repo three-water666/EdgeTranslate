@@ -46,7 +46,7 @@ function initSelectTranslate() {
 
 function createSelectState() {
     return {
-        buttonPositionSetting: "TopRight",
+        buttonPositionSetting: "AutoAvoid",
         buttonSelection: null,
         channel: new Channel(),
         hasButtonShown: false,

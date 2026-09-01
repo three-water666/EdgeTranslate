@@ -6,6 +6,7 @@ import {
     getInnerParent,
     getSelection,
 } from "./select_helpers.js";
+import { cancelAutoAvoidRechecks, scheduleAutoAvoidRechecks } from "./select_button_auto_avoid.js";
 
 const BUTTON_HOST_ID = "edge-translate-button-host";
 const BUTTON_ID = "edge-translate-button";
@@ -39,11 +40,45 @@ export function initializeButtonContainer(state, onMouseDown) {
 
 export function showButton(state, event) {
     state.buttonSelection = getSelection();
+    state.buttonAnchor = { x: event.x, y: event.y };
     showButtonLayer(state);
+    positionButton(state);
+    state.hasButtonShown = true;
+    scheduleAutoAvoidRechecks(state, () => positionButton(state));
+}
+
+export function scrollHandler(state) {
+    if (!state.hasButtonShown) return;
+    const distanceX = state.originScrollX - state.scrollingElement[state.scrollPropertyX];
+    const distanceY = state.originScrollY - state.scrollingElement[state.scrollPropertyY];
+    const left = state.originPositionX + distanceX;
+    const top = state.originPositionY + distanceY;
+    state.translationButtonContainer.style.left = `${left}px`;
+    state.translationButtonContainer.style.top = `${top}px`;
+    state.buttonAnchor.x += distanceX;
+    state.buttonAnchor.y += distanceY;
+    state.originScrollX = state.scrollingElement[state.scrollPropertyX];
+    state.originScrollY = state.scrollingElement[state.scrollPropertyY];
+    state.originPositionX = left;
+    state.originPositionY = top;
+}
+
+export function disappearButton(state) {
+    if (!state.hasButtonShown) return;
+    cancelAutoAvoidRechecks(state);
+    closeButtonHost(state.translationButtonHost);
+    if (document.documentElement.contains(state.translationButtonContainer)) {
+        document.documentElement.removeChild(state.translationButtonContainer);
+    }
+    state.hasButtonShown = false;
+    state.buttonSelection = null;
+}
+
+function positionButton(state) {
     const position = getButtonPosition(
         state.buttonPositionSetting,
         state.translationButtonContainer,
-        event
+        state.buttonAnchor
     );
     state.translationButtonContainer.style.top = `${position.top}px`;
     state.translationButtonContainer.style.left = `${position.left}px`;
@@ -51,25 +86,6 @@ export function showButton(state, event) {
     state.originScrollY = state.scrollingElement[state.scrollPropertyY];
     state.originPositionX = position.left;
     state.originPositionY = position.top;
-    state.hasButtonShown = true;
-}
-
-export function scrollHandler(state) {
-    if (!state.hasButtonShown) return;
-    const distanceX = state.originScrollX - state.scrollingElement[state.scrollPropertyX];
-    const distanceY = state.originScrollY - state.scrollingElement[state.scrollPropertyY];
-    state.translationButtonContainer.style.left = `${state.originPositionX + distanceX}px`;
-    state.translationButtonContainer.style.top = `${state.originPositionY + distanceY}px`;
-}
-
-export function disappearButton(state) {
-    if (!state.hasButtonShown) return;
-    closeButtonHost(state.translationButtonHost);
-    if (document.documentElement.contains(state.translationButtonContainer)) {
-        document.documentElement.removeChild(state.translationButtonContainer);
-    }
-    state.hasButtonShown = false;
-    state.buttonSelection = null;
 }
 
 function renderButton(state, onMouseDown) {
