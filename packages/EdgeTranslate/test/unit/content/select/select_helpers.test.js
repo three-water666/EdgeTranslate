@@ -1,10 +1,12 @@
-import { getButtonPosition } from "content/select/select_helpers.js";
+import { getButtonPlacement, getButtonPosition } from "content/select/select_button_position.js";
+import { getButtonAnchor } from "content/select/select_button_anchor.js";
 
 describe("selection button position", () => {
     let originalElementsFromPoint;
 
     beforeEach(() => {
         document.documentElement.innerHTML = "<head></head><body></body>";
+        window.getSelection().removeAllRanges();
         originalElementsFromPoint = document.elementsFromPoint;
     });
 
@@ -14,6 +16,7 @@ describe("selection button position", () => {
         } else {
             delete document.elementsFromPoint;
         }
+        window.getSelection().removeAllRanges();
     });
 
     it("prefers the upper-right position when no floating element overlaps", () => {
@@ -35,8 +38,8 @@ describe("selection button position", () => {
         });
 
         expect(getButtonPosition("AutoAvoid", container, createSelectionEvent())).toEqual({
-            left: 58,
-            top: 48,
+            left: 110,
+            top: 120,
         });
     });
 
@@ -45,7 +48,7 @@ describe("selection button position", () => {
         document.body.appendChild(container);
         const popup = createPopupRect({ left: 50, top: 30, right: 300, bottom: 85 });
         setElementsFromPoint((x, y) => {
-            if (container.style.visibility !== "hidden") return [container];
+            if (container.style.opacity !== "0") return [container];
             if (x >= 50 && x <= 300 && y >= 30 && y <= 85) return [popup];
             return [document.body];
         });
@@ -66,6 +69,166 @@ describe("selection button position", () => {
             left: 110,
             top: 48,
         });
+    });
+
+    it("ignores absolute page layout without an explicit stacking level", () => {
+        const container = createButtonContainer();
+        const layout = createPopupRect({ left: 106, top: 44, right: 146, bottom: 84 });
+        layout.style.position = "absolute";
+        setElementsFromPoint(() => [container, layout, document.body]);
+
+        expect(getButtonPosition("AutoAvoid", container, createSelectionEvent())).toEqual({
+            left: 110,
+            top: 48,
+        });
+    });
+
+    it("moves when a page element is actually stacked above the button", () => {
+        const container = createButtonContainer();
+        const overlay = createPopupRect({ left: 106, top: 44, right: 146, bottom: 84 });
+        overlay.style.position = "absolute";
+        setElementsFromPoint((x, y) => {
+            if (x >= 106 && x <= 146 && y >= 44 && y <= 84) return [overlay, container];
+            return [document.body];
+        });
+
+        expect(getButtonPosition("AutoAvoid", container, createSelectionEvent())).toEqual({
+            left: 110,
+            top: 120,
+        });
+    });
+
+    it("ignores a large fixed layout container underneath the button", () => {
+        const container = createButtonContainer();
+        const layout = createPopupRect({
+            bottom: window.innerHeight,
+            left: 0,
+            right: window.innerWidth,
+            top: 0,
+        });
+        setElementsFromPoint(() => [container, layout, document.body]);
+
+        expect(getButtonPosition("AutoAvoid", container, createSelectionEvent())).toEqual({
+            left: 110,
+            top: 48,
+        });
+    });
+
+    it("ignores positioned app layout while avoiding a selection toolbar", () => {
+        const container = createButtonContainer();
+        const appLayout = createPopupRect({
+            bottom: window.innerHeight,
+            left: 0,
+            right: window.innerWidth,
+            top: 0,
+        });
+        appLayout.style.position = "relative";
+        appLayout.style.zIndex = "1";
+        const toolbar = createPopupRect({ left: 50, top: 40, right: 150, bottom: 90 });
+        setElementsFromPoint((x, y) => {
+            if (x >= 50 && x <= 150 && y >= 40 && y <= 90) {
+                return [container, toolbar, appLayout];
+            }
+            return [container, appLayout, document.body];
+        });
+
+        expect(getButtonPosition("AutoAvoid", container, createSelectionEvent())).toEqual({
+            left: 110,
+            top: 120,
+        });
+    });
+
+    it("keeps its current direction when every candidate is obstructed", () => {
+        const container = createButtonContainer();
+        const overlay = createPopupRect({
+            bottom: window.innerHeight,
+            left: 0,
+            right: window.innerWidth,
+            top: 0,
+        });
+        setElementsFromPoint(() => [overlay, container, document.body]);
+
+        const initialPlacement = getButtonPlacement("AutoAvoid", container, createSelectionEvent());
+        const stablePlacement = getButtonPlacement("AutoAvoid", container, createSelectionEvent(), {
+            currentDirection: initialPlacement.direction,
+        });
+
+        expect(initialPlacement.direction).toBe("TopRight");
+        expect(stablePlacement).toEqual(initialPlacement);
+    });
+
+    it("does not move when only a thin edge of the button overlaps", () => {
+        const container = createButtonContainer();
+        const popup = createPopupRect({ left: 108, top: 44, right: 112, bottom: 84 });
+        setElementsFromPoint((x, y) => {
+            if (x >= 108 && x <= 112 && y >= 44 && y <= 84) return [container, popup];
+            return [document.body];
+        });
+
+        expect(getButtonPosition("AutoAvoid", container, createSelectionEvent())).toEqual({
+            left: 110,
+            top: 48,
+        });
+    });
+
+    it("keeps the current direction after its original blocker disappears", () => {
+        const container = createButtonContainer();
+        const popup = createPopupRect({ left: 106, top: 44, right: 146, bottom: 84 });
+        let popupVisible = true;
+        setElementsFromPoint((x, y) => {
+            if (popupVisible && x >= 106 && x <= 146 && y >= 44 && y <= 84) {
+                return [container, popup];
+            }
+            return [document.body];
+        });
+
+        const initialPlacement = getButtonPlacement("AutoAvoid", container, createSelectionEvent());
+        popupVisible = false;
+        const stablePlacement = getButtonPlacement("AutoAvoid", container, createSelectionEvent(), {
+            currentDirection: initialPlacement.direction,
+        });
+
+        expect(initialPlacement.direction).toBe("BottomRight");
+        expect(stablePlacement).toEqual(initialPlacement);
+    });
+
+    it("nudges a slightly clipped upper-right position instead of flipping below", () => {
+        const container = createButtonContainer();
+        setElementsFromPoint(() => [document.body]);
+
+        expect(getButtonPosition("AutoAvoid", container, { x: 100, y: 50 })).toEqual({
+            left: 110,
+            top: 4,
+        });
+    });
+
+    it("anchors repeated clicks to the selected word rectangle", () => {
+        const container = createButtonContainer();
+        const target = document.createElement("span");
+        target.textContent = "stable";
+        document.body.appendChild(target);
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        Object.defineProperty(range, "getClientRects", {
+            configurable: true,
+            value: () => [createRect({ left: 80, top: 90, right: 120, bottom: 110 })],
+        });
+        window.getSelection().addRange(range);
+        setElementsFromPoint(() => [document.body]);
+
+        const firstPosition = getButtonPosition(
+            "AutoAvoid",
+            container,
+            getButtonAnchor({ x: 85, y: 100 })
+        );
+        const secondPosition = getButtonPosition(
+            "AutoAvoid",
+            container,
+            getButtonAnchor({ x: 115, y: 100 })
+        );
+
+        expect(firstPosition).toEqual({ left: 130, top: 48 });
+        expect(secondPosition).toEqual(firstPosition);
     });
 
     it("uses an in-view candidate near a viewport edge", () => {
@@ -101,6 +264,14 @@ function createPopupRect(rect) {
     });
     document.body.appendChild(popup);
     return popup;
+}
+
+function createRect(rect) {
+    return {
+        ...rect,
+        height: rect.bottom - rect.top,
+        width: rect.right - rect.left,
+    };
 }
 
 function setElementsFromPoint(value) {

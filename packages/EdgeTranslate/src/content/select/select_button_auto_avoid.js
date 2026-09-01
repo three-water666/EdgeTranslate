@@ -24,6 +24,10 @@ export function cancelAutoAvoidRechecks(state) {
     state.autoAvoidObserverStopTimer = null;
     window.clearTimeout(state.autoAvoidMutationTimer);
     state.autoAvoidMutationTimer = null;
+    window.clearTimeout(state.autoAvoidDirectionConfirmTimer);
+    state.autoAvoidDirectionConfirmTimer = null;
+    state.autoAvoidPendingDirection = null;
+    state.autoAvoidPendingSince = null;
 }
 
 function observeAutoAvoidChanges(state, reposition) {
