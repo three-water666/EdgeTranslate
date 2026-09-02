@@ -8,6 +8,8 @@
         "lint:fix": "pnpm lint --fix",
         "format": "node ../../scripts/run-eslint.js packages/EdgeTranslate \"src/**/*.js\" \"config/**/*.js\" --fix",
         "dev": "pnpm --dir ../translators dev:prepare && node ./scripts/build-extension.js dev --browser chrome",
+        "dev:browser": "pnpm --dir ../translators dev:prepare && node ./scripts/build-extension.js dev --browser chrome --launch-browser",
+        "preview:browser": "pnpm --dir ../translators build && node ./scripts/build-extension.js preview --browser chrome",
         "build": "node ./scripts/build-extension.js build --browser chrome",
         "package": "node -e \"console.log('\\npacking package for chrome')\" && node ./scripts/build-extension.js package --browser chrome",
         "e2e": "playwright test --config ./test/e2e/playwright.config.js --project=functional",

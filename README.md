@@ -114,6 +114,26 @@ The development output is available under:
 
 -   `./packages/EdgeTranslate/dev/chrome/`
 
+Build the extension, watch for changes, and open it in a Playwright-managed Chromium browser:
+
+```shell
+pnpm dev:browser
+```
+
+The browser opens the project page automatically and stores its isolated profile under
+`./packages/EdgeTranslate/dev/browser-profiles/development/`. Run
+`pnpm --filter edge_translate e2e:install` first if the Playwright Chromium browser is not
+installed.
+
+To build the production output and open it without file watching:
+
+```shell
+pnpm preview:browser
+```
+
+The production preview uses a separate profile under
+`./packages/EdgeTranslate/dev/browser-profiles/production/`.
+
 ## Acknowledgement
 
 This project continues maintenance work based on the original open source project [Edge Translate](https://github.com/EdgeTranslate/EdgeTranslate). Thanks to the original authors and contributors for their work.

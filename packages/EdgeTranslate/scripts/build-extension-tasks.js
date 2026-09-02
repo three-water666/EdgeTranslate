@@ -20,9 +20,10 @@ const {
     toPosixPath,
 } = require("./build-extension-assets");
 const { watchAssets } = require("./build-extension-watch");
+const { createManualBrowserSession, runManualBrowser } = require("./manual-browser");
 
 function parseArgs(argv) {
-    const args = { browser: "chrome", command: argv[0] };
+    const args = { browser: "chrome", command: argv[0], launchBrowser: false };
 
     for (let index = 1; index < argv.length; index += 1) {
         const arg = argv[index];
@@ -32,6 +33,8 @@ function parseArgs(argv) {
             index += 1;
         } else if (arg.startsWith("--browser=")) {
             args.browser = arg.slice("--browser=".length) || args.browser;
+        } else if (arg === "--launch-browser") {
+            args.launchBrowser = true;
         }
     }
 
@@ -39,7 +42,10 @@ function parseArgs(argv) {
 }
 
 function printUsage() {
-    console.error("Usage: node scripts/build-extension.js <build|dev|package> [--browser chrome]");
+    console.error(
+        "Usage: node scripts/build-extension.js <build|dev|preview|package> " +
+            "[--browser chrome] [--launch-browser]"
+    );
 }
 
 async function buildExtension({ browser }) {
@@ -50,13 +56,20 @@ async function buildExtension({ browser }) {
     patchGeneratedGlobalFallbacks(context);
 }
 
-async function devExtension({ browser }) {
+async function devExtension({ browser, launchBrowser }) {
     const context = createBuildContext("development", browser);
 
     cleanOutput(context);
     await runAssetBuild(context);
     await touchHotReloadStamp(context);
-    await runWebpackWatch(context);
+    await runWebpackWatch(context, { launchBrowser });
+}
+
+async function previewExtension({ browser }) {
+    await buildExtension({ browser });
+
+    const context = createBuildContext("production", browser);
+    await runManualBrowser(context.outputDir, context.environment);
 }
 
 async function packageExtension({ browser }) {
@@ -118,12 +131,26 @@ function runWebpack(context) {
     });
 }
 
-function runWebpackWatch(context) {
+function runWebpackWatch(context, { launchBrowser }) {
     const watcher = watchAssets(context);
+    const browserSession = createManualBrowserSession(
+        launchBrowser,
+        context.outputDir,
+        context.environment
+    );
     const compiler = webpack(createWebpackConfig(context));
-    const watching = compiler.watch({ aggregateTimeout: 300 }, logWebpackResult);
+    let shutdown;
+    const watching = compiler.watch({ aggregateTimeout: 300 }, (error, stats) => {
+        if (!logWebpackResult(error, stats)) return;
 
-    bindShutdown(watcher, watching);
+        browserSession.start(
+            () => shutdown(),
+            (browserError) => handleBrowserLaunchError(browserError, shutdown)
+        );
+    });
+
+    shutdown = createShutdown({ browserSession, watcher, watching });
+    bindShutdown(shutdown);
     return new Promise(() => {});
 }
 
@@ -140,8 +167,10 @@ function logWebpackResult(error, stats) {
     try {
         assertWebpackSuccess(error, stats);
         logWebpackStats(stats);
+        return true;
     } catch (buildError) {
         console.error(buildError.stack || buildError);
+        return false;
     }
 }
 
@@ -227,13 +256,38 @@ function closeCompiler(compiler) {
     });
 }
 
-function bindShutdown(watcher, watching) {
-    const shutdown = () => {
-        Promise.all([watcher.close(), closeWatching(watching)]).finally(() => process.exit());
-    };
+function handleBrowserLaunchError(error, shutdown) {
+    console.error(error.stack || error);
+    shutdown(1);
+}
 
-    process.once("SIGINT", shutdown);
-    process.once("SIGTERM", shutdown);
+function createShutdown(resources) {
+    let shutdownPromise;
+
+    return (exitCode = 0) => {
+        if (!shutdownPromise) {
+            shutdownPromise = finishShutdown(resources, exitCode);
+        }
+        return shutdownPromise;
+    };
+}
+
+async function finishShutdown({ browserSession, watcher, watching }, exitCode) {
+    try {
+        await Promise.all([browserSession.close(), watcher.close(), closeWatching(watching)]);
+    } catch (error) {
+        console.error(error.stack || error);
+        exitCode = 1;
+    }
+
+    process.exit(exitCode);
+}
+
+function bindShutdown(shutdown) {
+    const handleSignal = () => shutdown();
+
+    process.once("SIGINT", handleSignal);
+    process.once("SIGTERM", handleSignal);
 }
 
 function closeWatching(watching) {
@@ -278,5 +332,6 @@ module.exports = {
     devExtension,
     packageExtension,
     parseArgs,
+    previewExtension,
     printUsage,
 };

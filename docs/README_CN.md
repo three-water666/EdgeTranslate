@@ -114,6 +114,25 @@ pnpm dev
 
 -   `./packages/EdgeTranslate/dev/chrome/`
 
+构建并监听扩展，同时使用 Playwright 管理的 Chromium 启动扩展：
+
+```shell
+pnpm dev:browser
+```
+
+浏览器会自动打开项目页面，并将独立的用户数据保存在
+`./packages/EdgeTranslate/dev/browser-profiles/development/`。如果尚未安装 Playwright
+Chromium，请先运行 `pnpm --filter edge_translate e2e:install`。
+
+如需构建并打开不带文件监听的生产版本：
+
+```shell
+pnpm preview:browser
+```
+
+生产预览使用独立的用户数据目录
+`./packages/EdgeTranslate/dev/browser-profiles/production/`。
+
 ## 致谢
 
 本项目基于原开源项目 [Edge Translate](https://github.com/EdgeTranslate/EdgeTranslate) 持续维护，感谢原作者与贡献者的工作。
