@@ -114,6 +114,26 @@ pnpm dev
 
 -   `./packages/EdgeTranslate/dev/chrome/`
 
+Чтобы собрать расширение, отслеживать изменения и открыть его в Chromium под управлением
+Playwright, выполните:
+
+```shell
+pnpm dev:browser
+```
+
+Браузер автоматически откроет страницу проекта и сохранит изолированный профиль в каталоге
+`./packages/EdgeTranslate/dev/browser-profiles/development/`. Если Chromium для Playwright еще не
+установлен, сначала выполните `pnpm --filter edge_translate e2e:install`.
+
+Чтобы собрать и открыть production-версию без отслеживания файлов, выполните:
+
+```shell
+pnpm preview:browser
+```
+
+Для production-предпросмотра используется отдельный профиль в каталоге
+`./packages/EdgeTranslate/dev/browser-profiles/production/`.
+
 ## Благодарность
 
 Этот проект продолжает поддержку на основе исходного открытого проекта [Edge Translate](https://github.com/EdgeTranslate/EdgeTranslate). Спасибо оригинальным авторам и участникам за их работу.

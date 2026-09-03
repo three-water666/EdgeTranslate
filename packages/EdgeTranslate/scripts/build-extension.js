@@ -3,6 +3,7 @@ const {
     devExtension,
     packageExtension,
     parseArgs,
+    previewExtension,
     printUsage,
 } = require("./build-extension-tasks");
 
@@ -16,6 +17,11 @@ async function main() {
 
     if (args.command === "dev") {
         await devExtension(args);
+        return;
+    }
+
+    if (args.command === "preview") {
+        await previewExtension(args);
         return;
     }
 
