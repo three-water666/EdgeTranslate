@@ -502,6 +502,10 @@
         "message": "Translation button location",
         "description": "Select the translation button location"
     },
+    "AutoAvoid": {
+        "message": "Auto",
+        "description": "Automatically position the translation button away from page overlays"
+    },
     "TopRight": {
         "message": "Upper Right",
         "description": "Upper Right"

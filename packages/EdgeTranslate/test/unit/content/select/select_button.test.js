@@ -10,6 +10,7 @@ describe("selection button top layer host", () => {
     let originalShow;
     let originalShowModal;
     let originalShowPopover;
+    let originalElementsFromPoint;
 
     beforeEach(() => {
         document.documentElement.innerHTML = "<head></head><body></body>";
@@ -18,6 +19,8 @@ describe("selection button top layer host", () => {
         originalShow = HTMLDialogElement.prototype.show;
         originalShowModal = HTMLDialogElement.prototype.showModal;
         originalShowPopover = HTMLDialogElement.prototype.showPopover;
+        originalElementsFromPoint = document.elementsFromPoint;
+        window.getSelection().removeAllRanges();
     });
 
     afterEach(() => {
@@ -26,6 +29,13 @@ describe("selection button top layer host", () => {
         restoreDialogMethod("show", originalShow);
         restoreDialogMethod("showModal", originalShowModal);
         restoreDialogMethod("showPopover", originalShowPopover);
+        if (originalElementsFromPoint) {
+            setElementsFromPoint(originalElementsFromPoint);
+        } else {
+            delete document.elementsFromPoint;
+        }
+        window.getSelection().removeAllRanges();
+        jest.useRealTimers();
     });
 
     it("shows the button directly on normal pages", () => {
@@ -93,11 +103,105 @@ describe("selection button top layer host", () => {
         expect(document.documentElement.contains(state.translationButtonContainer)).toBe(false);
         expect(document.getElementById("edge-translate-button-host")).toBeNull();
     });
+
+    it("deduplicates repeated show requests for the same selected word", () => {
+        const state = createButtonState();
+        selectText("hello world");
+
+        initializeButtonContainer(state, jest.fn());
+        prepareButtonDimensions(state);
+        showButton(state, createSelectionEvent());
+        showButton(state, { x: 130, y: 100 });
+
+        expect(state.translationButtonContainer.style.left).toBe("110px");
+        expect(state.translationButtonContainer.style.top).toBe("48px");
+    });
+
+    it("requires a persistent blocker before changing direction", () => {
+        jest.useFakeTimers();
+        const state = createButtonState("AutoAvoid");
+        const popup = createPopupRect({ left: 106, top: 44, right: 146, bottom: 84 });
+        let popupVisible = false;
+        setElementsFromPoint((x, y) => {
+            if (popupVisible && x >= 106 && x <= 146 && y >= 44 && y <= 84) {
+                return [state.translationButtonContainer, popup];
+            }
+            return [document.body];
+        });
+
+        initializeButtonContainer(state, jest.fn());
+        prepareButtonDimensions(state);
+        showButton(state, createSelectionEvent());
+        popupVisible = true;
+        jest.advanceTimersByTime(0);
+
+        expect(state.translationButtonContainer.style.left).toBe("110px");
+        expect(state.translationButtonContainer.style.top).toBe("48px");
+        jest.advanceTimersByTime(49);
+        expect(state.translationButtonContainer.style.top).toBe("48px");
+        jest.advanceTimersByTime(1);
+        expect(state.translationButtonContainer.style.left).toBe("110px");
+        expect(state.translationButtonContainer.style.top).toBe("120px");
+
+        disappearButton(state);
+        jest.useRealTimers();
+    });
+
+    it("ignores a blocker that disappears during the confirmation window", () => {
+        jest.useFakeTimers();
+        const state = createButtonState("AutoAvoid");
+        const popup = createPopupRect({ left: 106, top: 44, right: 146, bottom: 84 });
+        let popupVisible = false;
+        setElementsFromPoint((x, y) => {
+            if (popupVisible && x >= 106 && x <= 146 && y >= 44 && y <= 84) {
+                return [state.translationButtonContainer, popup];
+            }
+            return [document.body];
+        });
+
+        initializeButtonContainer(state, jest.fn());
+        prepareButtonDimensions(state);
+        showButton(state, createSelectionEvent());
+        popupVisible = true;
+        jest.advanceTimersByTime(0);
+        popupVisible = false;
+        jest.advanceTimersByTime(50);
+
+        expect(state.translationButtonContainer.style.left).toBe("110px");
+        expect(state.translationButtonContainer.style.top).toBe("48px");
+
+        disappearButton(state);
+        jest.useRealTimers();
+    });
+
+    it("does not rotate when every direction remains obstructed", () => {
+        jest.useFakeTimers();
+        const state = createButtonState("AutoAvoid");
+        const overlay = createPopupRect({
+            bottom: window.innerHeight,
+            left: 0,
+            right: window.innerWidth,
+            top: 0,
+        });
+        setElementsFromPoint(() => [overlay, state.translationButtonContainer, document.body]);
+
+        initializeButtonContainer(state, jest.fn());
+        prepareButtonDimensions(state);
+        showButton(state, createSelectionEvent());
+        jest.advanceTimersByTime(1600);
+
+        expect(state.buttonPlacementDirection).toBe("TopRight");
+        expect(state.translationButtonContainer.style.left).toBe("110px");
+        expect(state.translationButtonContainer.style.top).toBe("48px");
+
+        disappearButton(state);
+        jest.useRealTimers();
+    });
 });
 
-function createButtonState() {
+function createButtonState(buttonPositionSetting = "TopRight") {
     return {
-        buttonPositionSetting: "TopRight",
+        buttonPositionSetting,
         hasButtonShown: false,
         originPositionX: 0,
         originPositionY: 0,
@@ -109,6 +213,25 @@ function createButtonState() {
         translationButtonContainer: document.createElement("iframe"),
         translationButtonHost: null,
     };
+}
+
+function createPopupRect(rect) {
+    const popup = document.createElement("div");
+    popup.style.position = "fixed";
+    popup.getBoundingClientRect = () => ({
+        ...rect,
+        height: rect.bottom - rect.top,
+        width: rect.right - rect.left,
+    });
+    document.body.appendChild(popup);
+    return popup;
+}
+
+function setElementsFromPoint(value) {
+    Object.defineProperty(document, "elementsFromPoint", {
+        configurable: true,
+        value,
+    });
 }
 
 function prepareButtonDimensions(state) {
@@ -142,7 +265,14 @@ function selectText(text) {
 
     const range = document.createRange();
     range.selectNodeContents(target);
-    range.getBoundingClientRect = () => ({ left: 12, top: 34 });
+    range.getBoundingClientRect = () => ({
+        bottom: 54,
+        height: 20,
+        left: 12,
+        right: 112,
+        top: 34,
+        width: 100,
+    });
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);

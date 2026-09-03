@@ -502,6 +502,10 @@
         "message": "翻訳ボタン位置",
         "description": "翻訳ボタン位置"
     },
+    "AutoAvoid": {
+        "message": "自動",
+        "description": "ページ上のフローティング要素と重ならない位置を自動検出します"
+    },
     "TopRight": {
         "message": "右上",
         "description": "右上"

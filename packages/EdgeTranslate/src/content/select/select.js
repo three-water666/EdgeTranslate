@@ -46,8 +46,11 @@ function initSelectTranslate() {
 
 function createSelectState() {
     return {
-        buttonPositionSetting: "TopRight",
+        buttonPositionSetting: "AutoAvoid",
+        buttonAnchor: null,
+        buttonPlacementDirection: null,
         buttonSelection: null,
+        buttonShownAt: null,
         channel: new Channel(),
         hasButtonShown: false,
         longPressEnabled: false,
@@ -59,6 +62,7 @@ function createSelectState() {
         originScrollX: 0,
         originScrollY: 0,
         screenshotSelector: createScreenshotSelector(),
+        selectionActionGeneration: 0,
         scrollPropertyX: "pageXOffset",
         scrollPropertyY: "pageYOffset",
         scrollingElement: window,
@@ -102,6 +106,7 @@ function initializeDomListeners(state) {
     }
     state.scrollingElement.addEventListener("scroll", () => scrollHandler(state));
     document.addEventListener("mousedown", () => {
+        state.selectionActionGeneration += 1;
         disappearButton(state);
         detectSelect(document, (event) => selectTranslate(state, event));
     });
@@ -119,9 +124,11 @@ function initializeDomListeners(state) {
 
 function selectTranslate(state, event, isDoubleClick = false) {
     if (!shouldTranslate()) return;
+    const actionGeneration = ++state.selectionActionGeneration;
     isInBlacklist().then((inBlacklist) => {
-        if (inBlacklist) return;
+        if (inBlacklist || actionGeneration !== state.selectionActionGeneration) return;
         getOrSetDefaultSettings("OtherSettings", DEFAULT_SETTINGS).then((result) => {
+            if (actionGeneration !== state.selectionActionGeneration) return;
             const otherSettings = result.OtherSettings;
             if (!otherSettings) return;
             if (

@@ -59,19 +59,6 @@ export function getInnerParent(container) {
     return container.shadowRoot;
 }
 
-export function getButtonPosition(positionSetting, container, event) {
-    const offset = resolveButtonOffset(positionSetting, container);
-    let left = event.x + offset.x;
-    let top = event.y + offset.y;
-    if (left <= 0 || left + container.clientWidth > window.innerWidth) {
-        left = event.x - offset.x - container.clientWidth;
-    }
-    if (top <= 0 || top + container.clientHeight > window.innerHeight) {
-        top = event.y - offset.y - container.clientHeight;
-    }
-    return { left, top };
-}
-
 export function syncChangedSettings(state, changes, area, cancelLongPressSession) {
     if (area !== "sync") return;
     if (changes.LayoutSettings) {
@@ -113,22 +100,6 @@ export function applyButtonStyle(translationButton) {
         border: "none",
         cursor: "pointer",
     });
-}
-
-function resolveButtonOffset(position, container) {
-    const offsetX = 10;
-    const offsetY = 20;
-    switch (position) {
-        case "TopLeft":
-            return { x: -offsetX - container.clientWidth, y: -offsetY - container.clientHeight };
-        case "BottomRight":
-            return { x: offsetX, y: offsetY };
-        case "BottomLeft":
-            return { x: -offsetX - container.clientWidth, y: offsetY };
-        case "TopRight":
-        default:
-            return { x: offsetX, y: -offsetY - container.clientHeight };
-    }
 }
 
 function clickIfPresent(button) {

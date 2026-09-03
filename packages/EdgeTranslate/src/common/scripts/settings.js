@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS = {
         RTL: false,
         FoldLongContent: true,
         AutoClosePanelOnPageScroll: true,
-        SelectTranslatePosition: "TopRight",
+        SelectTranslatePosition: "AutoAvoid",
     },
     // Default settings of source language and target language
     languageSetting: { sl: "auto", tl: BROWSER_LANGUAGES_MAP[chrome.i18n.getUILanguage()] },

@@ -502,6 +502,10 @@
         "message": "翻譯按鈕位置",
         "description": "翻譯按鈕位置"
     },
+    "AutoAvoid": {
+        "message": "自動",
+        "description": "自動探測位置，避免與網頁懸浮元素互相遮擋"
+    },
     "TopRight": {
         "message": "右上",
         "description": "右上"
